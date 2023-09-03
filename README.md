@@ -14,7 +14,7 @@ are developed similarly to the main application, using TDD.
 * Javascript
     * Javascript is used to develop the user interface, the client
         * Solid.js is used as a framework for developing reactive components
-        * Cypress is used for automated testing
+        * Cypress or Vitest are used for automated testing
 * Postgres
     * Postgres is used to persist ordered data
     * Should be absolutely persistent: loss of pages or user data should be
