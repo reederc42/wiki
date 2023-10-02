@@ -32,7 +32,7 @@ class SignedInUser extends HTMLElement {
         component(this, function() {
             return `
                 Username: ${user.data.username}
-                <button onclick="signOut">Sign Out</button>
+                <button onclick="signOut()">Sign Out</button>
             `
         }, {events});
     }
@@ -47,7 +47,10 @@ class SignedOutUser extends HTMLElement {
     connectedCallback() {
         let events = {
             signIn() {
-                let username = this.parentNode.parentNode.querySelector("#username");
+                let username = this
+                    .parentNode
+                    .parentNode
+                    .querySelector("#username");
                 user.signIn(username.value);
             }
         };
