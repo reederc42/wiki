@@ -5,7 +5,7 @@ const esbuildBin = './node_modules/.bin/esbuild';
 
 const baseOptions = [
     '--bundle',
-    '--outfile=dist/index.js',
+    `--outfile=${outdir}/index.js`,
     'src/main.js'
 ];
 
@@ -19,8 +19,9 @@ function build(options=[], env='') {
     fs.copyFileSync('index.html', `${outdir}/index.html`);
     console.log(`copied index.html to ${outdir}.`);
     console.log('building index.js...');
-    let opts = [esbuildBin].concat(options).concat(baseOptions);
-    execSync(opts.join(' '));
+    let cmd = [esbuildBin].concat(options).concat(baseOptions).join(' ');
+    console.log(`executing command: ${cmd}`);
+    execSync(cmd);
     console.log('built index.js.');
     console.log(`built UI for ${env}`);
 }
