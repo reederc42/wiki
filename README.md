@@ -13,8 +13,8 @@ are developed similarly to the main application, using TDD.
     * Go is used to develop the server and tools
 * Javascript
     * Javascript is used to develop the user interface, the client
-        * Solid.js is used as a framework for developing reactive components
-        * Cypress or Vitest are used for automated testing
+        * Reef.js is used to assist with reactive components
+        * Cypress is used for automated testing
 * Postgres
     * Postgres is used to persist ordered data
     * Should be absolutely persistent: loss of pages or user data should be

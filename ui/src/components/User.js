@@ -9,11 +9,11 @@ class WikiUser extends HTMLElement {
     connectedCallback() {
         component(this, function() {
             return `${user.data.username != "" ? `
-                <signed-in-user />
+                <wiki-signed-in-user></wiki-signed-in-user>
             ` : `
-                <signed-out-user />
+                <wiki-signed-out-user></wiki-signed-out-user>
             `}`
-        })
+        });
     }
 }
 customElements.define("wiki-user", WikiUser);
@@ -37,7 +37,7 @@ class SignedInUser extends HTMLElement {
         }, {events});
     }
 }
-customElements.define("signed-in-user", SignedInUser);
+customElements.define("wiki-signed-in-user", SignedInUser);
 
 class SignedOutUser extends HTMLElement {
     constructor() {
@@ -65,4 +65,4 @@ class SignedOutUser extends HTMLElement {
         }, {events});
     }
 }
-customElements.define("signed-out-user", SignedOutUser);
+customElements.define("wiki-signed-out-user", SignedOutUser);

@@ -8,8 +8,9 @@ class App extends HTMLElement {
     connectedCallback() {
         render(this, `
             <h1>Wiki</h1>
-            <wiki-user />
-        `)
+            <wiki-user></wiki-user>
+            <wiki-router></wiki-router>
+        `);
     }
 }
 customElements.define("wiki-app", App);
