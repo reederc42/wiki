@@ -1,3 +1,5 @@
-const build = require('./build');
+import {build} from './build.js';
 
-build(['--minify'], 'prod');
+await build({
+    minify: true
+}, 'prod');
