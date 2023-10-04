@@ -1,6 +1,7 @@
 import express from 'express';
 import {build} from './build.js';
 import * as os from 'os';
+import * as fs from 'fs';
 
 function getAddress(iface='', family='IPv4') {
     let i = os.networkInterfaces()[iface]
@@ -18,16 +19,19 @@ const app = express();
 const port = 8080;
 
 await build({
-    sourcemap: 'inline'
+    sourcemap: true
 }, 'dev');
 
 let dist = process.cwd() + "/dist";
 
-app.get('/index.js', (req, res) => {
-    res.sendFile(`${dist}/index.js`);
-});
+let distFiles = fs.readdirSync(dist);
+for (const d of distFiles) {
+    app.get(`/${d}`, (_, res) => {
+        res.sendFile(`${dist}/${d}`);
+    })
+}
 
-app.get('/*', (req, res) => {
+app.get('/*', (_, res) => {
     res.sendFile(`${dist}/index.html`);
 })
 
