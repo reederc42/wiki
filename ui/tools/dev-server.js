@@ -1,5 +1,4 @@
 const build = require('./build');
-const fs = require('fs');
 const express = require('express');
 
 const app = express();
@@ -7,13 +6,14 @@ const port = 8080;
 
 build(['--sourcemap=inline'], 'dev');
 
+let dist = process.cwd() + "/dist";
 
 app.get('/index.js', (req, res) => {
-    res.sendFile('/home/docker/src/github.com/reederc42/wiki/ui/dist/index.js');
+    res.sendFile(`${dist}/index.js`);
 });
 
 app.get('/*', (req, res) => {
-    res.sendFile('/home/docker/src/github.com/reederc42/wiki/ui/dist/index.html');
+    res.sendFile(`${dist}/index.html`);
 })
 
 let listener = app.listen(port).address();
