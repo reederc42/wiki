@@ -1,7 +1,7 @@
 import {component} from 'reefjs';
 import {route, navigate} from '../store/router';
 
-class WikiRouter extends HTMLElement {
+class Router extends HTMLElement {
     constructor() {
         super();
     }
@@ -11,7 +11,7 @@ class WikiRouter extends HTMLElement {
         component(this, function() {
             return `
                 ${route.value == "/" ? `
-                    <p>Home page! Go to <a to-link="/abcd" onclick="navigate()">subject</a></p>
+                    <p>Home page! Go to <a href="/abcd" onclick="navigate()">subject</a></p>
                 ` : `
                     <wiki-subject></wiki-subject>
                 `}
@@ -19,4 +19,4 @@ class WikiRouter extends HTMLElement {
         }, {events});
     }
 }
-customElements.define("wiki-router", WikiRouter);
+customElements.define("wiki-router", Router);

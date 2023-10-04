@@ -1,7 +1,7 @@
 import {component} from 'reefjs';
 import {user} from '../store/user';
 
-class WikiUser extends HTMLElement {
+class User extends HTMLElement {
     constructor() {
         super();
     }
@@ -16,7 +16,7 @@ class WikiUser extends HTMLElement {
         });
     }
 }
-customElements.define("wiki-user", WikiUser);
+customElements.define("wiki-user", User);
 
 class SignedInUser extends HTMLElement {
     constructor() {
@@ -45,12 +45,10 @@ class SignedOutUser extends HTMLElement {
     }
 
     connectedCallback() {
+        let root = this;
         let events = {
             signIn() {
-                let username = this
-                    .parentNode
-                    .parentNode
-                    .querySelector("#username");
+                let username = root.querySelector("#username");
                 user.signIn(username.value);
             }
         };
