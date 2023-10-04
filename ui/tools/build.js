@@ -10,7 +10,9 @@ export async function build(options={}, env='') {
     });
 
     fs.mkdirSync(outdir);
-    fs.cpSync('index.html', outdir + '/index.html');
+    fs.cpSync('public', outdir, {
+        recursive: true
+    });
 
     let baseOptions = {
         entryPoints: ['src/main.js'],
@@ -22,5 +24,6 @@ export async function build(options={}, env='') {
         ...baseOptions,
         ...options
     });
+
     console.log(`finishing building for ${env}`);
 }
