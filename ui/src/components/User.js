@@ -1,13 +1,18 @@
 import {component} from 'reefjs';
 import {user} from '../store/user';
 
-class User extends HTMLElement {
+console.log("user loaded");
+
+export class User extends HTMLElement {
     constructor() {
         super();
+        console.log("user constructed");
     }
 
     connectedCallback() {
+        console.log("user connected");
         component(this, function() {
+            console.log("user component called");
             return `${user.data.username != "" ? `
                 <wiki-signed-in-user></wiki-signed-in-user>
             ` : `
@@ -18,40 +23,38 @@ class User extends HTMLElement {
 }
 customElements.define("wiki-user", User);
 
-class SignedInUser extends HTMLElement {
+export class SignedInUser extends HTMLElement {
     constructor() {
         super();
+        console.log("signed in user constructed");
     }
 
     connectedCallback() {
-        let events = {
-            signOut() {
-                user.signOut();
-            }
-        };
+        function signOut() {
+            user.signOut();
+        }
         component(this, function() {
             return `
                 Username: ${user.data.username}
                 <button onclick="signOut()">Sign Out</button>
             `
-        }, {events});
+        }, {events: signOut});
     }
 }
 customElements.define("wiki-signed-in-user", SignedInUser);
 
-class SignedOutUser extends HTMLElement {
+export class SignedOutUser extends HTMLElement {
     constructor() {
         super();
+        console.log("signed in user constructed");
     }
 
     connectedCallback() {
         let root = this;
-        let events = {
-            signIn() {
-                let username = root.querySelector("#username");
-                user.signIn(username.value);
-            }
-        };
+        function signIn() {
+            let username = root.querySelector("#username");
+            user.signIn(username.value);
+        }
         component(this, function() {
             return `
                 <label for="username">Username</label>
@@ -60,7 +63,7 @@ class SignedOutUser extends HTMLElement {
                 <input id="password" />
                 <button onclick="signIn()">Sign In</button>
             `
-        }, {events});
+        }, {events: signIn});
     }
 }
 customElements.define("wiki-signed-out-user", SignedOutUser);

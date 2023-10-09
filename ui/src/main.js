@@ -1,5 +1,21 @@
-import './components/App';
-import './components/User';
-import './components/Subject';
-import './components/Router';
-import './components/EditSubject';
+import {makeApp} from './components/App';
+
+makeApp();
+
+import {makeEditSubject} from './components/EditSubject';
+
+makeEditSubject();
+
+import {makeSubject} from './components/Subject';
+
+makeSubject();
+
+import {makeUser, makeSignedInUser, makeSignedOutUser} from './components/User';
+
+makeUser();
+makeSignedInUser();
+makeSignedOutUser();
+
+import {makeRouter} from './components/Router';
+
+makeRouter();

@@ -1,7 +1,6 @@
 import express from 'express';
 import {build} from './build.js';
 import * as os from 'os';
-import * as fs from 'fs';
 
 function getAddress(iface='', family='IPv4') {
     let i = os.networkInterfaces()[iface]
@@ -24,14 +23,9 @@ await build({
 
 let dist = process.cwd() + "/dist";
 
-let distFiles = fs.readdirSync(dist);
-for (const d of distFiles) {
-    app.get(`/${d}`, (_, res) => {
-        res.sendFile(`${dist}/${d}`);
-    })
-}
+app.use(express.static(dist));
 
-app.get('/*', (_, res) => {
+app.get('/wiki/*', (_, res) => {
     res.sendFile(`${dist}/index.html`);
 })
 

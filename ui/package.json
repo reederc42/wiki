@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "DEBUG=express:router nodemon tools/dev-server.js",
     "build": "node tools/prod.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test"
   },
   "repository": {
     "type": "git",
@@ -16,9 +16,12 @@
   "author": "Chris Reeder <reederc42@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@testing-library/dom": "^9.3.3",
     "ace-builds": "^1.28.0",
+    "core-js": "^3.33.0",
     "esbuild": "^0.19.4",
     "express": "^4.18.2",
+    "jsdom": "^22.1.0",
     "marked": "^9.0.3",
     "nodemon": "^3.0.1",
     "reefjs": "^12.4.0"
