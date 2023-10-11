@@ -1,9 +1,6 @@
 import express from 'express';
 import { build } from './build.js';
-import { env } from 'node:process';
 import * as os from 'os';
-
-env.DEBUG = 'express:router';
 
 function getAddress(iface='', family='IPv4') {
     let i = os.networkInterfaces()[iface]
