@@ -29,16 +29,10 @@ export async function build(options={}, env='') {
 }
 
 export function buildSync(options={}, env='') {
-    console.log(options);
     let baseOptions = {
         bundle: true,
         logLevel: 'info'
     }
-    let realOptions = {
-        ...baseOptions,
-        ...options
-    }
-    console.log(realOptions);
     esbuild.buildSync({
         ...baseOptions,
         ...options

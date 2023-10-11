@@ -7,7 +7,6 @@ class Router extends HTMLElement {
     }
 
     connectedCallback() {
-        let events = {navigate};
         component(this, function() {
             return `
                 ${route.value == "/" ? `
@@ -16,7 +15,7 @@ class Router extends HTMLElement {
                     <wiki-subject></wiki-subject>
                 `}
             `;
-        }, {events});
+        }, {events: {navigate}});
     }
 }
 customElements.define("wiki-router", Router);

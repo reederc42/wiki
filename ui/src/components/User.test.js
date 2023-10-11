@@ -18,16 +18,17 @@ describe("User component", () => {
     test("signed in shows signed in component", () => {
         let dom = new DOM();
         let document = dom.window.document;
-        dom.addScript("./src/components/User.js");
+        dom.addScript(`
+            import "../src/components/User";
+            import { user } from "../src/store/user";
+
+            window.user = user;
+        `);
+
+        dom.window.user.signIn("user1");
 
         let wikiUser = document.createElement("wiki-user");
         document.body.appendChild(wikiUser);
-
-        let username = wikiUser.querySelector("#username");
-        username.value = "user1";
-
-        let button = wikiUser.querySelector("button");
-        button.click();
 
         assert(wikiUser.querySelector("wiki-signed-in-user"));
     });

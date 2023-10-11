@@ -23,13 +23,25 @@ export class DOM {
     }
 
     addScript(src) {
-        let options = {};
-        if (fs.statSync(src)) {
+        let outfile;
+        let entryPoint = src;
+        if (fs.existsSync(src)) {
             let base = src.split("/").pop().split(".")[0];
-            options.entryPoints = [src];
-            options.outfile = `testdata/${base}-${crypto.randomUUID()}.js`;
+            outfile = `testdata/${base}-${crypto.randomUUID()}.js`;
+        } else {
+            outfile = `testdata/anon-${crypto.randomUUID()}.js`;
+            entryPoint = `testdata/anon-src-${crypto.randomUUID()}.js`;
+            fs.mkdirSync("testdata", {
+                recursive: true
+            });
+            fs.writeFileSync(entryPoint, src);
         }
-        buildSync(options, "test");
+
+        buildSync({
+            entryPoints: [entryPoint],
+            outfile: outfile
+        }, "test");
+
         let script = this.window.document.createElement("script");
         script.textContent = fs.readFileSync(outfile);
         this.window.document.body.appendChild(script);

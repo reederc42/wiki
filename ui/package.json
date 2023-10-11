@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "dev": "DEBUG=express:router nodemon tools/dev-server.js",
+    "dev": "nodemon tools/dev-server.js",
     "build": "node tools/prod.js",
     "test": "node --test"
   },

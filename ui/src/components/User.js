@@ -1,18 +1,13 @@
-import {component} from '/Users/creeder/src/github.com/reederc42/reef/src/reef';
-import {user} from '../store/user';
-
-console.log("user loaded");
+import {component} from "reefjs";
+import {user} from "../store/user";
 
 export class User extends HTMLElement {
     constructor() {
         super();
-        console.log("user constructed");
     }
 
     connectedCallback() {
-        console.log("user connected");
         component(this, function() {
-            console.log("user component called");
             return `${user.data.username != "" ? `
                 <wiki-signed-in-user></wiki-signed-in-user>
             ` : `
@@ -26,7 +21,6 @@ customElements.define("wiki-user", User);
 export class SignedInUser extends HTMLElement {
     constructor() {
         super();
-        console.log("signed in user constructed");
     }
 
     connectedCallback() {
@@ -38,7 +32,7 @@ export class SignedInUser extends HTMLElement {
                 Username: ${user.data.username}
                 <button onclick="signOut()">Sign Out</button>
             `
-        }, {events: signOut});
+        }, {events: {signOut}});
     }
 }
 customElements.define("wiki-signed-in-user", SignedInUser);
@@ -46,7 +40,6 @@ customElements.define("wiki-signed-in-user", SignedInUser);
 export class SignedOutUser extends HTMLElement {
     constructor() {
         super();
-        console.log("signed out user constructed");
     }
 
     connectedCallback() {
@@ -63,7 +56,7 @@ export class SignedOutUser extends HTMLElement {
                 <input id="password" />
                 <button onclick="signIn()">Sign In</button>
             `
-        }, {events: signIn});
+        }, {events: {signIn}});
     }
 }
 customElements.define("wiki-signed-out-user", SignedOutUser);
