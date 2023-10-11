@@ -27,3 +27,22 @@ export async function build(options={}, env='') {
 
     console.log(`finishing building for ${env}`);
 }
+
+export function buildSync(options={}, env='') {
+    console.log(options);
+    let baseOptions = {
+        bundle: true,
+        logLevel: 'info'
+    }
+    let realOptions = {
+        ...baseOptions,
+        ...options
+    }
+    console.log(realOptions);
+    esbuild.buildSync({
+        ...baseOptions,
+        ...options
+    });
+
+    console.log(`finished building for ${env}`);
+}

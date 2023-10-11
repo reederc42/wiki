@@ -1,4 +1,4 @@
-import {component} from 'reefjs';
+import {component} from '/Users/creeder/src/github.com/reederc42/reef/src/reef';
 import {user} from '../store/user';
 
 console.log("user loaded");
@@ -46,7 +46,7 @@ customElements.define("wiki-signed-in-user", SignedInUser);
 export class SignedOutUser extends HTMLElement {
     constructor() {
         super();
-        console.log("signed in user constructed");
+        console.log("signed out user constructed");
     }
 
     connectedCallback() {

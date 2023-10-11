@@ -2,16 +2,14 @@ import ace from 'ace-builds/src-min-noconflict/ace';
 import 'ace-builds/src-min-noconflict/theme-github';
 import 'ace-builds/src-min-noconflict/mode-markdown';
 
-export function makeEditSubject(elementName="wiki-edit-subject") {
-    class EditSubject extends HTMLElement {
-        constructor() {
-            super();
-        }
-
-        connectedCallback() {
-            let editor = this.querySelector("#editor");
-            ace.edit(editor);
-        }
+class EditSubject extends HTMLElement {
+    constructor() {
+        super();
     }
-    customElements.define(elementName, EditSubject);
+
+    connectedCallback() {
+        let editor = this.querySelector("#editor");
+        ace.edit(editor);
+    }
 }
+customElements.define("wiki-edit-subject", EditSubject);
