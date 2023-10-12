@@ -55,7 +55,7 @@ describe("User component", () => {
     after(() => {
         fs.rmSync("testdata", {
             recursive: true,
-            force: true
+            force: true,
         });
     });
 });

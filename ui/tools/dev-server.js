@@ -1,9 +1,11 @@
-import express from 'express';
-import { build } from './build.js';
-import * as os from 'os';
+/*eslint-env node */
 
-function getAddress(iface='', family='IPv4') {
-    let i = os.networkInterfaces()[iface]
+import express from "express";
+import { build } from "./build.js";
+import * as os from "os";
+
+function getAddress(iface = "", family = "IPv4") {
+    let i = os.networkInterfaces()[iface];
     if (i) {
         for (const j of i) {
             if (j.family == family) {
@@ -11,26 +13,29 @@ function getAddress(iface='', family='IPv4') {
             }
         }
     }
-    return '';
+    return "";
 }
 
 const app = express();
 const port = 8080;
 
-await build({
-    sourcemap: true
-}, 'dev');
+await build(
+    {
+        sourcemap: true,
+    },
+    "dev",
+);
 
 let dist = process.cwd() + "/dist";
 
 app.use(express.static(dist));
 
-app.get('/wiki/*', (_, res) => {
+app.get("/wiki/*", (_, res) => {
     res.sendFile(`${dist}/index.html`);
-})
+});
 
 let listener = app.listen(port).address();
-let ifaces = ['lo0', 'en0'];
+let ifaces = ["lo0", "en0"];
 let addresses = [];
 for (const i of ifaces) {
     let addr = getAddress(i);

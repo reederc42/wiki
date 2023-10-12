@@ -4,7 +4,7 @@ import { buildSync } from "../../tools/build.js";
 
 export class DOM {
     constructor() {
-        this.dom = new JSDOM(``, {runScripts: "dangerously"});
+        this.dom = new JSDOM(``, { runScripts: "dangerously" });
         this.window = this.dom.window;
 
         this.window.addEventListener("log", (message) => {
@@ -17,7 +17,9 @@ export class DOM {
             console.error(message);
         });
 
-        this.window.requestAnimationFrame = (cb) => {cb()};
+        this.window.requestAnimationFrame = (cb) => {
+            cb();
+        };
 
         this.addScript("./src/test-helpers/core-js.js");
     }
@@ -32,15 +34,18 @@ export class DOM {
             outfile = `testdata/anon-${crypto.randomUUID()}.js`;
             entryPoint = `testdata/anon-src-${crypto.randomUUID()}.js`;
             fs.mkdirSync("testdata", {
-                recursive: true
+                recursive: true,
             });
             fs.writeFileSync(entryPoint, src);
         }
 
-        buildSync({
-            entryPoints: [entryPoint],
-            outfile: outfile
-        }, "test");
+        buildSync(
+            {
+                entryPoints: [entryPoint],
+                outfile: outfile,
+            },
+            "test",
+        );
 
         let script = this.window.document.createElement("script");
         script.textContent = fs.readFileSync(outfile);

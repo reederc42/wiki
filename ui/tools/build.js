@@ -1,41 +1,43 @@
-import * as fs from 'fs';
-import * as esbuild from 'esbuild';
+/*eslint-env node */
 
-const outdir = 'dist';
+import * as fs from "fs";
+import * as esbuild from "esbuild";
 
-export async function build(options={}, env='') {
+const outdir = "dist";
+
+export async function build(options = {}, env = "") {
     fs.rmSync(outdir, {
         recursive: true,
-        force: true
+        force: true,
     });
 
     fs.mkdirSync(outdir);
-    fs.cpSync('public', outdir, {
-        recursive: true
+    fs.cpSync("public", outdir, {
+        recursive: true,
     });
 
     let baseOptions = {
-        entryPoints: ['src/main.js'],
+        entryPoints: ["src/main.js"],
         bundle: true,
-        outfile: outdir + '/index.js',
-        logLevel: 'info'
-    }
+        outfile: outdir + "/index.js",
+        logLevel: "info",
+    };
     await esbuild.build({
         ...baseOptions,
-        ...options
+        ...options,
     });
 
     console.log(`finishing building for ${env}`);
 }
 
-export function buildSync(options={}, env='') {
+export function buildSync(options = {}, env = "") {
     let baseOptions = {
         bundle: true,
-        logLevel: 'info'
-    }
+        logLevel: "info",
+    };
     esbuild.buildSync({
         ...baseOptions,
-        ...options
+        ...options,
     });
 
     console.log(`finished building for ${env}`);

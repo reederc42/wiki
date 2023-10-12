@@ -1,12 +1,15 @@
-import {setter} from 'reefjs';
+import { setter } from "reefjs";
 
-export const user = setter({username: ""}, {
-    signIn(user, username) {
-        console.log(`signed in ${username}`)
-        user.username = username;
+export const user = setter(
+    { username: "" },
+    {
+        signIn(user, username) {
+            console.log(`signed in ${username}`);
+            user.username = username;
+        },
+        signOut(user) {
+            console.log(`signed out ${user.username}`);
+            user.username = "";
+        },
     },
-    signOut(user) {
-        console.log(`signed out ${user.username}`)
-        user.username = "";
-    }
-});
+);
