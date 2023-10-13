@@ -18,5 +18,5 @@ describe("Router component", () => {
         `);
     });
 
-    test("")
+    test("");
 });
