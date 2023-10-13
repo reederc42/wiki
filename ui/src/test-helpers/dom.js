@@ -1,5 +1,5 @@
 import { JSDOM } from "jsdom";
-import * as fs from "fs";
+import fs from "fs";
 import { buildSync } from "../../tools/build.js";
 
 export class DOM {

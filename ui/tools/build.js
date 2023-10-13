@@ -1,11 +1,13 @@
 /*eslint-env node */
 
-import * as fs from "fs";
-import * as esbuild from "esbuild";
+import fs from "fs";
+import esbuild from "esbuild";
 
 const outdir = "dist";
 
 export async function build(options = {}, env = "") {
+    console.log(`building for ${env}...`);
+
     fs.rmSync(outdir, {
         recursive: true,
         force: true,
@@ -31,6 +33,8 @@ export async function build(options = {}, env = "") {
 }
 
 export function buildSync(options = {}, env = "") {
+    console.log(`building for ${env}...`);
+
     let baseOptions = {
         bundle: true,
         logLevel: "info",
