@@ -1,7 +1,7 @@
-import { describe, beforeEach, after, test } from "node:test";
+import { describe, beforeEach, afterEach, test } from "node:test";
 import assert from "node:assert";
 import { DOM } from "../test-helpers/dom.js";
-import * as fs from "fs";
+import fs from "fs";
 
 describe("User component", () => {
     let dom;
@@ -52,7 +52,7 @@ describe("User component", () => {
         assert(wikiUser.querySelector("wiki-signed-out-user"));
     });
 
-    after(() => {
+    afterEach(() => {
         fs.rmSync("testdata", {
             recursive: true,
             force: true,
