@@ -1,5 +1,5 @@
 import { component } from "reefjs";
-import { navigate } from "../store/router";
+import { navigate } from "../store/route";
 
 class App extends HTMLElement {
     constructor() {
@@ -11,7 +11,9 @@ class App extends HTMLElement {
             this,
             function () {
                 return `
-                <h1><a href="/" onclick="navigate()">Wiki</a></h1>
+                <h1>
+                    <a href2="/" onclick="navigate()">Wiki</a>
+                </h1>
                 <wiki-user></wiki-user>
                 <wiki-router></wiki-router>
             `;
