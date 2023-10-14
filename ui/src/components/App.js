@@ -12,7 +12,7 @@ class App extends HTMLElement {
             function () {
                 return `
                 <h1>
-                    <a href2="/" onclick="navigate()">Wiki</a>
+                    <a href="/" onclick="navigate()">Wiki</a>
                 </h1>
                 <wiki-user></wiki-user>
                 <wiki-router></wiki-router>

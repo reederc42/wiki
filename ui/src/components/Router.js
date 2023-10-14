@@ -10,6 +10,7 @@ class Router extends HTMLElement {
         component(
             this,
             function () {
+                console.log(`rendering router with ${route}`);
                 return `
                 ${
                     route.data == "/"

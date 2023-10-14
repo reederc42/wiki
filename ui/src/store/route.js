@@ -13,8 +13,8 @@ export const route = setter(location.href.substring(location.origin.length), {
         }
 
         route = path;
-        history.pushState(null, null, path);
-        console.log(`navigating to ${path}`);
+        history.pushState({}, null, path);
+        console.log(`navigating to ${route}`);
     },
 
     set(route, path) {
