@@ -20,9 +20,12 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: '20.x'
+    - name: Install
+      run: npm install
+      working-directory: ./ui
     - name: Lint
-      run: cd ui; npm run lint
+      run: npm run lint
       working-directory: ./ui
     - name: Test
-      run: cd ui; npm run test
+      run: npm run test
       working-directory: ./ui
