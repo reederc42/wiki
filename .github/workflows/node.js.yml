@@ -21,6 +21,10 @@ jobs:
       with:
         node-version: '20.x'
         cache: 'npm'
+    - name: pwd
+      run: pwd
+    - name: ls
+      run: ls
     - name: Install
       run: cd ui; npm install
     - name: Lint
