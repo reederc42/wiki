@@ -1,33 +1,35 @@
 import { setter } from "reefjs";
 
 export const route = setter(
-    { path: location.href.substring(location.origin.length) }, {
-    navigate(route, path) {
-        if (route.path == path) {
-            console.log("navigating to self");
-            return;
-        }
+    { path: location.href.substring(location.origin.length) },
+    {
+        navigate(route, path) {
+            if (route.path == path) {
+                console.log("navigating to self");
+                return;
+            }
 
-        if (!validatePath(path)) {
-            console.log("invalid path, navigating to /");
-            path = "/";
-        }
+            if (!validatePath(path)) {
+                console.log("invalid path, navigating to /");
+                path = "/";
+            }
 
-        route.path = path;
-        history.pushState(null, null, path);
-        console.log(`navigating to ${route}`);
+            route.path = path;
+            history.pushState(null, null, path);
+            console.log(`navigating to ${route}`);
+        },
+
+        set(route, path) {
+            if (!validatePath(path)) {
+                console.log("invalid path, not setting path");
+                return;
+            }
+
+            route.path = path;
+            console.log(`setting path to ${path}`);
+        },
     },
-
-    set(route, path) {
-        if (!validatePath(path)) {
-            console.log("invalid path, not setting path");
-            return;
-        }
-
-        route.path = path;
-        console.log(`setting path to ${path}`);
-    },
-});
+);
 
 export function navigate(event) {
     event.preventDefault();
