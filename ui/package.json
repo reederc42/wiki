@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "nodemon tools/dev-server.js",
     "build": "node tools/prod.js",
-    "test": "node --test"
+    "test": "node --test",
+    "lint": "eslint ./src/**/*.js ./tools/**/*.js",
+    "lint-fix": "eslint --fix ./src/**/*.js ./tools/**/*.js"
   },
   "repository": {
     "type": "git",
@@ -20,15 +22,50 @@
     "ace-builds": "^1.28.0",
     "core-js": "^3.33.0",
     "esbuild": "^0.19.4",
-    "express": "^4.18.2",
+    "eslint": "^8.51.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
     "jsdom": "^22.1.0",
     "marked": "^9.0.3",
-    "nodemon": "^3.0.1",
     "reefjs": "^12.4.0"
+  },
+  "devDependencies": {
+    "express": "^4.18.2",
+    "nodemon": "^3.0.1"
   },
   "nodemonConfig": {
     "ignore": [
       "dist/**"
+    ]
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "es2021": true
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:prettier/recommended"
+    ],
+    "parserOptions": {
+      "ecmaVersion": "latest",
+      "sourceType": "module"
+    },
+    "rules": {
+      "prettier/prettier": [
+        "error",
+        {
+          "singleQuote": false,
+          "semi": true,
+          "trailingComma": "all",
+          "tabWidth": 4,
+          "endOfLine": "lf"
+        }
+      ]
+    },
+    "ignorePatterns": [
+      "dist/",
+      "node_modules/"
     ]
   }
 }

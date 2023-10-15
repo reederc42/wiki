@@ -1,5 +1,10 @@
-import {build} from './build.js';
+/*eslint-env node */
 
-await build({
-    minify: true
-}, 'prod');
+import { build } from "./build.js";
+
+await build(
+    {
+        minify: true,
+    },
+    "prod",
+);
