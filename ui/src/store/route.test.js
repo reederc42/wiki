@@ -28,8 +28,8 @@ describe("router store", () => {
         console.error = previousConsoleError;
     });
 
-    after(() => {
-        fs.rmSync("testdata", {
+    after(async () => {
+        await fs.rm("testdata", {
             recursive: true,
             force: true,
         });

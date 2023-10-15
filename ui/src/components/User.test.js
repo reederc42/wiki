@@ -21,8 +21,8 @@ describe("User component", () => {
         `);
     });
 
-    after(() => {
-        fs.rmSync("testdata", {
+    after(async () => {
+        await fs.rm("testdata", {
             recursive: true,
             force: true,
         });
