@@ -1,4 +1,4 @@
-import { describe, beforeEach, afterEach, test } from "node:test";
+import { describe, beforeEach, after, test } from "node:test";
 import assert from "node:assert";
 import { DOM } from "../test-helpers/dom.js";
 import fs from "fs";
@@ -19,6 +19,13 @@ describe("User component", () => {
 
             window.user = user;
         `);
+    });
+
+    after(async () => {
+        await fs.rm("testdata", {
+            recursive: true,
+            force: true,
+        });
     });
 
     test("signed out shows signed out component", () => {
@@ -50,12 +57,5 @@ describe("User component", () => {
         window.user.signOut();
 
         assert(wikiUser.querySelector("wiki-signed-out-user"));
-    });
-
-    afterEach(() => {
-        fs.rmSync("testdata", {
-            recursive: true,
-            force: true,
-        });
     });
 });

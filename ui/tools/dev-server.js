@@ -39,8 +39,15 @@ let ifaces = ["lo0", "en0"];
 let addresses = [];
 for (const i of ifaces) {
     let addr = getAddress(i);
-    addresses.push(addr);
+    if (addr != "") {
+        addresses.push(addr);
+    }
 }
-for (const a of addresses) {
-    console.log(`listening at http://${a}:${listener.port}/`);
+if (addresses.length > 0) {
+    for (const a of addresses) {
+        console.log(`listening at http://${a}:${listener.port}/`);
+    }
+} else {
+    console.log(`listening at http://localhost:${listener.port}/`);
+    console.log("could not find loopback or network address");
 }
