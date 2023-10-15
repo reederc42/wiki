@@ -1,8 +1,9 @@
 import { setter } from "reefjs";
 
-export const route = setter(location.href.substring(location.origin.length), {
+export const route = setter(
+    { path: location.href.substring(location.origin.length) }, {
     navigate(route, path) {
-        if (route == path) {
+        if (route.path == path) {
             console.log("navigating to self");
             return;
         }
@@ -12,8 +13,8 @@ export const route = setter(location.href.substring(location.origin.length), {
             path = "/";
         }
 
-        route = path;
-        history.pushState({}, null, path);
+        route.path = path;
+        history.pushState(null, null, path);
         console.log(`navigating to ${route}`);
     },
 
@@ -23,7 +24,7 @@ export const route = setter(location.href.substring(location.origin.length), {
             return;
         }
 
-        route = path;
+        route.path = path;
         console.log(`setting path to ${path}`);
     },
 });

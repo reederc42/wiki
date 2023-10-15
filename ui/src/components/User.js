@@ -64,7 +64,7 @@ export class SignedOutUser extends HTMLElement {
                 <input id="username" />
                 <label for="password">Password</label>
                 <input id="password" />
-                <button onclick="signIn">Sign In</button>
+                <button onclick="signIn()">Sign In</button>
             `;
             },
             { events: { signIn } },

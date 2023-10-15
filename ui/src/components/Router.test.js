@@ -5,10 +5,12 @@ import fs from "fs";
 
 describe("Router component", () => {
     let dom;
+    let window;
     let document;
 
     beforeEach(() => {
         dom = new DOM();
+        window = dom.window;
         document = dom.window.document;
 
         dom.addScript(`
@@ -33,7 +35,27 @@ describe("Router component", () => {
         assert(wikiRouter.querySelector("p"));
     });
 
-    test("path not found redirects to root");
+    test("wiki/ shows subject", () => {
+        window.route.navigate("/wiki/someSubject");
 
-    test("wiki/ shows subject");
+        let wikiRouter = document.createElement("wiki-router");
+        document.body.appendChild(wikiRouter);
+
+        assert(wikiRouter.querySelector("wiki-subject"));
+    });
+
+    test("navigate to and from subject changes view", () => {
+        let wikiRouter = document.createElement("wiki-router");
+        document.body.appendChild(wikiRouter);
+
+        assert(wikiRouter.querySelector("p"));
+
+        window.route.navigate("/wiki/someSubject");
+
+        assert(wikiRouter.querySelector("wiki-subject"));
+
+        window.route.navigate("/badpath/");
+
+        assert(wikiRouter.querySelector("p"));
+    });
 });
