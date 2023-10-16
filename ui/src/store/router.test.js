@@ -17,9 +17,9 @@ describe("router store", () => {
         document = dom.window.document;
 
         dom.addScript(`
-            import { route, navigate } from "../src/store/route";
+            import { router, navigate } from "../src/store/router";
 
-            window.route = route;
+            window.router = router;
             window.navigate = navigate;
         `);
     });
@@ -36,7 +36,7 @@ describe("router store", () => {
     });
 
     test("navigate to new place changes location", () => {
-        window.route.navigate("/wiki/someSubject");
+        window.router.navigate("/wiki/someSubject");
 
         assert(getPath(window.location) == "/wiki/someSubject");
     });
@@ -44,13 +44,13 @@ describe("router store", () => {
     test("navigate to same place does not change location", () => {
         let previousHistory = window.history.length;
 
-        window.route.navigate("/");
+        window.router.navigate("/");
 
         assert(window.history.length == previousHistory);
     });
 
     test("navigate to bad route changes location to root", () => {
-        window.route.navigate("/badpath/");
+        window.router.navigate("/badpath/");
 
         assert(getPath(window.location) == "/");
     });
@@ -89,7 +89,7 @@ describe("router store", () => {
 
         let previousHistory = window.history.length;
 
-        window.route.set("/wiki/someSubject");
+        window.router.set("/wiki/someSubject");
 
         assert(getPath(window.location));
         assert(window.history.length == previousHistory);

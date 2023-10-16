@@ -1,5 +1,5 @@
 import { component } from "reefjs";
-import { route, navigate } from "../store/route";
+import { router, navigate } from "../store/router";
 
 class Router extends HTMLElement {
     constructor() {
@@ -10,10 +10,10 @@ class Router extends HTMLElement {
         component(
             this,
             function () {
-                console.log(`rendering router with ${route.data.path}`);
+                console.log(`rendering router with ${router.data.path}`);
                 return `
                 ${
-                    route.data.path == "/"
+                    router.data.path == "/"
                         ? `
                     <p>Home page! Go to <a href="/wiki/abcd" onclick="navigate()">subject</a></p>
                 `

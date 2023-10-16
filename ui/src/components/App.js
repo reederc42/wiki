@@ -1,5 +1,5 @@
 import { component } from "reefjs";
-import { navigate } from "../store/route";
+import { navigate } from "../store/router";
 
 class App extends HTMLElement {
     constructor() {
