@@ -32,16 +32,12 @@ class Subject extends HTMLElement {
                     <button onclick="edit()">Edit</button>
                 </div>
                 <div id="view" ${
-                    view.value == viewView
-                        ? ``
-                        : `style="display: none"`
+                    view.value == viewView ? `` : `style="display: none"`
                 }>
                     Viewing Subject
                 </div>
                 <div id="edit" ${
-                    view.value == viewEdit
-                        ? ``
-                        : `style="display: none"`
+                    view.value == viewEdit ? `` : `style="display: none"`
                 }>
                     <wiki-edit-subject>
                         <div id="editor" style="width: 100ex;min-height: 82vh"></div>
