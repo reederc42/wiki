@@ -18,6 +18,7 @@
   "author": "Chris Reeder <reederc42@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@testing-library/dom": "^9.3.3",
     "ace-builds": "^1.28.0",
     "core-js": "^3.33.0",
     "esbuild": "^0.19.4",

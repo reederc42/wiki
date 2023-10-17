@@ -1,10 +1,10 @@
 import { setter } from "reefjs";
 
-export const route = setter(
+export const router = setter(
     { path: location.href.substring(location.origin.length) },
     {
-        navigate(route, path) {
-            if (route.path == path) {
+        navigate(router, path) {
+            if (router.path == path) {
                 console.log("navigating to self");
                 return;
             }
@@ -14,18 +14,18 @@ export const route = setter(
                 path = "/";
             }
 
-            route.path = path;
+            router.path = path;
             history.pushState(null, null, path);
-            console.log(`navigating to ${route}`);
+            console.log(`navigating to ${router.path}`);
         },
 
-        set(route, path) {
+        set(router, path) {
             if (!validatePath(path)) {
                 console.log("invalid path, not setting path");
                 return;
             }
 
-            route.path = path;
+            router.path = path;
             console.log(`setting path to ${path}`);
         },
     },
@@ -37,14 +37,17 @@ export function navigate(event) {
     let target = event.target;
     if (target.hasAttribute("href")) {
         let href = target.getAttribute("href");
-        route.navigate(href);
+        router.navigate(href);
     } else {
         console.error("target is missing href");
     }
 }
 
 addEventListener("popstate", () => {
-    route.set(location.href.substring(location.origin.length));
+    console.log(
+        `popping state to ${location.href.substring(location.origin.length)}`,
+    );
+    router.set(location.href.substring(location.origin.length));
 });
 
 const validSubjectRE = /\/wiki\/.+/;

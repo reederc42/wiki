@@ -15,9 +15,9 @@ describe("Router component", () => {
 
         dom.addScript(`
             import "../src/components/Router";
-            import { route } from "../src/store/route";
+            import { router } from "../src/store/router";
 
-            window.route = route;
+            window.router = router;
         `);
     });
 
@@ -36,7 +36,7 @@ describe("Router component", () => {
     });
 
     test("wiki/ shows subject", () => {
-        window.route.navigate("/wiki/someSubject");
+        window.router.navigate("/wiki/someSubject");
 
         let wikiRouter = document.createElement("wiki-router");
         document.body.appendChild(wikiRouter);
@@ -50,11 +50,11 @@ describe("Router component", () => {
 
         assert(wikiRouter.querySelector("p"));
 
-        window.route.navigate("/wiki/someSubject");
+        window.router.navigate("/wiki/someSubject");
 
         assert(wikiRouter.querySelector("wiki-subject"));
 
-        window.route.navigate("/badpath/");
+        window.router.navigate("/badpath/");
 
         assert(wikiRouter.querySelector("p"));
     });
