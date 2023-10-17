@@ -1,6 +1,8 @@
-import { setter } from "reefjs";
+import { store } from "reefjs";
 
-export const router = setter(
+export const signal = "router";
+
+export const router = store(
     { path: location.href.substring(location.origin.length) },
     {
         navigate(router, path) {
@@ -29,6 +31,7 @@ export const router = setter(
             console.log(`setting path to ${path}`);
         },
     },
+    signal,
 );
 
 export function navigate(event) {

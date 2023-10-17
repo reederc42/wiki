@@ -98,19 +98,19 @@ describe("router store", () => {
 
     test("history pop sets location", async () => {
         window.router.navigate("/wiki/someSubject");
-        assert(window.router.data.path == "/wiki/someSubject");
+        assert(window.router.value.path == "/wiki/someSubject");
 
         window.history.back();
 
         await waitFor(
             () => {
-                if (window.router.data.path != "/") {
+                if (window.router.value.path != "/") {
                     throw new Error("waiting");
                 }
             },
             { container: document },
         );
-        assert(window.router.data.path == "/");
+        assert(window.router.value.path == "/");
     });
 });
 

@@ -1,8 +1,9 @@
-import { store, component } from "reefjs";
+import { signal, component } from "reefjs";
 import { setView } from "../store/title";
 
-const viewSubject = "view";
-const editSubject = "edit";
+const viewView = "view";
+const viewEdit = "edit";
+const viewSignal = "view";
 
 class Subject extends HTMLElement {
     constructor() {
@@ -10,16 +11,16 @@ class Subject extends HTMLElement {
     }
 
     connectedCallback() {
-        let subjectState = store(viewSubject);
-        setView(subjectState.value);
+        let view = signal(viewView, viewSignal);
+        setView(view.value);
         let events = {
             view() {
-                subjectState.value = viewSubject;
-                setView(viewSubject);
+                view.value = viewView;
+                setView(viewView);
             },
             edit() {
-                subjectState.value = editSubject;
-                setView(editSubject);
+                view.value = viewEdit;
+                setView(viewEdit);
             },
         };
         component(
@@ -31,16 +32,12 @@ class Subject extends HTMLElement {
                     <button onclick="edit()">Edit</button>
                 </div>
                 <div id="view" ${
-                    subjectState.value == viewSubject
-                        ? ``
-                        : `style="display: none"`
+                    view.value == viewView ? `` : `style="display: none"`
                 }>
                     Viewing Subject
                 </div>
                 <div id="edit" ${
-                    subjectState.value == editSubject
-                        ? ``
-                        : `style="display: none"`
+                    view.value == viewEdit ? `` : `style="display: none"`
                 }>
                     <wiki-edit-subject>
                         <div id="editor" style="width: 100ex;min-height: 82vh"></div>
@@ -48,7 +45,7 @@ class Subject extends HTMLElement {
                 </div>
             `;
             },
-            { events },
+            { events, signals: [viewSignal] },
         );
     }
 
