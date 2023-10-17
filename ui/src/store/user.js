@@ -1,5 +1,7 @@
 import { store } from "reefjs";
 
+export const signal = "user";
+
 export const user = store(
     { username: "" },
     {
@@ -12,5 +14,5 @@ export const user = store(
             user.username = "";
         },
     },
-    "user",
+    signal,
 );

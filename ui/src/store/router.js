@@ -1,5 +1,7 @@
 import { store } from "reefjs";
 
+export const signal = "router";
+
 export const router = store(
     { path: location.href.substring(location.origin.length) },
     {
@@ -29,7 +31,7 @@ export const router = store(
             console.log(`setting path to ${path}`);
         },
     },
-    "router",
+    signal,
 );
 
 export function navigate(event) {

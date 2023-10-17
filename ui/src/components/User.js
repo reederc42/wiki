@@ -1,5 +1,5 @@
 import { component } from "reefjs";
-import { user } from "../store/user";
+import { user, signal as userSignal } from "../store/user";
 
 export class User extends HTMLElement {
     constructor() {
@@ -7,17 +7,21 @@ export class User extends HTMLElement {
     }
 
     connectedCallback() {
-        component(this, function () {
-            return `${
-                user.value.username != ""
-                    ? `
+        component(
+            this,
+            function () {
+                return `${
+                    user.value.username != ""
+                        ? `
                 <wiki-signed-in-user></wiki-signed-in-user>
             `
-                    : `
+                        : `
                 <wiki-signed-out-user></wiki-signed-out-user>
             `
-            }`;
-        }, { signals: ["user"] });
+                }`;
+            },
+            { signals: [userSignal] },
+        );
     }
 }
 customElements.define("wiki-user", User);

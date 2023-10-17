@@ -1,5 +1,5 @@
 import { component } from "reefjs";
-import { router, navigate } from "../store/router";
+import { router, navigate, signal as routerSignal } from "../store/router";
 
 class Router extends HTMLElement {
     constructor() {
@@ -23,7 +23,7 @@ class Router extends HTMLElement {
                 }
             `;
             },
-            { events: { navigate }, signals: ["router"] },
+            { events: { navigate }, signals: [routerSignal] },
         );
     }
 }
