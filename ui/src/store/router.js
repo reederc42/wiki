@@ -44,6 +44,9 @@ export function navigate(event) {
 }
 
 addEventListener("popstate", () => {
+    console.log(
+        `popping state to ${location.href.substring(location.origin.length)}`,
+    );
     router.set(location.href.substring(location.origin.length));
 });
 

@@ -1,5 +1,6 @@
 import { describe, beforeEach, afterEach, after, test } from "node:test";
 import assert from "node:assert";
+import { waitFor } from "@testing-library/dom";
 import fs from "fs";
 import { DOM } from "../test-helpers/dom.js";
 
@@ -94,7 +95,23 @@ describe("router store", () => {
         assert(getPath(window.location));
         assert(window.history.length == previousHistory);
     });
-    // test("history pop sets location");
+
+    test("history pop sets location", async () => {
+        window.router.navigate("/wiki/someSubject");
+        assert(window.router.data.path == "/wiki/someSubject");
+
+        window.history.back();
+
+        await waitFor(
+            () => {
+                if (window.router.data.path != "/") {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(window.router.data.path == "/");
+    });
 });
 
 function getPath(location) {
