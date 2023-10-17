@@ -9,7 +9,7 @@ export class User extends HTMLElement {
     connectedCallback() {
         component(this, function () {
             return `${
-                user.data.username != ""
+                user.value.username != ""
                     ? `
                 <wiki-signed-in-user></wiki-signed-in-user>
             `
@@ -17,7 +17,7 @@ export class User extends HTMLElement {
                 <wiki-signed-out-user></wiki-signed-out-user>
             `
             }`;
-        });
+        }, { signals: ["user"] });
     }
 }
 customElements.define("wiki-user", User);
@@ -35,7 +35,7 @@ export class SignedInUser extends HTMLElement {
             this,
             function () {
                 return `
-                Username: ${user.data.username}
+                Username: ${user.value.username}
                 <button onclick="signOut()">Sign Out</button>
             `;
             },

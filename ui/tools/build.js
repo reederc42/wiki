@@ -13,11 +13,6 @@ export async function build(options = {}, env = "") {
         force: true,
     });
 
-    fs.mkdirSync(outdir);
-    fs.cpSync("public", outdir, {
-        recursive: true,
-    });
-
     let baseOptions = {
         entryPoints: ["src/main.js"],
         bundle: true,
@@ -27,6 +22,10 @@ export async function build(options = {}, env = "") {
     await esbuild.build({
         ...baseOptions,
         ...options,
+    });
+
+    fs.cpSync("public", outdir, {
+        recursive: true,
     });
 
     console.log(`finishing building for ${env}`);

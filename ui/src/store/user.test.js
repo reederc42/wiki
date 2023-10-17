@@ -28,16 +28,16 @@ describe("user store", () => {
     test("sign out before signed in", () => {
         window.user.signOut();
 
-        assert(window.user.data.username == "");
+        assert(window.user.value.username == "");
     });
 
     test("sign in and out", () => {
         window.user.signIn("testuser");
 
-        assert(window.user.data.username == "testuser");
+        assert(window.user.value.username == "testuser");
 
         window.user.signOut();
 
-        assert(window.user.data.username == "");
+        assert(window.user.value.username == "");
     });
 });

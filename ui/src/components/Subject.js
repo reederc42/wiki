@@ -1,4 +1,4 @@
-import { store, component } from "reefjs";
+import { signal, component } from "reefjs";
 import { setView } from "../store/title";
 
 const viewSubject = "view";
@@ -10,7 +10,7 @@ class Subject extends HTMLElement {
     }
 
     connectedCallback() {
-        let subjectState = store(viewSubject);
+        let subjectState = signal(viewSubject);
         setView(subjectState.value);
         let events = {
             view() {

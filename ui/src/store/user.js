@@ -1,6 +1,6 @@
-import { setter } from "reefjs";
+import { store } from "reefjs";
 
-export const user = setter(
+export const user = store(
     { username: "" },
     {
         signIn(user, username) {
@@ -12,4 +12,5 @@ export const user = setter(
             user.username = "";
         },
     },
+    "user",
 );

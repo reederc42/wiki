@@ -10,10 +10,10 @@ class Router extends HTMLElement {
         component(
             this,
             function () {
-                console.log(`rendering router with ${router.data.path}`);
+                console.log(`rendering router with ${router.value.path}`);
                 return `
                 ${
-                    router.data.path == "/"
+                    router.value.path == "/"
                         ? `
                     <p>Home page! Go to <a href="/wiki/abcd" onclick="navigate()">subject</a></p>
                 `
@@ -23,7 +23,7 @@ class Router extends HTMLElement {
                 }
             `;
             },
-            { events: { navigate } },
+            { events: { navigate }, signals: ["router"] },
         );
     }
 }
