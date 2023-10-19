@@ -40,11 +40,14 @@ describe("subjects store", () => {
         function assertion() {
             return eventFired;
         }
-        await waitFor(() => {
-            if (!assertion()) {
-                throw new Error("waiting");
-            }
-        }, { container: document });
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
         assert(assertion());
     });
 
@@ -56,11 +59,14 @@ describe("subjects store", () => {
         function assertion() {
             return window.subjects.list().length > 0;
         }
-        await waitFor(() => {
-            if (!assertion()) {
-                throw new Error("waiting");
-            }
-        }, { container: document });
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
         assert(assertion());
     });
 
@@ -75,11 +81,14 @@ describe("subjects store", () => {
         function assertion() {
             return eventFired;
         }
-        await waitFor(() => {
-            if (!assertion()) {
-                throw new Error("waiting");
-            }
-        }, { container: document });
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
         assert(assertion());
     });
 
@@ -91,11 +100,14 @@ describe("subjects store", () => {
         function assertion() {
             return window.subjects.content("one").length > 0;
         }
-        await waitFor(() => {
-            if (!assertion()) {
-                throw new Error("waiting");
-            }
-        }, { container: document });
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
         assert(assertion());
     });
 });

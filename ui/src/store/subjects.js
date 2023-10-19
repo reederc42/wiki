@@ -3,27 +3,31 @@ import { subject as subjectAPI } from "../api/mock/subject";
 
 export const signal = "subjects";
 
-const subjectStore = store(new Map(), {
-    updateList(m, names) {
-        let n = new Map(names.map((v) => [v]));
-        // delete existing names that are invalid
-        for (const e of m) {
-            if (!n.has(e[0])) {
-                m.delete(e[0]);
+const subjectStore = store(
+    new Map(),
+    {
+        updateList(m, names) {
+            let n = new Map(names.map((v) => [v]));
+            // delete existing names that are invalid
+            for (const e of m) {
+                if (!n.has(e[0])) {
+                    m.delete(e[0]);
+                }
             }
-        }
-        // add new names to m
-        for (const e of n) {
-            if (!m.has(e[0])) {
-                m.set(e[0]);
+            // add new names to m
+            for (const e of n) {
+                if (!m.has(e[0])) {
+                    m.set(e[0]);
+                }
             }
-        }
-    },
+        },
 
-    updateContent(m, subject, content) {
-        m.set(subject, content);
-    }
-}, signal);
+        updateContent(m, subject, content) {
+            m.set(subject, content);
+        },
+    },
+    signal,
+);
 
 export const subjects = {
     // updateList asynchronously updates the list of subjects, emitting signal
@@ -55,4 +59,4 @@ export const subjects = {
         }
         return content;
     },
-}
+};

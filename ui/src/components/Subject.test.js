@@ -1,5 +1,6 @@
 import { describe, beforeEach, after, test } from "node:test";
 import assert from "node:assert";
+import fs from "fs";
 import { DOM } from "../test-helpers/dom.js";
 
 describe("Subject component", () => {
@@ -15,6 +16,13 @@ describe("Subject component", () => {
         dom.addScript(`
             import "../src/components/Subject";
         `);
+    });
+
+    after(async () => {
+        await fs.rm("testdata", {
+            recursive: true,
+            force: true,
+        });
     });
 
     test("subject inits to view and switches to edit and back to view", () => {

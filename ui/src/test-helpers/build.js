@@ -1,6 +1,6 @@
 import * as esbuild from "esbuild";
 
-export function buildSync(options={}, env="test") {
+export function buildSync(options = {}, env = "test") {
     console.log(`building for ${env}...`);
 
     let baseOptions = {
