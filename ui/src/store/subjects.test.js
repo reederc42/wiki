@@ -29,47 +29,73 @@ describe("subjects store", () => {
         });
     });
 
-    // test("updateList emits event on success", async () => {
-    //     let eventFired = false;
-    //     document.addEventListener("reef:store-" + window.subjectsSignal, () => {
-    //         eventFired = true;
-    //     });
-
-    //     window.subjects.updateList();
-
-    //     await waitFor(
-    //         () => {
-    //             if (!eventFired) {
-    //                 throw new Error("waiting");
-    //             }
-    //         },
-    //         { container: document },
-    //     );
-    //     assert(eventFired);
-    // });
-
-    // test("list returns empty array", async () => {
-    //     assert(window.subjects.list().length == 0);
-    // });
-
-    test("list after update returns array", async () => {
+    test("update list emits event", async () => {
         let eventFired = false;
-        document.addEventListener("reef:store-" + window.subjectsSignal, () => {
+        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
             eventFired = true;
         });
 
         window.subjects.updateList();
 
-        // await waitFor(
-        //     () => {
-        //         if (!eventFired) {
-        //             throw new Error("waiting");
-        //         }
-        //     },
-        //     { container: document },
-        // );
-        // assert(eventFired);
+        function assertion() {
+            return eventFired;
+        }
+        await waitFor(() => {
+            if (!assertion()) {
+                throw new Error("waiting");
+            }
+        }, { container: document });
+        assert(assertion());
+    });
 
-        assert(window.subjects.list().length > 0);
+    test("list after update returns array", async () => {
+        assert(window.subjects.list().length == 0);
+
+        window.subjects.updateList();
+
+        function assertion() {
+            return window.subjects.list().length > 0;
+        }
+        await waitFor(() => {
+            if (!assertion()) {
+                throw new Error("waiting");
+            }
+        }, { container: document });
+        assert(assertion());
+    });
+
+    test("update content emits event", async () => {
+        let eventFired = false;
+        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
+            eventFired = true;
+        });
+
+        window.subjects.updateContent("one");
+
+        function assertion() {
+            return eventFired;
+        }
+        await waitFor(() => {
+            if (!assertion()) {
+                throw new Error("waiting");
+            }
+        }, { container: document });
+        assert(assertion());
+    });
+
+    test("content after update returns non-empty string", async () => {
+        assert(window.subjects.content("one").length == 0);
+
+        window.subjects.updateContent("one");
+
+        function assertion() {
+            return window.subjects.content("one").length > 0;
+        }
+        await waitFor(() => {
+            if (!assertion()) {
+                throw new Error("waiting");
+            }
+        }, { container: document });
+        assert(assertion());
     });
 });
