@@ -1,6 +1,6 @@
 import { JSDOM } from "jsdom";
 import fs from "fs";
-import { buildSync } from "../../tools/build.js";
+import { buildSync } from "./build.js";
 
 export class DOM {
     constructor(url = "http://localhost/") {
