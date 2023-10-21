@@ -15,7 +15,7 @@ class Router extends HTMLElement {
                 ${
                     router.value.path == "/"
                         ? `
-                    <p>Home page! Go to <a href="/wiki/abcd" onclick="navigate()">subject</a></p>
+                    <wiki-list-subjects></wiki-list-subjects>
                 `
                         : `
                     <wiki-subject></wiki-subject>

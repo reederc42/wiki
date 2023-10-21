@@ -32,7 +32,7 @@ describe("Router component", () => {
         let wikiRouter = document.createElement("wiki-router");
         document.body.appendChild(wikiRouter);
 
-        assert(wikiRouter.querySelector("p"));
+        assert(wikiRouter.querySelector("wiki-list-subjects"));
     });
 
     test("wiki/ shows subject", () => {
@@ -48,7 +48,7 @@ describe("Router component", () => {
         let wikiRouter = document.createElement("wiki-router");
         document.body.appendChild(wikiRouter);
 
-        assert(wikiRouter.querySelector("p"));
+        assert(wikiRouter.querySelector("wiki-list-subjects"));
 
         window.router.navigate("/wiki/someSubject");
 
@@ -56,6 +56,6 @@ describe("Router component", () => {
 
         window.router.navigate("/badpath/");
 
-        assert(wikiRouter.querySelector("p"));
+        assert(wikiRouter.querySelector("wiki-list-subjects"));
     });
 });
