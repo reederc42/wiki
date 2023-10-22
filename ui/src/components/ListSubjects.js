@@ -1,5 +1,6 @@
 import { component } from "reefjs";
 import { subjects, signal as subjectsSignal } from "../store/subjects";
+import { navigate } from "../store/router";
 
 class ListSubjects extends HTMLElement {
     constructor() {
@@ -7,15 +8,20 @@ class ListSubjects extends HTMLElement {
     }
 
     connectedCallback() {
+        console.log("connected");
         subjects.updateList();
-        component(
+        this.component = component(
             this,
             function () {
                 const subjectList = subjects.list();
                 return subjectsTable(subjectList);
             },
-            { signals: [subjectsSignal] },
+            { events: { navigate }, signals: [subjectsSignal] },
         );
+    }
+
+    disconnectedCallback() {
+        this.component.stop();
     }
 }
 customElements.define("wiki-list-subjects", ListSubjects);
@@ -37,9 +43,9 @@ function subjectsRow(subjectList, row, rowCount) {
         let i = row + c * rowCount;
         rowString += `<td>${
             i < subjectList.length
-                ? `<a href="/wiki/${encodeURIComponent(subjectList[i])}">${
-                      subjectList[i]
-                  }</a>`
+                ? `<a href="/wiki/${encodeURIComponent(
+                      subjectList[i],
+                  )}" onclick="navigate()">${subjectList[i]}</a>`
                 : ""
         }</td>`;
     }

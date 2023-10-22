@@ -7,7 +7,7 @@ class Router extends HTMLElement {
     }
 
     connectedCallback() {
-        component(
+        this.component = component(
             this,
             function () {
                 console.log(`rendering router with ${router.value.path}`);
@@ -25,6 +25,10 @@ class Router extends HTMLElement {
             },
             { events: { navigate }, signals: [routerSignal] },
         );
+    }
+
+    disconnectedCallback() {
+        this.component.stop();
     }
 }
 customElements.define("wiki-router", Router);

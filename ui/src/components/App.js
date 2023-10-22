@@ -7,7 +7,7 @@ class App extends HTMLElement {
     }
 
     connectedCallback() {
-        component(
+        this.component = component(
             this,
             function () {
                 return `
@@ -20,6 +20,10 @@ class App extends HTMLElement {
             },
             { events: { navigate } },
         );
+    }
+
+    disconnectedCallback() {
+        this.component.stop();
     }
 }
 customElements.define("wiki-app", App);
