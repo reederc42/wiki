@@ -4,9 +4,7 @@ import fs from "fs";
 import { DOM } from "../test-helpers/dom.js";
 
 describe("Subject component", () => {
-    let dom;
-    let window;
-    let document;
+    let dom, window, document;
 
     beforeEach(() => {
         dom = new DOM();
