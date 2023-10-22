@@ -8,7 +8,6 @@ class ListSubjects extends HTMLElement {
     }
 
     connectedCallback() {
-        console.log("connected");
         subjects.updateList();
         this.component = component(
             this,
