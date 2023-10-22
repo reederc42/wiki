@@ -51,6 +51,58 @@ describe("List Subjects component", () => {
         assert(assertion());
     });
 
-    test("shows all subjects in links");
-    test("subjects are split into n columns");
+    test("shows all subjects in links", async () => {
+        let eventFired = false;
+        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
+            eventFired = true;
+        });
+
+        let wikiListSubjects = document.createElement("wiki-list-subjects");
+        document.body.appendChild(wikiListSubjects);
+
+        function assertion() {
+            return eventFired;
+        }
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion());
+
+        assert(wikiListSubjects.querySelectorAll("td").length == window.subjects.list().length);
+        assert(wikiListSubjects.querySelectorAll("a").length == window.subjects.list().length);
+    });
+
+    test("subjects are split into n columns", async () => {
+        const columns = 3;
+        let eventFired = false;
+        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
+            eventFired = true;
+        });
+
+        let wikiListSubjects = document.createElement("wiki-list-subjects");
+        document.body.appendChild(wikiListSubjects);
+
+        function assertion() {
+            return eventFired;
+        }
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion());
+
+        let rows = wikiListSubjects.querySelectorAll("tr");
+        for (const row of rows) {
+            assert(row.querySelectorAll("td").length == columns);
+        }
+    });
 });
