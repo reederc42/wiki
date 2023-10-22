@@ -35,19 +35,24 @@ app.get("/wiki/*", (_, res) => {
 });
 
 let listener = app.listen(port).address();
-let ifaces = ["lo0", "en0"];
+let ifaces = ["lo0", "en0", "lo", "eth0"];
 let addresses = [];
 for (const i of ifaces) {
     let addr = getAddress(i);
     if (addr != "") {
-        addresses.push(addr);
+        addresses.push({
+            interface: i,
+            address: addr,
+        });
     }
 }
 if (addresses.length > 0) {
     for (const a of addresses) {
-        console.log(`listening at http://${a}:${listener.port}/`);
+        console.log(
+            `${a.interface} listening at http://${a.address}:${listener.port}/`,
+        );
     }
 } else {
     console.log(`listening at http://localhost:${listener.port}/`);
-    console.log("could not find loopback or network address");
+    console.log("could not find network addresses");
 }
