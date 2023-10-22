@@ -35,7 +35,13 @@ function subjectsRow(subjectList, row, rowCount) {
     let rowString = "<tr>";
     for (let c = 0; c < columns; c++) {
         let i = row + c * rowCount;
-        rowString += `<td>${i < subjectList.length ? `<a href="/wiki/${encodeURIComponent(subjectList[i])}">${subjectList[i]}</a>` : ""}</td>`
+        rowString += `<td>${
+            i < subjectList.length
+                ? `<a href="/wiki/${encodeURIComponent(subjectList[i])}">${
+                      subjectList[i]
+                  }</a>`
+                : ""
+        }</td>`;
     }
     return rowString + "</td>";
 }
