@@ -1,5 +1,9 @@
-let baseTitle = document.title;
+const baseTitle = document.title;
 
 export function setView(view) {
-    document.title = `${baseTitle} ${view}`;
+    let title = baseTitle;
+    if (view) {
+        title += " " + view;
+    }
+    document.title = title;
 }

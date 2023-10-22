@@ -23,7 +23,7 @@ class Subject extends HTMLElement {
                 setView(viewEdit);
             },
         };
-        component(
+        this.component = component(
             this,
             function () {
                 return `
@@ -51,6 +51,7 @@ class Subject extends HTMLElement {
 
     disconnectedCallback() {
         setView("");
+        this.component.stop();
     }
 }
 customElements.define("wiki-subject", Subject);

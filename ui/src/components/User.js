@@ -7,7 +7,7 @@ export class User extends HTMLElement {
     }
 
     connectedCallback() {
-        component(
+        this.component = component(
             this,
             function () {
                 return `${
@@ -22,6 +22,10 @@ export class User extends HTMLElement {
             },
             { signals: [userSignal] },
         );
+    }
+
+    disconnectedCallback() {
+        this.component.stop();
     }
 }
 customElements.define("wiki-user", User);
