@@ -41,9 +41,14 @@ export const subjects = {
     // updateContent asynchrously updates the content for a subject, emtting
     // signal and updating store on success
     updateContent(subject) {
-        subjectAPI.getContent(subject).then((content) => {
-            subjectStore.updateContent(subject, content);
-        });
+        subjectAPI
+            .getContent(subject)
+            .then((content) => {
+                subjectStore.updateContent(subject, content);
+            })
+            .catch((reason) => {
+                subjectStore.updateContent(subject, reason);
+            });
     },
 
     // list returns cached list of subject names

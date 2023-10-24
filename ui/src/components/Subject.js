@@ -1,5 +1,6 @@
 import { signal, component } from "reefjs";
-import { setView } from "../store/title";
+import { setTitle } from "../store/title";
+import { subjects } from "../store/subjects";
 
 const viewView = "view";
 const viewEdit = "edit";
@@ -11,16 +12,18 @@ class Subject extends HTMLElement {
     }
 
     connectedCallback() {
+        let subject = decodeURIComponent(this.getAttribute("subj"));
+        subjects.updateContent(subject);
         let view = signal(viewView, viewSignal);
-        setView(view.value);
+        setTitle(viewView, subject);
         let events = {
             view() {
                 view.value = viewView;
-                setView(viewView);
+                setTitle(viewView, subject);
             },
             edit() {
                 view.value = viewEdit;
-                setView(viewEdit);
+                setTitle(viewEdit, subject);
             },
         };
         this.component = component(
@@ -34,7 +37,8 @@ class Subject extends HTMLElement {
                 <div id="view" ${
                     view.value == viewView ? `` : `style="display: none"`
                 }>
-                    Viewing Subject
+                    <wiki-view-subject subj=${encodeURIComponent(subject)}>
+                    </wiki-view-subject>
                 </div>
                 <div id="edit" ${
                     view.value == viewEdit ? `` : `style="display: none"`
@@ -50,7 +54,7 @@ class Subject extends HTMLElement {
     }
 
     disconnectedCallback() {
-        setView("");
+        setTitle();
         this.component.stop();
     }
 }

@@ -4,9 +4,7 @@ import { DOM } from "../test-helpers/dom.js";
 import fs from "fs";
 
 describe("Router component", () => {
-    let dom;
-    let window;
-    let document;
+    let dom, window, document;
 
     beforeEach(() => {
         dom = new DOM();

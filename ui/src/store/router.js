@@ -46,6 +46,10 @@ export function navigate(event) {
     }
 }
 
+export function getSubject() {
+    return router.value.path.substring("/wiki/".length);
+}
+
 addEventListener("popstate", () => {
     console.log(
         `popping state to ${location.href.substring(location.origin.length)}`,

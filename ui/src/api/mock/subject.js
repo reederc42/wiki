@@ -20,9 +20,14 @@ export const subject = {
     },
 
     getContent(subject) {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             setTimeout(() => {
-                resolve(m.get(subject));
+                let content = m.get(subject);
+                if (content === undefined) {
+                    reject("Error: not found");
+                } else {
+                    resolve(content);
+                }
             }, timeout);
         });
     },

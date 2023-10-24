@@ -1,5 +1,10 @@
 import { component } from "reefjs";
-import { router, navigate, signal as routerSignal } from "../store/router";
+import {
+    router,
+    getSubject,
+    navigate,
+    signal as routerSignal,
+} from "../store/router";
 
 class Router extends HTMLElement {
     constructor() {
@@ -18,7 +23,7 @@ class Router extends HTMLElement {
                     <wiki-list-subjects></wiki-list-subjects>
                 `
                         : `
-                    <wiki-subject></wiki-subject>
+                    <wiki-subject subj=${getSubject()}></wiki-subject>
                 `
                 }
             `;

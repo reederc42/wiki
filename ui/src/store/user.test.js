@@ -4,8 +4,7 @@ import fs from "fs";
 import { DOM } from "../test-helpers/dom.js";
 
 describe("user store", () => {
-    let dom;
-    let window;
+    let dom, window;
 
     beforeEach(() => {
         dom = new DOM();

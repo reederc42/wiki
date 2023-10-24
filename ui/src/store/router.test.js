@@ -5,10 +5,7 @@ import fs from "fs";
 import { DOM } from "../test-helpers/dom.js";
 
 describe("router store", () => {
-    let dom;
-    let window;
-    let document;
-    let previousConsoleError;
+    let dom, window, document, previousConsoleError;
 
     beforeEach(() => {
         previousConsoleError = console.error;
