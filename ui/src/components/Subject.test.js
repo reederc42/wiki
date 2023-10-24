@@ -13,7 +13,10 @@ describe("Subject component", () => {
         document = dom.window.document;
 
         dom.addScript(`
+            import { signal } from "../src/store/subjects";
             import "../src/components/Subject";
+
+            window.subjectsSignal = signal;
         `);
     });
 
@@ -60,13 +63,43 @@ describe("Subject component", () => {
         function assertion() {
             return eventFired;
         }
-        await waitFor(() => {
-            if (!assertion()) {
-                throw new Error("waiting");
-            }
-        }, { container: document });
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
         assert(assertion());
 
         assert(document.title.includes(subjectName));
+    });
+
+    test("creating element updates content", async () => {
+        let eventFired = false;
+        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
+            eventFired = true;
+        });
+
+        let wikiSubject = document.createElement("wiki-subject");
+        wikiSubject.setAttribute(
+            "subj",
+            encodeURIComponent("Pro in antistite ferinos"),
+        );
+        document.body.appendChild(wikiSubject);
+
+        function assertion() {
+            return eventFired;
+        }
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion());
     });
 });

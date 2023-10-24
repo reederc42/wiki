@@ -1,5 +1,10 @@
 import { component } from "reefjs";
-import { router, getSubject, navigate, signal as routerSignal } from "../store/router";
+import {
+    router,
+    getSubject,
+    navigate,
+    signal as routerSignal,
+} from "../store/router";
 
 class Router extends HTMLElement {
     constructor() {
