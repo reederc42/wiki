@@ -1,6 +1,7 @@
 import { describe, beforeEach, after, test } from "node:test";
 import assert from "node:assert";
 import fs from "fs";
+import { waitFor } from "@testing-library/dom";
 import { DOM } from "../test-helpers/dom.js";
 
 describe("Subject component", () => {
@@ -43,5 +44,29 @@ describe("Subject component", () => {
         viewButton.click();
 
         assert(window.getComputedStyle(editDiv).display == "none");
+    });
+
+    test("title contains subject name", async () => {
+        let subjectName = "Pro in antistite ferinos";
+        let eventFired = true;
+        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
+            eventFired = true;
+        });
+
+        let wikiSubject = document.createElement("wiki-subject");
+        wikiSubject.setAttribute("subj", encodeURIComponent(subjectName));
+        document.body.appendChild(wikiSubject);
+
+        function assertion() {
+            return eventFired;
+        }
+        await waitFor(() => {
+            if (!assertion()) {
+                throw new Error("waiting");
+            }
+        }, { container: document });
+        assert(assertion());
+
+        assert(document.title.includes(subjectName));
     });
 });
