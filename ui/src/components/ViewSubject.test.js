@@ -62,11 +62,13 @@ describe("View Subject component", () => {
     test("content not found shows error", async () => {
         let subjectName = "not a real subject";
         let eventFired = false;
-        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
+        window.addEventListener("reef:signal-" + "view-subject-error", () => {
             eventFired = true;
         });
 
-        window.subjects.updateContent(subjectName);
+        let wikiViewSubject = document.createElement("wiki-view-subject");
+        wikiViewSubject.setAttribute("subj", encodeURIComponent(subjectName));
+        document.body.appendChild(wikiViewSubject);
 
         function assertion() {
             return eventFired;
@@ -81,10 +83,34 @@ describe("View Subject component", () => {
         );
         assert(assertion());
 
+        console.log(`textContent: ${wikiViewSubject.textContent}`);
+        assert(wikiViewSubject.textContent.includes("Error"));
+    });
+
+    test("creating element updates content", async () => {
+        let eventFired = false;
+        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
+            eventFired = true;
+        });
+
         let wikiViewSubject = document.createElement("wiki-view-subject");
-        wikiViewSubject.setAttribute("subj", encodeURIComponent(subjectName));
+        wikiViewSubject.setAttribute(
+            "subj",
+            encodeURIComponent("Pro in antistite ferinos"),
+        );
         document.body.appendChild(wikiViewSubject);
 
-        assert(wikiViewSubject.textContent.includes("Error"));
+        function assertion() {
+            return eventFired;
+        }
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion());
     });
 });

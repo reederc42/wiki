@@ -33,7 +33,7 @@ export const subjects = {
     // updateList asynchronously updates the list of subjects, emitting signal
     // and updating store on success
     updateList() {
-        subjectAPI.list().then((v) => {
+        return subjectAPI.list().then((v) => {
             subjectStore.updateList(v);
         });
     },
@@ -41,14 +41,9 @@ export const subjects = {
     // updateContent asynchrously updates the content for a subject, emtting
     // signal and updating store on success
     updateContent(subject) {
-        subjectAPI
-            .getContent(subject)
-            .then((content) => {
-                subjectStore.updateContent(subject, content);
-            })
-            .catch((reason) => {
-                subjectStore.updateContent(subject, reason);
-            });
+        return subjectAPI.getContent(subject).then((content) => {
+            subjectStore.updateContent(subject, content);
+        });
     },
 
     // list returns cached list of subject names
@@ -58,7 +53,7 @@ export const subjects = {
 
     // content returns cached subject content
     content(subject) {
-        let content = subjectStore.value.get(subject);
+        const content = subjectStore.value.get(subject);
         if (content === undefined) {
             return "";
         }

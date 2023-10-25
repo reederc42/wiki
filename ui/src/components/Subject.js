@@ -1,6 +1,5 @@
 import { signal, component } from "reefjs";
 import { setTitle } from "../store/title";
-import { subjects } from "../store/subjects";
 
 const viewView = "view";
 const viewEdit = "edit";
@@ -13,7 +12,6 @@ class Subject extends HTMLElement {
 
     connectedCallback() {
         let subject = decodeURIComponent(this.getAttribute("subj"));
-        subjects.updateContent(subject);
         let view = signal(viewView, viewSignal);
         setTitle(viewView, subject);
         let events = {

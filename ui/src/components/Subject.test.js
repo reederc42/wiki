@@ -75,31 +75,4 @@ describe("Subject component", () => {
 
         assert(document.title.includes(subjectName));
     });
-
-    test("creating element updates content", async () => {
-        let eventFired = false;
-        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
-            eventFired = true;
-        });
-
-        let wikiSubject = document.createElement("wiki-subject");
-        wikiSubject.setAttribute(
-            "subj",
-            encodeURIComponent("Pro in antistite ferinos"),
-        );
-        document.body.appendChild(wikiSubject);
-
-        function assertion() {
-            return eventFired;
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
-    });
 });

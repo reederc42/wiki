@@ -1,6 +1,8 @@
-import { component } from "reefjs";
+import { signal, component } from "reefjs";
 import { subjects, signal as subjectsSignal } from "../store/subjects";
 import { navigate } from "../store/router";
+
+const errorSignal = "list-subjects-error";
 
 class ListSubjects extends HTMLElement {
     constructor() {
@@ -8,14 +10,20 @@ class ListSubjects extends HTMLElement {
     }
 
     connectedCallback() {
-        subjects.updateList();
+        let err = signal(undefined, errorSignal);
+        subjects.updateList().catch((error) => {
+            err.value = error;
+        });
         this.component = component(
             this,
             function () {
+                if (err.value != undefined) {
+                    return `Error listing subjects: ${err.value.message}`;
+                }
                 const subjectList = subjects.list();
                 return subjectsTable(subjectList);
             },
-            { events: { navigate }, signals: [subjectsSignal] },
+            { events: { navigate }, signals: [subjectsSignal, errorSignal] },
         );
     }
 

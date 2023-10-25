@@ -1,6 +1,8 @@
-import { component } from "reefjs";
+import { signal, component } from "reefjs";
 import { marked } from "marked";
 import { subjects, signal as subjectsSignal } from "../store/subjects";
+
+const errorSignal = "view-subject-error";
 
 class ViewSubject extends HTMLElement {
     constructor() {
@@ -9,14 +11,21 @@ class ViewSubject extends HTMLElement {
 
     connectedCallback() {
         const subject = decodeURIComponent(this.getAttribute("subj"));
+        const err = signal(undefined, errorSignal);
+        subjects.updateContent(subject).catch((error) => {
+            err.value = error;
+        });
         this.component = component(
             this,
             function () {
+                if (err.value !== undefined) {
+                    return `Error getting '${subject}': ${err.value.message}`;
+                }
                 return marked.parse(subjects.content(subject), {
                     async: false,
                 });
             },
-            { signals: [subjectsSignal] },
+            { signals: [subjectsSignal, errorSignal] },
         );
     }
 

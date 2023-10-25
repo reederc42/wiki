@@ -14,7 +14,7 @@ export const subject = {
     list() {
         return new Promise((resolve) => {
             setTimeout(() => {
-                resolve(Array.from(m.keys()));
+                resolve(Array.from(m.keys()).sort());
             }, timeout);
         });
     },
@@ -24,7 +24,7 @@ export const subject = {
             setTimeout(() => {
                 let content = m.get(subject);
                 if (content === undefined) {
-                    reject("Error: not found");
+                    reject(new Error("not found"));
                 } else {
                     resolve(content);
                 }
