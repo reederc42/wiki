@@ -41,7 +41,7 @@ class Subject extends HTMLElement {
                 <div id="edit" ${
                     view.value == viewEdit ? `` : `style="display: none"`
                 }>
-                    <wiki-edit-subject>
+                    <wiki-edit-subject subj=${encodeURIComponent(subject)}>
                         <div id="editor" style="width: 100ex;min-height: 82vh"></div>
                     </wiki-edit-subject>
                 </div>
