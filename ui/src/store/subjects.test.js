@@ -91,13 +91,13 @@ describe("subjects store", () => {
     });
 
     test("content after update returns non-empty string", async () => {
-        assert(window.subjects.content("one").length == 0);
+        assert(window.subjects.get("one") === undefined);
 
         window.subjects.updateContent("Pro in antistite ferinos");
 
         function assertion() {
             return (
-                window.subjects.content("Pro in antistite ferinos").length > 0
+                window.subjects.get("Pro in antistite ferinos").content.length > 0
             );
         }
         await waitFor(

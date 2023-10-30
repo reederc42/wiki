@@ -3,6 +3,19 @@ import { subject as subjectAPI } from "../api/mock/subject";
 
 export const signal = "subjects";
 
+function makeSubject(content) {
+    let s = {
+        content: "",
+        rendered: false,
+        synced: false,
+    }
+    if (content != "") {
+        s.content = content
+        s.synced = true
+    }
+    return s
+}
+
 const subjectStore = store(
     new Map(),
     {
@@ -17,13 +30,19 @@ const subjectStore = store(
             // add new names to m
             for (const e of n) {
                 if (!m.has(e[0])) {
-                    m.set(e[0]);
+                    m.set(e[0], makeSubject(""));
                 }
             }
         },
 
         updateContent(m, subject, content) {
-            m.set(subject, content);
+            if (!m.has(subject)) {
+                m.set(subject, makeSubject(content));
+            } else {
+                let s = m.get(subject);
+                s.content = content;
+                s.synced = true;
+            }
         },
     },
     signal,
@@ -41,7 +60,7 @@ export const subjects = {
     // updateContent asynchrously updates the content for a subject, emtting
     // signal and updating store on success
     updateContent(subject) {
-        return subjectAPI.getContent(subject).then((content) => {
+        return subjectAPI.get(subject).then((content) => {
             subjectStore.updateContent(subject, content);
         });
     },
@@ -51,12 +70,8 @@ export const subjects = {
         return Array.from(subjectStore.value.keys());
     },
 
-    // content returns cached subject content
-    content(subject) {
-        const content = subjectStore.value.get(subject);
-        if (content === undefined) {
-            return "";
-        }
-        return content;
+    // get returns a reference to cached subject object
+    get(subject) {
+        return subjectStore.value.get(subject);
     },
 };

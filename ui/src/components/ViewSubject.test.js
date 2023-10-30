@@ -55,7 +55,6 @@ describe("View Subject component", () => {
         document.body.appendChild(wikiViewSubject);
 
         // "not empty" means a top-level header with subject name
-        console.log(wikiViewSubject.querySelector("h1").textContent);
         assert(wikiViewSubject.querySelector("h1").textContent == subjectName);
     });
 
@@ -83,7 +82,6 @@ describe("View Subject component", () => {
         );
         assert(assertion());
 
-        console.log(`textContent: ${wikiViewSubject.textContent}`);
         assert(wikiViewSubject.textContent.includes("Error"));
     });
 

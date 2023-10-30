@@ -19,7 +19,7 @@ export const subject = {
         });
     },
 
-    getContent(subject) {
+    get(subject) {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 let content = m.get(subject);

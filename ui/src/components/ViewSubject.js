@@ -21,7 +21,7 @@ class ViewSubject extends HTMLElement {
                 if (err.value !== undefined) {
                     return `Error getting '${subject}': ${err.value.message}`;
                 }
-                return marked.parse(subjects.content(subject), {
+                return marked.parse(subjects.get(subject).content, {
                     async: false,
                 });
             },
