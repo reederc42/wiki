@@ -88,13 +88,16 @@ export const subjects = {
         if (s.err !== undefined) {
             return new Promise((resolve, reject) => {
                 reject(s.err);
-            })
+            });
         }
-        return subjectAPI.put(subject, s.content).then(() => {
-            s.synced = true;
-        }).catch((err) => {
-            s.err = err;
-        })
+        return subjectAPI
+            .put(subject, s.content)
+            .then(() => {
+                s.synced = true;
+            })
+            .catch((err) => {
+                s.err = err;
+            });
     },
 
     // list returns cached list of subject names

@@ -14,7 +14,7 @@ export const subject = {
     list() {
         return new Promise((resolve) => {
             setTimeout(() => {
-                resolve(Array.from(m.keys()).sort());
+                resolve(Array.from(m.keys()));
             }, timeout);
         });
     },
@@ -31,4 +31,17 @@ export const subject = {
             }, timeout);
         });
     },
+
+    put(subject, content) {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                if (subject == "error") {
+                    reject(new Error("server error"));
+                } else {
+                    m.set(subject, content);
+                    resolve();
+                }
+            }, timeout);
+        });
+    }
 };

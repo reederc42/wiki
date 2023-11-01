@@ -8,8 +8,7 @@
     "dev": "nodemon tools/dev-server.js",
     "build": "node tools/prod.js",
     "test": "node --test",
-    "lint": "eslint ./src/**/*.js ./tools/**/*.js",
-    "lint-fix": "eslint --fix ./src/**/*.js ./tools/**/*.js"
+    "lint": "eslint ./src/**/*.js ./tools/**/*.js"
   },
   "repository": {
     "type": "git",
