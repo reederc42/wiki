@@ -13,7 +13,7 @@ class Subject extends HTMLElement {
         let subjectName = decodeURIComponent(subjectProp);
 
         let fetched = signal(null, subjectProp);
-        subjectStore.updateContent(subjectName).then(() => {
+        subjectStore.fetchContent(subjectName).then(() => {
             fetched.value = true;
         });
 
@@ -26,6 +26,7 @@ class Subject extends HTMLElement {
             <div>
                 <button onclick="view()" disabled>View</button>
                 <button onclick="edit()" disabled>Edit</button>
+                <button onclick="save()" disabled>Save</button>
             </div>
             <div id="view">
                 <wiki-view-subject subj="${subjectProp}">

@@ -35,7 +35,7 @@ describe("View Subject component", () => {
             eventFired = true;
         });
 
-        window.subjects.updateContent(subjectName);
+        window.subjects.fetchContent(subjectName);
 
         function assertion() {
             return eventFired;
@@ -65,7 +65,7 @@ describe("View Subject component", () => {
             eventFired = true;
         });
 
-        window.subjects.updateContent(subjectName);
+        window.subjects.fetchContent(subjectName);
 
         function assertion() {
             return eventFired;
@@ -96,7 +96,7 @@ describe("View Subject component", () => {
 
         assert(wikiViewSubject.textContent.includes("Updating"));
 
-        window.subjects.updateContent(subjectName);
+        window.subjects.fetchContent(subjectName);
 
         let eventFired = false;
         window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {

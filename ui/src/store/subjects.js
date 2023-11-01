@@ -23,39 +23,6 @@ function makeSubject(content, err) {
     return s;
 }
 
-// const subjectStore = store(
-//     new Map(),
-//     {
-//         updateList(m, names) {
-//             let n = new Map(names.map((v) => [v]));
-//             // delete existing names that are invalid
-//             for (const e of m) {
-//                 if (!n.has(e[0])) {
-//                     m.delete(e[0]);
-//                 }
-//             }
-//             // add new names to m
-//             for (const e of n) {
-//                 if (!m.has(e[0])) {
-//                     m.set(e[0], makeSubject("", undefined));
-//                 }
-//             }
-//         },
-
-//         updateContent(m, subject, content, err) {
-//             if (!m.has(subject)) {
-//                 m.set(subject, makeSubject(content, err));
-//             } else {
-//                 let s = m.get(subject);
-//                 s.content = content;
-//                 s.synced = true;
-//                 s.err = err;
-//             }
-//         },
-//     },
-//     signal,
-// );
-
 const store = new Map();
 
 function updateList(names) {
@@ -96,9 +63,9 @@ export const subjects = {
         });
     },
 
-    // updateContent asynchrously updates the content for a subject, emtting
+    // fetchContent asynchronously updates the content for a subject, emtting
     // signal and updating store on success
-    updateContent(subject) {
+    fetchContent(subject) {
         return subjectAPI
             .get(subject)
             .then((content) => {
@@ -107,6 +74,27 @@ export const subjects = {
             .catch((err) => {
                 updateContent(subject, "", err);
             });
+    },
+
+    // pushContent asynchronously saves the current content to backend, emitting
+    // signal and updating store on success
+    pushContent(subject) {
+        let s = store.get(subject);
+        if (s === undefined) {
+            return new Promise((resolve, reject) => {
+                reject(new Error("subject does not exist"));
+            });
+        }
+        if (s.err !== undefined) {
+            return new Promise((resolve, reject) => {
+                reject(s.err);
+            })
+        }
+        return subjectAPI.put(subject, s.content).then(() => {
+            s.synced = true;
+        }).catch((err) => {
+            s.err = err;
+        })
     },
 
     // list returns cached list of subject names

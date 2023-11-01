@@ -4,6 +4,11 @@ import "ace-builds/src-min-noconflict/theme-github";
 import "ace-builds/src-min-noconflict/mode-markdown";
 import { subjects } from "../store/subjects";
 
+const signal = "subject-edited";
+const event = new Event("wiki:signal-" + signal, {
+    bubbles: true,
+});
+
 class EditSubject extends HTMLElement {
     constructor() {
         super();
@@ -29,6 +34,7 @@ class EditSubject extends HTMLElement {
             if (subject !== undefined) {
                 subject.rendered = false;
             }
+            document.dispatchEvent(event);
         });
 
         this.updateContent = function () {

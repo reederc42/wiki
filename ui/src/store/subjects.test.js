@@ -74,7 +74,7 @@ describe("subjects store", () => {
             eventFired = true;
         });
 
-        window.subjects.updateContent("Pro in antistite ferinos");
+        window.subjects.fetchContent("Pro in antistite ferinos");
 
         function assertion() {
             return eventFired;
@@ -94,7 +94,7 @@ describe("subjects store", () => {
         let subjectName = "Pro in antistite ferinos";
         assert(window.subjects.get(subjectName) === undefined);
 
-        window.subjects.updateContent(subjectName);
+        window.subjects.fetchContent(subjectName);
 
         function assertion() {
             return window.subjects.get(subjectName).content.length > 0;
@@ -114,7 +114,7 @@ describe("subjects store", () => {
         let subjectName = "not a subject";
         assert(window.subjects.get(subjectName) === undefined);
 
-        window.subjects.updateContent(subjectName);
+        window.subjects.fetchContent(subjectName);
 
         function assertion() {
             return window.subjects
@@ -135,7 +135,7 @@ describe("subjects store", () => {
     test("get returns mutable reference", async () => {
         let subjectName = "Pro in antistite ferinos";
 
-        window.subjects.updateContent(subjectName);
+        window.subjects.fetchContent(subjectName);
 
         function assertion() {
             return window.subjects.get(subjectName).content.length > 0;
@@ -160,4 +160,10 @@ describe("subjects store", () => {
 
         assert(subject.content == window.subjects.get(subjectName).content);
     });
+
+    test("pushing nonexistent subject fails");
+
+    test("pushing subject with error fails");
+
+    test("pushing new content sets synced");
 });
