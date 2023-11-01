@@ -1,8 +1,8 @@
 import { render } from "reefjs";
+import { subjects } from "../store/subjects";
 import ace from "ace-builds/src-min-noconflict/ace";
 import "ace-builds/src-min-noconflict/theme-github";
 import "ace-builds/src-min-noconflict/mode-markdown";
-import { subjects } from "../store/subjects";
 
 const signal = "subject-edited";
 const event = new Event("wiki:signal-" + signal, {
