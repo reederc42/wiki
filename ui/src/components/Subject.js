@@ -1,10 +1,6 @@
-import { signal, component } from "reefjs";
+import { signal, render } from "reefjs";
 import { setTitle } from "../store/title";
-import { subjects } from "../store/subjects";
-
-const viewView = "view";
-const viewEdit = "edit";
-const viewSignal = "view";
+import { subjects as subjectStore } from "../store/subjects";
 
 class Subject extends HTMLElement {
     constructor() {
@@ -12,50 +8,69 @@ class Subject extends HTMLElement {
     }
 
     connectedCallback() {
-        let subject = decodeURIComponent(this.getAttribute("subj"));
-        subjects.updateContent(subject);
-        let view = signal(viewView, viewSignal);
-        setTitle(viewView, subject);
-        let events = {
-            view() {
-                view.value = viewView;
-                setTitle(viewView, subject);
-            },
-            edit() {
-                view.value = viewEdit;
-                setTitle(viewEdit, subject);
-            },
-        };
-        this.component = component(
+        let viewTab, editTab, viewer, editor;
+        let subjectProp = this.getAttribute("subj");
+        let subjectName = decodeURIComponent(subjectProp);
+
+        let fetched = signal(null, subjectProp);
+        subjectStore.fetchContent(subjectName).then(() => {
+            fetched.value = true;
+        });
+
+        setTitle("view", subjectName);
+
+        // buttons start disabled until all elements can be bound to a property
+        render(
             this,
-            function () {
-                return `
-                <div>
-                    <button onclick="view()">View</button>
-                    <button onclick="edit()">Edit</button>
-                </div>
-                <div id="view" ${
-                    view.value == viewView ? `` : `style="display: none"`
-                }>
-                    <wiki-view-subject subj=${encodeURIComponent(subject)}>
-                    </wiki-view-subject>
-                </div>
-                <div id="edit" ${
-                    view.value == viewEdit ? `` : `style="display: none"`
-                }>
-                    <wiki-edit-subject>
-                        <div id="editor" style="width: 100ex;min-height: 82vh"></div>
-                    </wiki-edit-subject>
-                </div>
-            `;
+            `
+            <div>
+                <button onclick="view()" disabled>View</button>
+                <button onclick="edit()" disabled>Edit</button>
+                <button onclick="save()" disabled>Save</button>
+            </div>
+            <div id="view">
+                <wiki-view-subject subj="${subjectProp}">
+                </wiki-view-subject>
+            </div>
+            <div id="edit" style="display: none;">
+                <wiki-edit-subject subj="${subjectProp}">
+                </wiki-edit-subject>
+            </div>
+        `,
+            {
+                view: () => {
+                    viewTab.style.display = "inline";
+                    editTab.style.display = "none";
+
+                    setTitle("view", subjectName);
+
+                    let subject = subjectStore.get(subjectName);
+                    if (subject !== undefined && !subject.rendered) {
+                        subject.content = editor.getValue();
+                        viewer.render();
+                    }
+                },
+                edit: () => {
+                    viewTab.style.display = "none";
+                    editTab.style.display = "inline";
+
+                    setTitle("edit", subjectName);
+                },
             },
-            { events, signals: [viewSignal] },
         );
+
+        viewTab = this.querySelector("#view");
+        editTab = this.querySelector("#edit");
+        viewer = viewTab.querySelector("wiki-view-subject");
+        editor = editTab.querySelector("wiki-edit-subject");
+
+        for (const b of this.querySelectorAll("button")) {
+            b.removeAttribute("disabled");
+        }
     }
 
     disconnectedCallback() {
         setTitle();
-        this.component.stop();
     }
 }
 customElements.define("wiki-subject", Subject);

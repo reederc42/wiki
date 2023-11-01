@@ -1,6 +1,8 @@
-import { component } from "reefjs";
+import { signal, render } from "reefjs";
 import { subjects, signal as subjectsSignal } from "../store/subjects";
 import { navigate } from "../store/router";
+
+const errorSignal = "list-subjects-error";
 
 class ListSubjects extends HTMLElement {
     constructor() {
@@ -8,19 +10,33 @@ class ListSubjects extends HTMLElement {
     }
 
     connectedCallback() {
-        subjects.updateList();
-        this.component = component(
-            this,
-            function () {
+        let root = this;
+        let err = signal(undefined, errorSignal);
+        subjects.updateList().catch((error) => {
+            err.value = error;
+        });
+
+        this.render = function () {
+            function template() {
+                if (err.value !== undefined) {
+                    return `Error listing subjects: ${err.value.message}`;
+                }
                 const subjectList = subjects.list();
                 return subjectsTable(subjectList);
-            },
-            { events: { navigate }, signals: [subjectsSignal] },
-        );
+            }
+            render(root, template(), { navigate });
+        };
+
+        this.render();
+
+        document.addEventListener("wiki:signal-" + subjectsSignal, this.render);
     }
 
     disconnectedCallback() {
-        this.component.stop();
+        document.removeEventListener(
+            "wiki:signal-" + subjectsSignal,
+            this.render,
+        );
     }
 }
 customElements.define("wiki-list-subjects", ListSubjects);

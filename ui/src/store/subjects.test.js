@@ -29,7 +29,7 @@ describe("subjects store", () => {
 
     test("update list emits event", async () => {
         let eventFired = false;
-        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
+        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
             eventFired = true;
         });
 
@@ -70,11 +70,11 @@ describe("subjects store", () => {
 
     test("update content emits event", async () => {
         let eventFired = false;
-        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
+        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
             eventFired = true;
         });
 
-        window.subjects.updateContent("Pro in antistite ferinos");
+        window.subjects.fetchContent("Pro in antistite ferinos");
 
         function assertion() {
             return eventFired;
@@ -91,14 +91,13 @@ describe("subjects store", () => {
     });
 
     test("content after update returns non-empty string", async () => {
-        assert(window.subjects.content("one").length == 0);
+        let subjectName = "Pro in antistite ferinos";
+        assert(window.subjects.get(subjectName) === undefined);
 
-        window.subjects.updateContent("Pro in antistite ferinos");
+        window.subjects.fetchContent(subjectName);
 
         function assertion() {
-            return (
-                window.subjects.content("Pro in antistite ferinos").length > 0
-            );
+            return window.subjects.get(subjectName).content.length > 0;
         }
         await waitFor(
             () => {
@@ -109,5 +108,160 @@ describe("subjects store", () => {
             { container: document },
         );
         assert(assertion());
+    });
+
+    test("not found content sets error", async () => {
+        let subjectName = "not a subject";
+        assert(window.subjects.get(subjectName) === undefined);
+
+        window.subjects.fetchContent(subjectName);
+
+        function assertion() {
+            return window.subjects
+                .get(subjectName)
+                .err.message.includes("not found");
+        }
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion());
+    });
+
+    test("get returns mutable reference", async () => {
+        let subjectName = "Pro in antistite ferinos";
+
+        window.subjects.fetchContent(subjectName);
+
+        function assertion() {
+            return window.subjects.get(subjectName).content.length > 0;
+        }
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion());
+
+        assert(
+            window.subjects.get(subjectName) ===
+                window.subjects.get(subjectName),
+        );
+
+        let subject = window.subjects.get(subjectName);
+        subject.content = "some test value";
+
+        assert(subject.content == window.subjects.get(subjectName).content);
+    });
+
+    test("pushing nonexistent subject fails", async () => {
+        let err;
+        window.subjects.pushContent("some subject").catch((e) => {
+            err = e;
+        });
+
+        function assertion() {
+            return err !== undefined;
+        }
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion());
+    });
+
+    test("pushing subject with error fails", async () => {
+        let subjectName = "not a real subject";
+        let eventFired = false;
+        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
+            eventFired = true;
+        });
+
+        window.subjects.fetchContent(subjectName);
+
+        function assertion1() {
+            return eventFired;
+        }
+        await waitFor(
+            () => {
+                if (!assertion1()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion1());
+
+        assert(window.subjects.get(subjectName).err !== undefined);
+
+        let err;
+        window.subjects.pushContent(subjectName).catch((e) => {
+            err = e;
+        });
+
+        function assertion2() {
+            return err !== undefined;
+        }
+        await waitFor(
+            () => {
+                if (!assertion2()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion2());
+    });
+
+    test("pushing new content sets synced", async () => {
+        let subjectName = "Pro in antistite ferinos";
+        let eventFired = false;
+        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
+            eventFired = true;
+        });
+
+        window.subjects.fetchContent(subjectName);
+
+        function assertion1() {
+            return eventFired;
+        }
+        await waitFor(
+            () => {
+                if (!assertion1()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion1());
+
+        let success = false;
+        window.subjects.pushContent(subjectName).then(() => {
+            success = true;
+        });
+
+        function assertion2() {
+            return success;
+        }
+        await waitFor(
+            () => {
+                if (!assertion2()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion2());
     });
 });

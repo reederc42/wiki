@@ -1,6 +1,6 @@
-import { component } from "reefjs";
+import { render } from "reefjs";
 import { marked } from "marked";
-import { subjects, signal as subjectsSignal } from "../store/subjects";
+import { subjects } from "../store/subjects";
 
 class ViewSubject extends HTMLElement {
     constructor() {
@@ -8,20 +8,38 @@ class ViewSubject extends HTMLElement {
     }
 
     connectedCallback() {
-        const subject = decodeURIComponent(this.getAttribute("subj"));
-        this.component = component(
-            this,
-            function () {
-                return marked.parse(subjects.content(subject), {
-                    async: false,
-                });
-            },
-            { signals: [subjectsSignal] },
+        this.subjectProp = this.getAttribute("subj");
+        let subjectName = decodeURIComponent(this.subjectProp);
+        let root = this;
+
+        this.render = function () {
+            let subject = subjects.get(subjectName);
+            if (subject === undefined) {
+                render(root, `Updating ${subjectName}...`);
+            } else if (subject.err !== undefined) {
+                render(
+                    root,
+                    `Error updating ${subjectName}: ${subject.err.message}`,
+                );
+            } else {
+                render(root, marked.parse(subject.content, { async: false }));
+                subject.rendered = true;
+            }
+        };
+
+        this.render();
+
+        document.addEventListener(
+            "reef:signal-" + this.subjectProp,
+            this.render,
         );
     }
 
     disconnectedCallback() {
-        this.component.stop();
+        document.removeEventListener(
+            "reef:signal-" + this.subjectProp,
+            this.render,
+        );
     }
 }
 customElements.define("wiki-view-subject", ViewSubject);

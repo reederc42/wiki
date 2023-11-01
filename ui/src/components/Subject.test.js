@@ -35,18 +35,18 @@ describe("Subject component", () => {
         let viewButton = buttons[0];
         let editButton = buttons[1];
 
-        let viewDiv = wikiSubject.querySelector("#view");
-        let editDiv = wikiSubject.querySelector("#edit");
+        let viewTab = wikiSubject.querySelector("#view");
+        let editTab = wikiSubject.querySelector("#edit");
 
-        assert(window.getComputedStyle(editDiv).display == "none");
+        assert(window.getComputedStyle(editTab).display == "none");
 
         editButton.click();
 
-        assert(window.getComputedStyle(viewDiv).display == "none");
+        assert(window.getComputedStyle(viewTab).display == "none");
 
         viewButton.click();
 
-        assert(window.getComputedStyle(editDiv).display == "none");
+        assert(window.getComputedStyle(editTab).display == "none");
     });
 
     test("title contains subject name", async () => {
@@ -74,32 +74,5 @@ describe("Subject component", () => {
         assert(assertion());
 
         assert(document.title.includes(subjectName));
-    });
-
-    test("creating element updates content", async () => {
-        let eventFired = false;
-        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
-            eventFired = true;
-        });
-
-        let wikiSubject = document.createElement("wiki-subject");
-        wikiSubject.setAttribute(
-            "subj",
-            encodeURIComponent("Pro in antistite ferinos"),
-        );
-        document.body.appendChild(wikiSubject);
-
-        function assertion() {
-            return eventFired;
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
     });
 });

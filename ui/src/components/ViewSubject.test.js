@@ -31,11 +31,11 @@ describe("View Subject component", () => {
     test("content is not empty after update", async () => {
         let subjectName = "Pro in antistite ferinos";
         let eventFired = false;
-        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
+        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
             eventFired = true;
         });
 
-        window.subjects.updateContent(subjectName);
+        window.subjects.fetchContent(subjectName);
 
         function assertion() {
             return eventFired;
@@ -55,18 +55,17 @@ describe("View Subject component", () => {
         document.body.appendChild(wikiViewSubject);
 
         // "not empty" means a top-level header with subject name
-        console.log(wikiViewSubject.querySelector("h1").textContent);
         assert(wikiViewSubject.querySelector("h1").textContent == subjectName);
     });
 
     test("content not found shows error", async () => {
         let subjectName = "not a real subject";
         let eventFired = false;
-        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
+        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
             eventFired = true;
         });
 
-        window.subjects.updateContent(subjectName);
+        window.subjects.fetchContent(subjectName);
 
         function assertion() {
             return eventFired;
@@ -85,6 +84,40 @@ describe("View Subject component", () => {
         wikiViewSubject.setAttribute("subj", encodeURIComponent(subjectName));
         document.body.appendChild(wikiViewSubject);
 
-        assert(wikiViewSubject.textContent.includes("Error"));
+        assert(wikiViewSubject.textContent.includes("not found"));
+    });
+
+    test("shows updating before content available", async () => {
+        let subjectName = "Pro in antistite ferinos";
+
+        let wikiViewSubject = document.createElement("wiki-view-subject");
+        wikiViewSubject.setAttribute("subj", encodeURIComponent(subjectName));
+        document.body.appendChild(wikiViewSubject);
+
+        assert(wikiViewSubject.textContent.includes("Updating"));
+
+        window.subjects.fetchContent(subjectName);
+
+        let eventFired = false;
+        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
+            eventFired = true;
+        });
+
+        function assertion() {
+            return eventFired;
+        }
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion());
+
+        wikiViewSubject.render();
+
+        assert(!wikiViewSubject.textContent.includes("Updating"));
     });
 });
