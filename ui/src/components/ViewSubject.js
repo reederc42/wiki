@@ -1,8 +1,6 @@
-import { signal, component } from "reefjs";
+import { render } from "reefjs";
 import { marked } from "marked";
-import { subjects, signal as subjectsSignal } from "../store/subjects";
-
-const errorSignal = "view-subject-error";
+import { subjects } from "../store/subjects";
 
 class ViewSubject extends HTMLElement {
     constructor() {
@@ -10,27 +8,37 @@ class ViewSubject extends HTMLElement {
     }
 
     connectedCallback() {
-        const subject = decodeURIComponent(this.getAttribute("subj"));
-        const err = signal(undefined, errorSignal);
-        subjects.updateContent(subject).catch((error) => {
-            err.value = error;
-        });
-        this.component = component(
-            this,
-            function () {
-                if (err.value !== undefined) {
-                    return `Error getting '${subject}': ${err.value.message}`;
-                }
-                return marked.parse(subjects.get(subject).content, {
-                    async: false,
-                });
-            },
-            { signals: [subjectsSignal, errorSignal] },
+        this.subjectProp = this.getAttribute("subj");
+        let subjectName = decodeURIComponent(this.subjectProp);
+        let root = this;
+
+        this.render = function () {
+            let subject = subjects.get(subjectName);
+            if (subject === undefined) {
+                render(root, `Updating ${subjectName}...`);
+            } else if (subject.err !== undefined) {
+                render(
+                    root,
+                    `Error updating ${subjectName}: ${subject.err.message}`,
+                );
+            } else {
+                render(root, marked.parse(subject.content, { async: false }));
+            }
+        };
+
+        this.render();
+
+        document.addEventListener(
+            "reef:signal-" + this.subjectProp,
+            this.render,
         );
     }
 
     disconnectedCallback() {
-        this.component.stop();
+        document.removeEventListener(
+            "reef:signal-" + this.subjectProp,
+            this.render,
+        );
     }
 }
 customElements.define("wiki-view-subject", ViewSubject);

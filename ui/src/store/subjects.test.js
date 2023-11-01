@@ -91,14 +91,35 @@ describe("subjects store", () => {
     });
 
     test("content after update returns non-empty string", async () => {
-        assert(window.subjects.get("one") === undefined);
+        let subjectName = "Pro in antistite ferinos";
+        assert(window.subjects.get(subjectName) === undefined);
 
-        window.subjects.updateContent("Pro in antistite ferinos");
+        window.subjects.updateContent(subjectName);
 
         function assertion() {
-            return (
-                window.subjects.get("Pro in antistite ferinos").content.length > 0
-            );
+            return window.subjects.get(subjectName).content.length > 0;
+        }
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion());
+    });
+
+    test("not found content sets error", async () => {
+        let subjectName = "not a subject";
+        assert(window.subjects.get(subjectName) === undefined);
+
+        window.subjects.updateContent(subjectName);
+
+        function assertion() {
+            return window.subjects
+                .get(subjectName)
+                .err.message.includes("not found");
         }
         await waitFor(
             () => {

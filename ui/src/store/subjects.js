@@ -3,17 +3,21 @@ import { subject as subjectAPI } from "../api/mock/subject";
 
 export const signal = "subjects";
 
-function makeSubject(content) {
+function makeSubject(content, err) {
     let s = {
         content: "",
         rendered: false,
         synced: false,
-    }
+        err: undefined,
+    };
     if (content != "") {
-        s.content = content
-        s.synced = true
+        s.content = content;
+        s.synced = true;
     }
-    return s
+    if (err !== undefined) {
+        s.err = err;
+    }
+    return s;
 }
 
 const subjectStore = store(
@@ -30,18 +34,19 @@ const subjectStore = store(
             // add new names to m
             for (const e of n) {
                 if (!m.has(e[0])) {
-                    m.set(e[0], makeSubject(""));
+                    m.set(e[0], makeSubject("", undefined));
                 }
             }
         },
 
-        updateContent(m, subject, content) {
+        updateContent(m, subject, content, err) {
             if (!m.has(subject)) {
-                m.set(subject, makeSubject(content));
+                m.set(subject, makeSubject(content, err));
             } else {
                 let s = m.get(subject);
                 s.content = content;
                 s.synced = true;
+                s.err = err;
             }
         },
     },
@@ -60,9 +65,14 @@ export const subjects = {
     // updateContent asynchrously updates the content for a subject, emtting
     // signal and updating store on success
     updateContent(subject) {
-        return subjectAPI.get(subject).then((content) => {
-            subjectStore.updateContent(subject, content);
-        });
+        return subjectAPI
+            .get(subject)
+            .then((content) => {
+                subjectStore.updateContent(subject, content, undefined);
+            })
+            .catch((err) => {
+                subjectStore.updateContent(subject, "", err);
+            });
     },
 
     // list returns cached list of subject names

@@ -13,7 +13,7 @@ class EditSubject extends HTMLElement {
         this.editor = ace.edit(this.querySelector("#editor"));
         this.setContent();
         window.addEventListener("reef:signal-" + subjectsSignal, () => {
-            this.setContent()
+            this.setContent();
         });
     }
 
