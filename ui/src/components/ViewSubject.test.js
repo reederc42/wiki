@@ -31,7 +31,7 @@ describe("View Subject component", () => {
     test("content is not empty after update", async () => {
         let subjectName = "Pro in antistite ferinos";
         let eventFired = false;
-        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
+        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
             eventFired = true;
         });
 
@@ -61,7 +61,7 @@ describe("View Subject component", () => {
     test("content not found shows error", async () => {
         let subjectName = "not a real subject";
         let eventFired = false;
-        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
+        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
             eventFired = true;
         });
 
@@ -99,7 +99,7 @@ describe("View Subject component", () => {
         window.subjects.updateContent(subjectName);
 
         let eventFired = false;
-        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
+        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
             eventFired = true;
         });
 

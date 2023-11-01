@@ -8,13 +8,13 @@ class Subject extends HTMLElement {
     }
 
     connectedCallback() {
-        let viewTab, editTab, viewer;
+        let viewTab, editTab, viewer, editor;
         let subjectProp = this.getAttribute("subj");
         let subjectName = decodeURIComponent(subjectProp);
 
-        let subject = signal(null, subjectProp);
+        let fetched = signal(null, subjectProp);
         subjectStore.updateContent(subjectName).then(() => {
-            subject.value = subjectStore.get(subjectName);
+            fetched.value = true;
         });
 
         setTitle("view", subjectName);
@@ -42,6 +42,13 @@ class Subject extends HTMLElement {
                     editTab.style.display = "none";
 
                     setTitle("view", subjectName);
+
+                    let subject = subjectStore.get(subjectName);
+                    console.log(subject);
+                    if (subject !== undefined && !subject.rendered) {
+                        subject.content = editor.getValue();
+                        viewer.render();
+                    }
                 },
                 edit: () => {
                     viewTab.style.display = "none";
@@ -55,6 +62,7 @@ class Subject extends HTMLElement {
         viewTab = this.querySelector("#view");
         editTab = this.querySelector("#edit");
         viewer = viewTab.querySelector("wiki-view-subject");
+        editor = editTab.querySelector("wiki-edit-subject");
 
         for (const b of this.querySelectorAll("button")) {
             b.removeAttribute("disabled");

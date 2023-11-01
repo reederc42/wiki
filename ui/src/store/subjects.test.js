@@ -29,7 +29,7 @@ describe("subjects store", () => {
 
     test("update list emits event", async () => {
         let eventFired = false;
-        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
+        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
             eventFired = true;
         });
 
@@ -70,7 +70,7 @@ describe("subjects store", () => {
 
     test("update content emits event", async () => {
         let eventFired = false;
-        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
+        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
             eventFired = true;
         });
 
@@ -130,5 +130,34 @@ describe("subjects store", () => {
             { container: document },
         );
         assert(assertion());
+    });
+
+    test("get returns mutable reference", async () => {
+        let subjectName = "Pro in antistite ferinos";
+
+        window.subjects.updateContent(subjectName);
+
+        function assertion() {
+            return window.subjects.get(subjectName).content.length > 0;
+        }
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion());
+
+        assert(
+            window.subjects.get(subjectName) ===
+                window.subjects.get(subjectName),
+        );
+
+        let subject = window.subjects.get(subjectName);
+        subject.content = "some test value";
+
+        assert(subject.content == window.subjects.get(subjectName).content);
     });
 });

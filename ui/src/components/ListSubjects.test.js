@@ -30,7 +30,7 @@ describe("List Subjects component", () => {
 
     test("creating element updates subjects", async () => {
         let eventFired = false;
-        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
+        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
             eventFired = true;
         });
 
@@ -53,7 +53,7 @@ describe("List Subjects component", () => {
 
     test("shows all subjects in links", async () => {
         let eventFired = false;
-        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
+        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
             eventFired = true;
         });
 
@@ -82,7 +82,7 @@ describe("List Subjects component", () => {
     test("subjects are split into n columns", async () => {
         const columns = 3;
         let eventFired = false;
-        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
+        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
             eventFired = true;
         });
 
