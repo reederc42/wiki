@@ -22,13 +22,8 @@ class ViewSubject extends HTMLElement {
                     `Error updating ${subjectName}: ${subject.err.message}`,
                 );
             } else {
-                console.log("rendering subject");
-                console.log(subject);
                 render(root, marked.parse(subject.content, { async: false }));
                 subject.rendered = true;
-                console.log(
-                    subjects.get(subjectName) === subjects.get(subjectName),
-                );
             }
         };
 

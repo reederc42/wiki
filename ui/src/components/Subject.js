@@ -44,7 +44,6 @@ class Subject extends HTMLElement {
                     setTitle("view", subjectName);
 
                     let subject = subjectStore.get(subjectName);
-                    console.log(subject);
                     if (subject !== undefined && !subject.rendered) {
                         subject.content = editor.getValue();
                         viewer.render();
