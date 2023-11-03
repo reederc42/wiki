@@ -63,6 +63,7 @@ const validSubjectRE = /\/wiki\/.+/;
 // a valid path satisfies one of these conditions:
 //   1. root ("/")
 //   2. a subject ("/wiki/.*")
+//   3. a new subject "/wiki-new"
 function validatePath(path) {
     if (path == "/") {
         return true;

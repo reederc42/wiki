@@ -23,7 +23,7 @@ class Router extends HTMLElement {
                     <wiki-list-subjects></wiki-list-subjects>
                 `
                         : `
-                    <wiki-subject subj=${getSubject()}></wiki-subject>
+                    <wiki-subject subj="${getSubject()}"></wiki-subject>
                 `
                 }
             `;
