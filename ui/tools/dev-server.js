@@ -34,9 +34,9 @@ app.get("/wiki/*", (_, res) => {
     res.sendFile(`${dist}/index.html`);
 });
 
-app.get("/wiki-new-subject", (_, res) => {
+app.get("/wiki-new", (_, res) => {
     res.sendFile(`${dist}/index.html`);
-})
+});
 
 let listener = app.listen(port).address();
 let ifaces = ["lo0", "en0", "lo", "eth0"];

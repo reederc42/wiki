@@ -8,13 +8,14 @@ class Subject extends HTMLElement {
     }
 
     connectedCallback() {
-        let viewTab, editTab, viewer, editor;
+        let viewTab, editTab, viewer, editor, saveButton, subject;
         let subjectProp = this.getAttribute("subj");
         let subjectName = decodeURIComponent(subjectProp);
 
         let fetched = signal(null, subjectProp);
         subjectStore.fetchContent(subjectName).then(() => {
             fetched.value = true;
+            subject = subjectStore.get(subjectName);
         });
 
         setTitle("view", subjectName);
@@ -56,6 +57,14 @@ class Subject extends HTMLElement {
 
                     setTitle("edit", subjectName);
                 },
+                save: () => {
+                    subject.content = editor.getValue();
+                    saveButton.setAttribute("disabled", null);
+                    subjectStore.pushContent(subjectName).catch((err) => {
+                        console.error(err);
+                        saveButton.removeAttribute("disabled");
+                    });
+                },
             },
         );
 
@@ -64,12 +73,28 @@ class Subject extends HTMLElement {
         viewer = viewTab.querySelector("wiki-view-subject");
         editor = editTab.querySelector("wiki-edit-subject");
 
-        for (const b of this.querySelectorAll("button")) {
-            b.removeAttribute("disabled");
-        }
+        // enable view and edit buttons, bind save button
+        const buttons = this.querySelectorAll("button");
+        buttons[0].removeAttribute("disabled");
+        buttons[1].removeAttribute("disabled");
+        saveButton = buttons[2];
+
+        this.enableSave = function () {
+            if (!subject.synced) {
+                saveButton.removeAttribute("disabled");
+            }
+        };
+        document.addEventListener(
+            "wiki:signal-subject-edited",
+            this.enableSave,
+        );
     }
 
     disconnectedCallback() {
+        document.removeEventListener(
+            "wiki:signal-subject-edited",
+            this.enableSave,
+        );
         setTitle();
     }
 }

@@ -69,5 +69,9 @@ function validatePath(path) {
         return true;
     }
 
+    if (path == "/wiki-new") {
+        return true;
+    }
+
     return validSubjectRE.test(path);
 }

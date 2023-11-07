@@ -6,21 +6,11 @@ const event = new Event("wiki:signal-" + signal, {
     bubbles: true,
 });
 
-function makeSubject(content, err) {
-    let s = {
-        content: "",
-        rendered: false,
-        synced: false,
-        err: undefined,
-    };
-    if (content != "") {
-        s.content = content;
-        s.synced = true;
-    }
-    if (err !== undefined) {
-        s.err = err;
-    }
-    return s;
+function Subject(content="", err=undefined) {
+    this.content = content;
+    this.err = err;
+    this.rendered = false;
+    this.synced = false;
 }
 
 const store = new Map();
@@ -36,7 +26,7 @@ function updateList(names) {
     // add new names
     for (const e of m) {
         if (!store.has(e[0])) {
-            store.set(e[0], makeSubject("", undefined));
+            store.set(e[0], new Subject());
         }
     }
     document.dispatchEvent(event);
@@ -44,7 +34,7 @@ function updateList(names) {
 
 function updateContent(subject, content, err) {
     if (!store.has(subject)) {
-        store.set(subject, makeSubject(content, err));
+        store.set(subject, new Subject(content, err));
     } else {
         let s = store.get(subject);
         s.content = content;
@@ -102,7 +92,7 @@ export const subjects = {
 
     // list returns cached list of subject names
     list() {
-        return Array.from(store.keys());
+        return Array.from(store.keys()).sort();
     },
 
     // get returns a reference to cached subject object

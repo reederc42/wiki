@@ -30,13 +30,6 @@ class EditSubject extends HTMLElement {
         editor.getSession().setMode("ace/mode/markdown");
         editor.setTheme("ace/theme/github");
 
-        editor.on("change", () => {
-            if (subject !== undefined) {
-                subject.rendered = false;
-            }
-            document.dispatchEvent(event);
-        });
-
         this.updateContent = function () {
             subject = subjects.get(subjectName);
             if (subject !== undefined && subject.err === undefined) {
@@ -45,6 +38,14 @@ class EditSubject extends HTMLElement {
         };
 
         this.updateContent();
+
+        editor.on("change", () => {
+            if (subject !== undefined) {
+                subject.rendered = false;
+                subject.synced = false;
+            }
+            document.dispatchEvent(event);
+        });
 
         document.addEventListener(
             "reef:signal-" + this.subjectProp,
