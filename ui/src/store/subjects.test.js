@@ -13,10 +13,11 @@ describe("subjects store", () => {
         document = dom.window.document;
 
         dom.addScript(`
-            import { subjects, signal } from "../src/store/subjects";
+            import { subjects, signal, Subject } from "../src/store/subjects";
 
             window.subjects = subjects;
             window.subjectsSignal = signal;
+            window.Subject = Subject;
         `);
     });
 
@@ -220,5 +221,45 @@ describe("subjects store", () => {
             { container: document },
         );
         assert(assertion2());
+    });
+
+    test("creating subject that already exists fails", async () => {
+        let subjectName = "Pro in antistite ferinos";
+
+        let eventFired = false;
+        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
+            eventFired = true;
+        });
+
+        window.subjects.updateList();
+
+        function assertion() {
+            return eventFired;
+        }
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion());
+
+        assert(
+            window.subjects
+                .create(subjectName, new window.Subject())
+                .message.includes("already exists"),
+        );
+    });
+
+    test("creating new subject allows retrieval", async () => {
+        let subjectName = "brand new subject";
+        let newSubject = new window.Subject();
+
+        let err = window.subjects.create(subjectName, newSubject);
+        assert(err == null);
+
+        assert(window.subjects.get(subjectName) === newSubject);
     });
 });

@@ -6,7 +6,7 @@ const event = new Event("wiki:signal-" + signal, {
     bubbles: true,
 });
 
-function Subject(content = "") {
+export function Subject(content = "") {
     this.content = content;
     this.rendered = false;
     this.synced = false;
@@ -53,22 +53,22 @@ export const subjects = {
 
     // fetchContent asynchronously updates the content for a subject, emtting
     // signal and updating store on success
-    fetchContent(subject) {
-        return subjectAPI.get(subject).then((content) => {
-            updateContent(subject, content);
+    fetchContent(name) {
+        return subjectAPI.get(name).then((content) => {
+            updateContent(name, content);
         });
     },
 
     // pushContent asynchronously saves the current content to backend, emitting
     // signal and updating store on success
-    pushContent(subject) {
-        let s = store.get(subject);
+    pushContent(name) {
+        let s = store.get(name);
         if (s === undefined) {
             return new Promise((resolve, reject) => {
                 reject(new Error("subject does not exist"));
             });
         }
-        return subjectAPI.put(subject, s.content).then(() => {
+        return subjectAPI.put(name, s.content).then(() => {
             s.synced = true;
         });
     },
@@ -79,7 +79,16 @@ export const subjects = {
     },
 
     // get returns a reference to cached subject object
-    get(subject) {
-        return store.get(subject);
+    get(name) {
+        return store.get(name);
+    },
+
+    // create creates a new subject
+    create(name, subject) {
+        if (store.has(name)) {
+            return new Error("subject already exists");
+        }
+        store.set(name, subject);
+        return null;
     },
 };

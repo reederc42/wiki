@@ -38,7 +38,7 @@ class Subject extends HTMLElement {
         render(
             this,
             `
-            <p>Fetching ${this.subjectName}...</p>
+            <p>Fetching "${this.subjectName}"...</p>
         `,
         );
     }
@@ -118,7 +118,7 @@ class Subject extends HTMLElement {
         render(
             this,
             `
-            <p>Could not fetch ${this.subjectName}: ${err}</p>
+            <p>Could not fetch "${this.subjectName}": ${err}</p>
         `,
         );
     }
