@@ -1,6 +1,6 @@
 import { render } from "reefjs";
 import { marked } from "marked";
-import { subjects } from "../store/subjects";
+import { extract } from "../store/inject";
 
 class ViewSubject extends HTMLElement {
     constructor() {
@@ -8,38 +8,13 @@ class ViewSubject extends HTMLElement {
     }
 
     connectedCallback() {
-        this.subjectProp = this.getAttribute("subj");
-        let subjectName = decodeURIComponent(this.subjectProp);
-        let root = this;
-
-        this.render = function () {
-            let subject = subjects.get(subjectName);
-            if (subject === undefined) {
-                render(root, `Updating ${subjectName}...`);
-            } else if (subject.err !== undefined) {
-                render(
-                    root,
-                    `Error updating ${subjectName}: ${subject.err.message}`,
-                );
-            } else {
-                render(root, marked.parse(subject.content, { async: false }));
-                subject.rendered = true;
-            }
-        };
-
+        this.subject = extract(this.id);
         this.render();
-
-        document.addEventListener(
-            "reef:signal-" + this.subjectProp,
-            this.render,
-        );
     }
 
-    disconnectedCallback() {
-        document.removeEventListener(
-            "reef:signal-" + this.subjectProp,
-            this.render,
-        );
+    render() {
+        render(this, marked.parse(this.subject.content));
+        this.subject.rendered = true;
     }
 }
 customElements.define("wiki-view-subject", ViewSubject);

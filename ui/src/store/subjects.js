@@ -6,9 +6,8 @@ const event = new Event("wiki:signal-" + signal, {
     bubbles: true,
 });
 
-function Subject(content="", err=undefined) {
+function Subject(content = "") {
     this.content = content;
-    this.err = err;
     this.rendered = false;
     this.synced = false;
 }
@@ -32,14 +31,13 @@ function updateList(names) {
     document.dispatchEvent(event);
 }
 
-function updateContent(subject, content, err) {
+function updateContent(subject, content) {
     if (!store.has(subject)) {
-        store.set(subject, new Subject(content, err));
+        store.set(subject, new Subject(content));
     } else {
         let s = store.get(subject);
         s.content = content;
         s.synced = true;
-        s.err = err;
     }
     document.dispatchEvent(event);
 }
@@ -56,14 +54,9 @@ export const subjects = {
     // fetchContent asynchronously updates the content for a subject, emtting
     // signal and updating store on success
     fetchContent(subject) {
-        return subjectAPI
-            .get(subject)
-            .then((content) => {
-                updateContent(subject, content, undefined);
-            })
-            .catch((err) => {
-                updateContent(subject, "", err);
-            });
+        return subjectAPI.get(subject).then((content) => {
+            updateContent(subject, content);
+        });
     },
 
     // pushContent asynchronously saves the current content to backend, emitting
@@ -80,14 +73,9 @@ export const subjects = {
                 reject(s.err);
             });
         }
-        return subjectAPI
-            .put(subject, s.content)
-            .then(() => {
-                s.synced = true;
-            })
-            .catch((err) => {
-                s.err = err;
-            });
+        return subjectAPI.put(subject, s.content).then(() => {
+            s.synced = true;
+        });
     },
 
     // list returns cached list of subject names

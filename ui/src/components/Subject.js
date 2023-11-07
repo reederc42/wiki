@@ -1,5 +1,6 @@
-import { signal, render } from "reefjs";
+import { render } from "reefjs";
 import { setTitle } from "../store/title";
+import { inject } from "../store/inject";
 import { subjects as subjectStore } from "../store/subjects";
 
 class Subject extends HTMLElement {
@@ -8,19 +9,48 @@ class Subject extends HTMLElement {
     }
 
     connectedCallback() {
-        let viewTab, editTab, viewer, editor, saveButton, subject;
         let subjectProp = this.getAttribute("subj");
-        let subjectName = decodeURIComponent(subjectProp);
+        this.subjectName = decodeURIComponent(subjectProp);
 
-        let fetched = signal(null, subjectProp);
-        subjectStore.fetchContent(subjectName).then(() => {
-            fetched.value = true;
-            subject = subjectStore.get(subjectName);
-        });
+        // get current subject
+        this.subject = subjectStore.get(this.subjectName);
 
-        setTitle("view", subjectName);
+        setTitle("view", this.subjectName);
 
-        // buttons start disabled until all elements can be bound to a property
+        // if subject is undefined, fetch it and display updating
+        if (this.subject === undefined || this.subject.content.length == 0) {
+            this.showUpdating();
+            subjectStore
+                .fetchContent(this.subjectName)
+                .then(() => {
+                    this.subject = subjectStore.get(this.subjectName);
+                    this.showSubject();
+                })
+                .catch((err) => {
+                    this.showError(err);
+                });
+        } else {
+            this.showSubject();
+        }
+    }
+
+    showUpdating() {
+        render(
+            this,
+            `
+            <p>Fetching ${this.subjectName}...</p>
+        `,
+        );
+    }
+
+    showSubject() {
+        let viewTab, editTab, viewer, editor;
+        let el = this;
+
+        inject("viewer", this.subject);
+        inject("editor", this.subject);
+
+        // buttons start disabled until all elements are bound
         render(
             this,
             `
@@ -30,11 +60,11 @@ class Subject extends HTMLElement {
                 <button onclick="save()" disabled>Save</button>
             </div>
             <div id="view">
-                <wiki-view-subject subj="${subjectProp}">
+                <wiki-view-subject id="viewer">
                 </wiki-view-subject>
             </div>
             <div id="edit" style="display: none;">
-                <wiki-edit-subject subj="${subjectProp}">
+                <wiki-edit-subject id="editor">
                 </wiki-edit-subject>
             </div>
         `,
@@ -43,11 +73,10 @@ class Subject extends HTMLElement {
                     viewTab.style.display = "inline";
                     editTab.style.display = "none";
 
-                    setTitle("view", subjectName);
+                    setTitle("view", el.subjectName);
 
-                    let subject = subjectStore.get(subjectName);
-                    if (subject !== undefined && !subject.rendered) {
-                        subject.content = editor.getValue();
+                    if (!el.subject.rendered) {
+                        el.subject.content = editor.getValue();
                         viewer.render();
                     }
                 },
@@ -55,14 +84,14 @@ class Subject extends HTMLElement {
                     viewTab.style.display = "none";
                     editTab.style.display = "inline";
 
-                    setTitle("edit", subjectName);
+                    setTitle("edit", el.subjectName);
                 },
                 save: () => {
-                    subject.content = editor.getValue();
-                    saveButton.setAttribute("disabled", null);
-                    subjectStore.pushContent(subjectName).catch((err) => {
+                    el.subject.content = editor.getValue();
+                    el.saveButton.setAttribute("disabled", null);
+                    subjectStore.pushContent(el.subjectName).catch((err) => {
                         console.error(err);
-                        saveButton.removeAttribute("disabled");
+                        el.saveButton.removeAttribute("disabled");
                     });
                 },
             },
@@ -70,30 +99,43 @@ class Subject extends HTMLElement {
 
         viewTab = this.querySelector("#view");
         editTab = this.querySelector("#edit");
-        viewer = viewTab.querySelector("wiki-view-subject");
-        editor = editTab.querySelector("wiki-edit-subject");
+        viewer = viewTab.querySelector("#viewer");
+        editor = editTab.querySelector("#editor");
 
         // enable view and edit buttons, bind save button
         const buttons = this.querySelectorAll("button");
         buttons[0].removeAttribute("disabled");
         buttons[1].removeAttribute("disabled");
-        saveButton = buttons[2];
+        this.saveButton = buttons[2];
 
-        this.enableSave = function () {
-            if (!subject.synced) {
-                saveButton.removeAttribute("disabled");
-            }
-        };
         document.addEventListener(
             "wiki:signal-subject-edited",
-            this.enableSave,
+            this.enableSave(),
         );
+    }
+
+    showError(err) {
+        render(
+            this,
+            `
+            <p>Could not fetch ${this.subjectName}: ${err}</p>
+        `,
+        );
+    }
+
+    enableSave() {
+        let el = this;
+        return function () {
+            if (!el.subject.synced) {
+                el.saveButton.removeAttribute("disabled");
+            }
+        };
     }
 
     disconnectedCallback() {
         document.removeEventListener(
             "wiki:signal-subject-edited",
-            this.enableSave,
+            this.enableSave(),
         );
         setTitle();
     }
