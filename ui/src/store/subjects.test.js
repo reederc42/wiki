@@ -110,16 +110,16 @@ describe("subjects store", () => {
         assert(assertion());
     });
 
-    test("not found content sets error", async () => {
+    test("not found content rejects promise", async () => {
         let subjectName = "not a subject";
-        assert(window.subjects.get(subjectName) === undefined);
 
-        window.subjects.fetchContent(subjectName);
+        let err = new Error();
+        window.subjects.fetchContent(subjectName).catch((e) => {
+            err = e;
+        });
 
         function assertion() {
-            return window.subjects
-                .get(subjectName)
-                .err.message.includes("not found");
+            return err.message.includes("not found");
         }
         await waitFor(
             () => {
@@ -179,49 +179,6 @@ describe("subjects store", () => {
             { container: document },
         );
         assert(assertion());
-    });
-
-    test("pushing subject with error fails", async () => {
-        let subjectName = "not a real subject";
-        let eventFired = false;
-        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
-            eventFired = true;
-        });
-
-        window.subjects.fetchContent(subjectName);
-
-        function assertion1() {
-            return eventFired;
-        }
-        await waitFor(
-            () => {
-                if (!assertion1()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion1());
-
-        assert(window.subjects.get(subjectName).err !== undefined);
-
-        let err;
-        window.subjects.pushContent(subjectName).catch((e) => {
-            err = e;
-        });
-
-        function assertion2() {
-            return err !== undefined;
-        }
-        await waitFor(
-            () => {
-                if (!assertion2()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion2());
     });
 
     test("pushing new content sets synced", async () => {

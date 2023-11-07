@@ -68,11 +68,6 @@ export const subjects = {
                 reject(new Error("subject does not exist"));
             });
         }
-        if (s.err !== undefined) {
-            return new Promise((resolve, reject) => {
-                reject(s.err);
-            });
-        }
         return subjectAPI.put(subject, s.content).then(() => {
             s.synced = true;
         });

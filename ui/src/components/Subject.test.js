@@ -13,9 +13,10 @@ describe("Subject component", () => {
         document = dom.window.document;
 
         dom.addScript(`
-            import { signal } from "../src/store/subjects";
+            import { subjects, signal } from "../src/store/subjects";
             import "../src/components/Subject";
 
+            window.subjects = subjects;
             window.subjectsSignal = signal;
         `);
     });
@@ -27,9 +28,27 @@ describe("Subject component", () => {
         });
     });
 
-    test("subject inits to view and switches to edit and back to view", () => {
+    test("subject inits to view and switches to edit and back to view", async () => {
+        let subjectName = "Pro in antistite ferinos";
+        let eventFired = false;
+        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
+            eventFired = true;
+        });
         let wikiSubject = document.createElement("wiki-subject");
+        wikiSubject.setAttribute("subj", encodeURIComponent(subjectName));
         document.body.appendChild(wikiSubject);
+
+        function assertion() {
+            return eventFired;
+        }
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
 
         let buttons = wikiSubject.querySelectorAll("button");
         let viewButton = buttons[0];
@@ -51,8 +70,8 @@ describe("Subject component", () => {
 
     test("title contains subject name", async () => {
         let subjectName = "Pro in antistite ferinos";
-        let eventFired = true;
-        window.addEventListener("reef:signal-" + window.subjectsSignal, () => {
+        let eventFired = false;
+        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
             eventFired = true;
         });
 
@@ -74,5 +93,50 @@ describe("Subject component", () => {
         assert(assertion());
 
         assert(document.title.includes(subjectName));
+    });
+
+    test("content not found shows error", async () => {
+        let subjectName = "not a real subject";
+
+        let wikiSubject = document.createElement("wiki-subject");
+        wikiSubject.setAttribute("subj", encodeURIComponent(subjectName));
+        document.body.appendChild(wikiSubject);
+
+        function assertion() {
+            let p = wikiSubject.querySelector("p");
+            return p && p.textContent.includes("not found");
+        }
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion());
+    });
+
+    test("shows fetching before content available", async () => {
+        let subjectName = "Pro in antistite ferinos";
+
+        let wikiSubject = document.createElement("wiki-subject");
+        wikiSubject.setAttribute("subj", encodeURIComponent(subjectName));
+        document.body.appendChild(wikiSubject);
+
+        assert(wikiSubject.textContent.includes("Fetching"));
+
+        function assertion() {
+            return !wikiSubject.querySelector("p");
+        }
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion());
     });
 });
