@@ -6,21 +6,10 @@ const event = new Event("wiki:signal-" + signal, {
     bubbles: true,
 });
 
-function makeSubject(content, err) {
-    let s = {
-        content: "",
-        rendered: false,
-        synced: false,
-        err: undefined,
-    };
-    if (content != "") {
-        s.content = content;
-        s.synced = true;
-    }
-    if (err !== undefined) {
-        s.err = err;
-    }
-    return s;
+export function Subject(content = "") {
+    this.content = content;
+    this.rendered = false;
+    this.synced = false;
 }
 
 const store = new Map();
@@ -36,20 +25,21 @@ function updateList(names) {
     // add new names
     for (const e of m) {
         if (!store.has(e[0])) {
-            store.set(e[0], makeSubject("", undefined));
+            store.set(e[0], new Subject());
         }
     }
     document.dispatchEvent(event);
 }
 
-function updateContent(subject, content, err) {
+function updateContent(subject, content) {
     if (!store.has(subject)) {
-        store.set(subject, makeSubject(content, err));
+        let s = new Subject(content);
+        s.synced = true;
+        store.set(subject, s);
     } else {
         let s = store.get(subject);
         s.content = content;
         s.synced = true;
-        s.err = err;
     }
     document.dispatchEvent(event);
 }
@@ -65,48 +55,42 @@ export const subjects = {
 
     // fetchContent asynchronously updates the content for a subject, emtting
     // signal and updating store on success
-    fetchContent(subject) {
-        return subjectAPI
-            .get(subject)
-            .then((content) => {
-                updateContent(subject, content, undefined);
-            })
-            .catch((err) => {
-                updateContent(subject, "", err);
-            });
+    fetchContent(name) {
+        return subjectAPI.get(name).then((content) => {
+            updateContent(name, content);
+        });
     },
 
     // pushContent asynchronously saves the current content to backend, emitting
     // signal and updating store on success
-    pushContent(subject) {
-        let s = store.get(subject);
+    pushContent(name) {
+        let s = store.get(name);
         if (s === undefined) {
             return new Promise((resolve, reject) => {
                 reject(new Error("subject does not exist"));
             });
         }
-        if (s.err !== undefined) {
-            return new Promise((resolve, reject) => {
-                reject(s.err);
-            });
-        }
-        return subjectAPI
-            .put(subject, s.content)
-            .then(() => {
-                s.synced = true;
-            })
-            .catch((err) => {
-                s.err = err;
-            });
+        return subjectAPI.put(name, s.content).then(() => {
+            s.synced = true;
+        });
     },
 
     // list returns cached list of subject names
     list() {
-        return Array.from(store.keys());
+        return Array.from(store.keys()).sort();
     },
 
     // get returns a reference to cached subject object
-    get(subject) {
-        return store.get(subject);
+    get(name) {
+        return store.get(name);
+    },
+
+    // create creates a new subject
+    create(name, subject) {
+        if (store.has(name)) {
+            return new Error("subject already exists");
+        }
+        store.set(name, subject);
+        return null;
     },
 };

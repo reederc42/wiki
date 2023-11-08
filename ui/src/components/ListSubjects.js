@@ -22,7 +22,11 @@ class ListSubjects extends HTMLElement {
                     return `Error listing subjects: ${err.value.message}`;
                 }
                 const subjectList = subjects.list();
-                return subjectsTable(subjectList);
+                return (
+                    `<div><a href="/wiki-new" onclick="navigate()">new</a></div><div>` +
+                    subjectsTable(subjectList) +
+                    "</div>"
+                );
             }
             render(root, template(), { navigate });
         };

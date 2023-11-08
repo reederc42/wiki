@@ -1,6 +1,11 @@
-import { signal, render } from "reefjs";
+import { render } from "reefjs";
 import { setTitle } from "../store/title";
-import { subjects as subjectStore } from "../store/subjects";
+import { inject } from "../store/inject";
+import {
+    subjects as subjectStore,
+    Subject as StoreSubject,
+} from "../store/subjects";
+import { router } from "../store/router";
 
 class Subject extends HTMLElement {
     constructor() {
@@ -8,18 +13,71 @@ class Subject extends HTMLElement {
     }
 
     connectedCallback() {
-        let viewTab, editTab, viewer, editor;
         let subjectProp = this.getAttribute("subj");
-        let subjectName = decodeURIComponent(subjectProp);
+        this.subjectName =
+            subjectProp != null ? decodeURIComponent(subjectProp) : "";
+        this.isNew = this.hasAttribute("new");
 
-        let fetched = signal(null, subjectProp);
-        subjectStore.fetchContent(subjectName).then(() => {
-            fetched.value = true;
-        });
+        if (this.subjectName != "") {
+            this.subject = subjectStore.get(this.subjectName);
+            if (
+                this.subject === undefined ||
+                this.subject.content.length == 0
+            ) {
+                this.showFetching();
+                subjectStore
+                    .fetchContent(this.subjectName)
+                    .then(() => {
+                        if (this.isNew) {
+                            // existing subject has new attribute, redirect to existing
+                            router.navigate("/wiki/" + subjectProp);
+                            this.isNew = false;
+                        }
+                        this.subject = subjectStore.get(this.subjectName);
+                        this.showSubject();
+                    })
+                    .catch((err) => {
+                        if (err.message.includes("not found") && this.isNew) {
+                            this.subject = new StoreSubject();
+                            this.subject.content = "# " + this.subjectName;
+                            this.showSubject();
+                        } else {
+                            this.showError(err);
+                        }
+                    });
+            } else {
+                if (this.isNew) {
+                    // existing subject has new attribute, redirect to existing
+                    router.navigate("/wiki/" + subjectProp);
+                    this.isNew = false;
+                }
+                this.showSubject();
+            }
+        } else {
+            this.subject = new StoreSubject();
+            this.showSubject();
+        }
+    }
 
-        setTitle("view", subjectName);
+    showFetching() {
+        render(
+            this,
+            `
+            <p>Fetching "${this.subjectName}"...</p>
+        `,
+        );
+    }
 
-        // buttons start disabled until all elements can be bound to a property
+    showSubject() {
+        let viewTab, editTab, viewer, editor;
+        let el = this;
+
+        inject("viewer", this.subject);
+        inject("editor", this.subject);
+
+        setTitle(this.isNew ? "edit" : "view", this.subjectName);
+
+        // buttons start disabled until all elements are bound
         render(
             this,
             `
@@ -28,12 +86,12 @@ class Subject extends HTMLElement {
                 <button onclick="edit()" disabled>Edit</button>
                 <button onclick="save()" disabled>Save</button>
             </div>
-            <div id="view">
-                <wiki-view-subject subj="${subjectProp}">
+            <div id="view" style="display: ${this.isNew ? "none" : "inline"};">
+                <wiki-view-subject id="viewer">
                 </wiki-view-subject>
             </div>
-            <div id="edit" style="display: none;">
-                <wiki-edit-subject subj="${subjectProp}">
+            <div id="edit" style="display: ${!this.isNew ? "none" : "inline"};">
+                <wiki-edit-subject id="editor">
                 </wiki-edit-subject>
             </div>
         `,
@@ -42,11 +100,10 @@ class Subject extends HTMLElement {
                     viewTab.style.display = "inline";
                     editTab.style.display = "none";
 
-                    setTitle("view", subjectName);
+                    setTitle("view", el.subjectName);
 
-                    let subject = subjectStore.get(subjectName);
-                    if (subject !== undefined && !subject.rendered) {
-                        subject.content = editor.getValue();
+                    if (!el.subject.rendered) {
+                        el.subject.content = editor.getValue();
                         viewer.render();
                     }
                 },
@@ -54,22 +111,77 @@ class Subject extends HTMLElement {
                     viewTab.style.display = "none";
                     editTab.style.display = "inline";
 
-                    setTitle("edit", subjectName);
+                    setTitle("edit", el.subjectName);
+                },
+                save: () => {
+                    el.subject.content = editor.getValue();
+                    el.saveButton.setAttribute("disabled", null);
+                    if (el.isNew) {
+                        el.subjectName = editor.getTitle();
+                        let err = subjectStore.create(
+                            el.subjectName,
+                            el.subject,
+                        );
+                        if (err != null) {
+                            console.error(err);
+                            el.saveButton.removeAttribute("disabled");
+                            return;
+                        }
+                        el.isNew = false;
+                        el.removeAttribute("new");
+                    }
+                    subjectStore.pushContent(el.subjectName).catch((err) => {
+                        console.error(err);
+                        el.saveButton.removeAttribute("disabled");
+                    });
                 },
             },
         );
 
         viewTab = this.querySelector("#view");
         editTab = this.querySelector("#edit");
-        viewer = viewTab.querySelector("wiki-view-subject");
-        editor = editTab.querySelector("wiki-edit-subject");
+        viewer = viewTab.querySelector("#viewer");
+        editor = editTab.querySelector("#editor");
 
-        for (const b of this.querySelectorAll("button")) {
-            b.removeAttribute("disabled");
+        // enable view and edit buttons, bind save button
+        const buttons = this.querySelectorAll("button");
+        buttons[0].removeAttribute("disabled");
+        buttons[1].removeAttribute("disabled");
+        this.saveButton = buttons[2];
+
+        if (!this.subject.synced && this.subject.content != "") {
+            this.saveButton.removeAttribute("disabled");
         }
+
+        document.addEventListener(
+            "wiki:signal-subject-edited",
+            this.enableSave(),
+        );
+    }
+
+    showError(err) {
+        render(
+            this,
+            `
+            <p>Could not fetch or create "${this.subjectName}": ${err}</p>
+        `,
+        );
+    }
+
+    enableSave() {
+        let el = this;
+        return function () {
+            if (!el.subject.synced) {
+                el.saveButton.removeAttribute("disabled");
+            }
+        };
     }
 
     disconnectedCallback() {
+        document.removeEventListener(
+            "wiki:signal-subject-edited",
+            this.enableSave(),
+        );
         setTitle();
     }
 }

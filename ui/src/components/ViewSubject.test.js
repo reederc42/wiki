@@ -14,10 +14,12 @@ describe("View Subject component", () => {
 
         dom.addScript(`
             import { subjects, signal } from "../src/store/subjects";
+            import { inject } from "../src/store/inject";
             import "../src/components/ViewSubject";
 
             window.subjects = subjects;
             window.subjectsSignal = signal;
+            window.inject = inject;
         `);
     });
 
@@ -28,7 +30,7 @@ describe("View Subject component", () => {
         });
     });
 
-    test("content is not empty after update", async () => {
+    test("content is not empty if subject not empty", async () => {
         let subjectName = "Pro in antistite ferinos";
         let eventFired = false;
         window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
@@ -50,74 +52,14 @@ describe("View Subject component", () => {
         );
         assert(assertion());
 
+        let subject = window.subjects.get(subjectName);
+        window.inject("viewer", subject);
+
         let wikiViewSubject = document.createElement("wiki-view-subject");
-        wikiViewSubject.setAttribute("subj", encodeURIComponent(subjectName));
+        wikiViewSubject.id = "viewer";
         document.body.appendChild(wikiViewSubject);
 
         // "not empty" means a top-level header with subject name
         assert(wikiViewSubject.querySelector("h1").textContent == subjectName);
-    });
-
-    test("content not found shows error", async () => {
-        let subjectName = "not a real subject";
-        let eventFired = false;
-        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
-            eventFired = true;
-        });
-
-        window.subjects.fetchContent(subjectName);
-
-        function assertion() {
-            return eventFired;
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
-
-        let wikiViewSubject = document.createElement("wiki-view-subject");
-        wikiViewSubject.setAttribute("subj", encodeURIComponent(subjectName));
-        document.body.appendChild(wikiViewSubject);
-
-        assert(wikiViewSubject.textContent.includes("not found"));
-    });
-
-    test("shows updating before content available", async () => {
-        let subjectName = "Pro in antistite ferinos";
-
-        let wikiViewSubject = document.createElement("wiki-view-subject");
-        wikiViewSubject.setAttribute("subj", encodeURIComponent(subjectName));
-        document.body.appendChild(wikiViewSubject);
-
-        assert(wikiViewSubject.textContent.includes("Updating"));
-
-        window.subjects.fetchContent(subjectName);
-
-        let eventFired = false;
-        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
-            eventFired = true;
-        });
-
-        function assertion() {
-            return eventFired;
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
-
-        wikiViewSubject.render();
-
-        assert(!wikiViewSubject.textContent.includes("Updating"));
     });
 });
