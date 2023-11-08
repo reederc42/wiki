@@ -1,4 +1,4 @@
-import { component } from "reefjs";
+import { render } from "reefjs";
 import { navigate } from "../store/router";
 
 class App extends HTMLElement {
@@ -7,18 +7,16 @@ class App extends HTMLElement {
     }
 
     connectedCallback() {
-        this.component = component(
+        render(
             this,
-            function () {
-                return `
-                <h1>
-                    <a href="/" onclick="navigate()">Wiki</a>
-                </h1>
-                <wiki-user></wiki-user>
-                <wiki-router></wiki-router>
-            `;
-            },
-            { events: { navigate } },
+            `
+            <h1>
+                <a href="/" onclick="navigate()">Wiki</a>
+            </h1>
+            <wiki-user></wiki-user>
+            <wiki-router></wiki-router>
+        `,
+            { navigate },
         );
     }
 

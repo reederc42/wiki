@@ -40,5 +40,12 @@ class EditSubject extends HTMLElement {
     getValue() {
         return this.editor.getValue();
     }
+
+    getTitle() {
+        return this.editor
+            .getValue()
+            .split("\n")[0]
+            .replace(/^#?\s+/, "");
+    }
 }
 customElements.define("wiki-edit-subject", EditSubject);

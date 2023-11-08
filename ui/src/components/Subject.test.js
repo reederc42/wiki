@@ -29,6 +29,30 @@ describe("Subject component", () => {
     });
 
     test("subject inits to view and switches to edit and back to view", async () => {
+        window.customElements.define(
+            "wiki-edit-subject",
+            class MockEditSubject extends window.HTMLElement {
+                constructor() {
+                    super();
+                }
+
+                getValue() {
+                    return "";
+                }
+            },
+        );
+
+        window.customElements.define(
+            "wiki-view-subject",
+            class MockViewSubject extends window.HTMLElement {
+                constructor() {
+                    super();
+                }
+
+                render() {}
+            },
+        );
+
         let subjectName = "Pro in antistite ferinos";
         let eventFired = false;
         window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
@@ -138,5 +162,47 @@ describe("Subject component", () => {
             { container: document },
         );
         assert(assertion());
+    });
+
+    test("new subject shows editor", () => {
+        let wikiSubject = document.createElement("wiki-subject");
+        wikiSubject.setAttribute("new", null);
+        document.body.appendChild(wikiSubject);
+
+        assert(wikiSubject.querySelector("#edit").style.display == "inline");
+    });
+
+    test("saving new subject adds to store", () => {
+        let subjectName = "brand new subject";
+        window.customElements.define(
+            "wiki-edit-subject",
+            class MockEditSubject extends window.HTMLElement {
+                constructor() {
+                    super();
+                }
+
+                getValue() {
+                    return "# " + subjectName;
+                }
+
+                getTitle() {
+                    return subjectName;
+                }
+            },
+        );
+
+        let wikiSubject = document.createElement("wiki-subject");
+        wikiSubject.setAttribute("new", null);
+        document.body.appendChild(wikiSubject);
+
+        let saveButton = wikiSubject.querySelectorAll("button")[2];
+        saveButton.removeAttribute("disabled");
+        saveButton.click();
+
+        let wikiEditSubject = document.querySelector("wiki-edit-subject");
+        assert(
+            window.subjects.get(subjectName).content ==
+                wikiEditSubject.getValue(),
+        );
     });
 });

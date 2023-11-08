@@ -1,7 +1,10 @@
 import { render } from "reefjs";
 import { setTitle } from "../store/title";
 import { inject } from "../store/inject";
-import { subjects as subjectStore } from "../store/subjects";
+import {
+    subjects as subjectStore,
+    Subject as StoreSubject,
+} from "../store/subjects";
 
 class Subject extends HTMLElement {
     constructor() {
@@ -12,29 +15,39 @@ class Subject extends HTMLElement {
         let subjectProp = this.getAttribute("subj");
         this.subjectName = decodeURIComponent(subjectProp);
 
-        // get current subject
-        this.subject = subjectStore.get(this.subjectName);
+        this.isNew = this.hasAttribute("new");
 
         setTitle("view", this.subjectName);
 
-        // if subject is undefined, fetch it and display updating
-        if (this.subject === undefined || this.subject.content.length == 0) {
-            this.showUpdating();
-            subjectStore
-                .fetchContent(this.subjectName)
-                .then(() => {
-                    this.subject = subjectStore.get(this.subjectName);
-                    this.showSubject();
-                })
-                .catch((err) => {
-                    this.showError(err);
-                });
+        if (!this.isNew) {
+            // get current subject
+            this.subject = subjectStore.get(this.subjectName);
+
+            // if subject is undefined, fetch it and display updating
+            if (
+                this.subject === undefined ||
+                this.subject.content.length == 0
+            ) {
+                this.showFetching();
+                subjectStore
+                    .fetchContent(this.subjectName)
+                    .then(() => {
+                        this.subject = subjectStore.get(this.subjectName);
+                        this.showSubject();
+                    })
+                    .catch((err) => {
+                        this.showError(err);
+                    });
+            } else {
+                this.showSubject();
+            }
         } else {
+            this.subject = new StoreSubject();
             this.showSubject();
         }
     }
 
-    showUpdating() {
+    showFetching() {
         render(
             this,
             `
@@ -59,11 +72,11 @@ class Subject extends HTMLElement {
                 <button onclick="edit()" disabled>Edit</button>
                 <button onclick="save()" disabled>Save</button>
             </div>
-            <div id="view">
+            <div id="view" style="display: ${this.isNew ? "none" : "inline"};">
                 <wiki-view-subject id="viewer">
                 </wiki-view-subject>
             </div>
-            <div id="edit" style="display: none;">
+            <div id="edit" style="display: ${!this.isNew ? "none" : "inline"};">
                 <wiki-edit-subject id="editor">
                 </wiki-edit-subject>
             </div>
@@ -89,6 +102,20 @@ class Subject extends HTMLElement {
                 save: () => {
                     el.subject.content = editor.getValue();
                     el.saveButton.setAttribute("disabled", null);
+                    if (el.isNew) {
+                        el.subjectName = editor.getTitle();
+                        let err = subjectStore.create(
+                            el.subjectName,
+                            el.subject,
+                        );
+                        if (err != null) {
+                            console.error(err);
+                            el.saveButton.removeAttribute("disabled");
+                            return;
+                        }
+                        el.isNew = false;
+                        el.removeAttribute("new");
+                    }
                     subjectStore.pushContent(el.subjectName).catch((err) => {
                         console.error(err);
                         el.saveButton.removeAttribute("disabled");

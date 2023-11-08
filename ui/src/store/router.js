@@ -50,6 +50,10 @@ export function getSubject() {
     return router.value.path.substring("/wiki/".length);
 }
 
+export function isNew() {
+    return router.value.path.startsWith("/wiki-new");
+}
+
 addEventListener("popstate", () => {
     console.log(
         `popping state to ${location.href.substring(location.origin.length)}`,

@@ -76,8 +76,8 @@ describe("List Subjects component", () => {
         assert(assertion());
 
         assert(
-            wikiListSubjects.querySelectorAll("a").length ==
-                window.subjects.list().length,
+            wikiListSubjects.querySelector("table").querySelectorAll("a")
+                .length == window.subjects.list().length,
         );
     });
 
