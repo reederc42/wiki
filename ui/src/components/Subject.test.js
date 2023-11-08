@@ -13,11 +13,16 @@ describe("Subject component", () => {
         document = dom.window.document;
 
         dom.addScript(`
-            import { subjects, signal } from "../src/store/subjects";
+            import { signal as routerSignal } from "../src/store/router";
+            import {
+                subjects,
+                signal as subjectsSignal
+            } from "../src/store/subjects";
             import "../src/components/Subject";
 
+            window.routerSignal = routerSignal;
             window.subjects = subjects;
-            window.subjectsSignal = signal;
+            window.subjectsSignal = subjectsSignal;
         `);
     });
 
@@ -203,6 +208,78 @@ describe("Subject component", () => {
         assert(
             window.subjects.get(subjectName).content ==
                 wikiEditSubject.getValue(),
+        );
+    });
+
+    test("new named subject shows editor and title", async () => {
+        let subjectName = "a new subject";
+        let wikiSubject = document.createElement("wiki-subject");
+        wikiSubject.setAttribute("new", null);
+        wikiSubject.setAttribute("subj", encodeURIComponent(subjectName));
+        document.body.appendChild(wikiSubject);
+
+        function assertion() {
+            return wikiSubject.querySelector("#edit");
+        }
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion());
+
+        assert(wikiSubject.querySelector("#edit").style.display == "inline");
+        assert(document.title.includes(subjectName));
+    });
+
+    test("creating new named subject that exists redirects to existing subject", async () => {
+        let subjectName = "Pro in antistite ferinos";
+        let wikiSubject = document.createElement("wiki-subject");
+        wikiSubject.setAttribute("new", null);
+        wikiSubject.setAttribute("subj", encodeURIComponent(subjectName));
+        document.body.appendChild(wikiSubject);
+
+        let subjectEventFired = false;
+        window.addEventListener("wiki:signal-" + window.subjectsSignal, () => {
+            subjectEventFired = true;
+        });
+
+        let routerEventFired = false;
+        window.addEventListener("reef:signal-" + window.routerSignal, () => {
+            routerEventFired = true;
+        });
+        function subjectAssertion() {
+            return subjectEventFired;
+        }
+        await waitFor(
+            () => {
+                if (!subjectAssertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(subjectAssertion());
+
+        function routerAssertion() {
+            return routerEventFired;
+        }
+        await waitFor(
+            () => {
+                if (!routerAssertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(routerAssertion());
+
+        assert(
+            window.location.href.substring(window.location.origin.length) ==
+                "/wiki/" + encodeURIComponent(subjectName),
         );
     });
 });

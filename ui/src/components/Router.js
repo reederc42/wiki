@@ -20,10 +20,11 @@ class Router extends HTMLElement {
                 let template;
                 if (router.value.path == "/") {
                     template = "<wiki-list-subjects></wiki-list-subjects>";
-                } else if (isNew()) {
-                    template = "<wiki-subject new></wiki-subject>";
                 } else {
-                    template = `<wiki-subject subj="${getSubject()}"></wiki-subject>`;
+                    let subjectName = getSubject();
+                    template = `<wiki-subject ${isNew() ? "new" : ""} ${
+                        subjectName ? `subj="${subjectName}"` : ""
+                    }></wiki-subject>`;
                 }
                 return template;
             },

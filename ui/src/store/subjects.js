@@ -33,7 +33,9 @@ function updateList(names) {
 
 function updateContent(subject, content) {
     if (!store.has(subject)) {
-        store.set(subject, new Subject(content));
+        let s = new Subject(content);
+        s.synced = true;
+        store.set(subject, s);
     } else {
         let s = store.get(subject);
         s.content = content;

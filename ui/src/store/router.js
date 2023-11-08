@@ -47,7 +47,11 @@ export function navigate(event) {
 }
 
 export function getSubject() {
-    return router.value.path.substring("/wiki/".length);
+    let path = router.value.path;
+    if (path.startsWith("/wiki-new")) {
+        return path.substring("/wiki-new/".length);
+    }
+    return path.substring("/wiki/".length);
 }
 
 export function isNew() {
@@ -66,8 +70,9 @@ const validSubjectRE = /\/wiki\/.+/;
 // validatePath returns if path is valid
 // a valid path satisfies one of these conditions:
 //   1. root ("/")
-//   2. a subject ("/wiki/.*")
-//   3. a new subject "/wiki-new"
+//   2. a subject ("/wiki/.+")
+//   3. a new subject ("/wiki-new")
+//   4. a new named subject ("/wiki-new/.+")
 function validatePath(path) {
     if (path == "/") {
         return true;

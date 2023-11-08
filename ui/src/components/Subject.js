@@ -5,6 +5,7 @@ import {
     subjects as subjectStore,
     Subject as StoreSubject,
 } from "../store/subjects";
+import { router } from "../store/router";
 
 class Subject extends HTMLElement {
     constructor() {
@@ -13,17 +14,12 @@ class Subject extends HTMLElement {
 
     connectedCallback() {
         let subjectProp = this.getAttribute("subj");
-        this.subjectName = decodeURIComponent(subjectProp);
-
+        this.subjectName =
+            subjectProp != null ? decodeURIComponent(subjectProp) : "";
         this.isNew = this.hasAttribute("new");
 
-        setTitle("view", this.subjectName);
-
-        if (!this.isNew) {
-            // get current subject
+        if (this.subjectName != "") {
             this.subject = subjectStore.get(this.subjectName);
-
-            // if subject is undefined, fetch it and display updating
             if (
                 this.subject === undefined ||
                 this.subject.content.length == 0
@@ -32,13 +28,29 @@ class Subject extends HTMLElement {
                 subjectStore
                     .fetchContent(this.subjectName)
                     .then(() => {
+                        if (this.isNew) {
+                            // existing subject has new attribute, redirect to existing
+                            router.navigate("/wiki/" + subjectProp);
+                            this.isNew = false;
+                        }
                         this.subject = subjectStore.get(this.subjectName);
                         this.showSubject();
                     })
                     .catch((err) => {
-                        this.showError(err);
+                        if (err.message.includes("not found") && this.isNew) {
+                            this.subject = new StoreSubject();
+                            this.subject.content = "# " + this.subjectName;
+                            this.showSubject();
+                        } else {
+                            this.showError(err);
+                        }
                     });
             } else {
+                if (this.isNew) {
+                    // existing subject has new attribute, redirect to existing
+                    router.navigate("/wiki/" + subjectProp);
+                    this.isNew = false;
+                }
                 this.showSubject();
             }
         } else {
@@ -62,6 +74,8 @@ class Subject extends HTMLElement {
 
         inject("viewer", this.subject);
         inject("editor", this.subject);
+
+        setTitle(this.isNew ? "edit" : "view", this.subjectName);
 
         // buttons start disabled until all elements are bound
         render(
@@ -135,6 +149,10 @@ class Subject extends HTMLElement {
         buttons[1].removeAttribute("disabled");
         this.saveButton = buttons[2];
 
+        if (!this.subject.synced && this.subject.content != "") {
+            this.saveButton.removeAttribute("disabled");
+        }
+
         document.addEventListener(
             "wiki:signal-subject-edited",
             this.enableSave(),
@@ -145,7 +163,7 @@ class Subject extends HTMLElement {
         render(
             this,
             `
-            <p>Could not fetch "${this.subjectName}": ${err}</p>
+            <p>Could not fetch or create "${this.subjectName}": ${err}</p>
         `,
         );
     }

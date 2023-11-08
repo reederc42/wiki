@@ -30,13 +30,13 @@ let dist = process.cwd() + "/dist";
 
 app.use(express.static(dist));
 
-app.get("/wiki/*", (_, res) => {
+function sendIndex(_, res) {
     res.sendFile(`${dist}/index.html`);
-});
+}
 
-app.get("/wiki-new", (_, res) => {
-    res.sendFile(`${dist}/index.html`);
-});
+app.get("/wiki/*", sendIndex);
+app.get("/wiki-new", sendIndex);
+app.get("/wiki-new/*", sendIndex);
 
 let listener = app.listen(port).address();
 let ifaces = ["lo0", "en0", "lo", "eth0"];
