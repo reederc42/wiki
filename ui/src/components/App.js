@@ -1,5 +1,5 @@
 import { render } from "reefjs";
-import { navigate } from "../store/router";
+import { router, navigate } from "../store/router";
 
 class App extends HTMLElement {
     constructor() {
@@ -7,6 +7,7 @@ class App extends HTMLElement {
     }
 
     connectedCallback() {
+        router.navigate(location.href.substring(location.origin.length));
         render(
             this,
             `

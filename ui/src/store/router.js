@@ -6,14 +6,14 @@ export const router = store(
     { path: location.href.substring(location.origin.length) },
     {
         navigate(router, path) {
-            if (router.path == path) {
-                console.log("navigating to self");
-                return;
-            }
-
             if (!validatePath(path)) {
                 console.log("invalid path, navigating to /");
                 path = "/";
+            }
+
+            if (router.path == path) {
+                console.log("navigating to self");
+                return;
             }
 
             router.path = path;
@@ -66,12 +66,13 @@ addEventListener("popstate", () => {
 });
 
 const validSubjectRE = /\/wiki\/.+/;
+const validNewSubjectRE = /\/wiki-new\/.+/;
 
 // validatePath returns if path is valid
 // a valid path satisfies one of these conditions:
 //   1. root ("/")
-//   2. a subject ("/wiki/.+")
-//   3. a new subject ("/wiki-new")
+//   2. a new subject ("/wiki-new")
+//   3. a subject ("/wiki/.+")
 //   4. a new named subject ("/wiki-new/.+")
 function validatePath(path) {
     if (path == "/") {
@@ -82,5 +83,9 @@ function validatePath(path) {
         return true;
     }
 
-    return validSubjectRE.test(path);
+    if (validSubjectRE.test(path)) {
+        return true;
+    }
+
+    return validNewSubjectRE.test(path);
 }
