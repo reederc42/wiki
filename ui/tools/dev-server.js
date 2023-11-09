@@ -1,8 +1,13 @@
 /*eslint-env node */
 
 import express from "express";
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 import { build } from "./build.js";
+import { prod as prodBuild, dev as devBuild } from "./build-options.js";
 import os from "os";
+
+const argv = yargs(hideBin(process.argv)).argv;
 
 function getAddress(iface = "", family = "IPv4") {
     let i = os.networkInterfaces()[iface];
@@ -17,14 +22,16 @@ function getAddress(iface = "", family = "IPv4") {
 }
 
 const app = express();
-const port = 8080;
+let port = 8080;
+if (argv.port) {
+    port = argv.port;
+}
 
-await build(
-    {
-        sourcemap: true,
-    },
-    "dev",
-);
+if (argv.build == "prod") {
+    await build(prodBuild, "prod");
+} else {
+    await build(devBuild, "dev");
+}
 
 let dist = process.cwd() + "/dist";
 
@@ -40,6 +47,13 @@ app.get("/wiki-new/*", sendIndex);
 
 let listener = app.listen(port).address();
 let ifaces = ["lo0", "en0", "lo", "eth0"];
+if (argv.interface) {
+    if (argv.interface instanceof Array) {
+        ifaces.concat(argv.interface);
+    } else {
+        ifaces.push(argv.interface);
+    }
+}
 let addresses = [];
 for (const i of ifaces) {
     let addr = getAddress(i);
