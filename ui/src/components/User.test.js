@@ -1,6 +1,7 @@
 import { describe, beforeEach, after, test } from "node:test";
 import assert from "node:assert";
 import { DOM } from "../test-helpers/dom.js";
+import { waitFor } from "@testing-library/dom";
 import fs from "fs";
 
 describe("User component", () => {
@@ -33,27 +34,69 @@ describe("User component", () => {
         assert(wikiUser.querySelector("wiki-signed-out-user"));
     });
 
-    test("signed in shows signed in component", () => {
-        window.user.signIn("user1");
+    test("signed in shows signed in component", async () => {
+        window.user.signIn("alice", "somepass");
 
         let wikiUser = document.createElement("wiki-user");
         document.body.appendChild(wikiUser);
 
-        assert(wikiUser.querySelector("wiki-signed-in-user"));
+        function assertion() {
+            return wikiUser.querySelector("wiki-signed-in-user");
+        }
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion());
     });
 
-    test("sign in and out modifies component", () => {
+    test("sign in and out modifies component", async () => {
         let wikiUser = document.createElement("wiki-user");
         document.body.appendChild(wikiUser);
 
-        assert(wikiUser.querySelector("wiki-signed-out-user"));
+        function signedOutAssertion() {
+            return wikiUser.querySelector("wiki-signed-out-user");
+        }
+        function signedInAssertion() {
+            return wikiUser.querySelector("wiki-signed-in-user");
+        }
 
-        window.user.signIn("user1");
+        await waitFor(
+            () => {
+                if (!signedOutAssertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(signedOutAssertion());
 
-        assert(wikiUser.querySelector("wiki-signed-in-user"));
+        window.user.signIn("user1", "passs");
+
+        await waitFor(
+            () => {
+                if (!signedInAssertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(signedInAssertion());
 
         window.user.signOut();
 
-        assert(wikiUser.querySelector("wiki-signed-out-user"));
+        await waitFor(
+            () => {
+                if (!signedOutAssertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(signedOutAssertion());
     });
 });
