@@ -1,6 +1,6 @@
 import { describe, beforeEach, after, test } from "node:test";
 import assert from "node:assert";
-import { waitFor } from "@testing-library/dom";
+import { waitFor } from "../test-helpers/waitFor.js";
 import fs from "fs";
 import { DOM } from "../test-helpers/dom.js";
 
@@ -36,18 +36,9 @@ describe("subjects store", () => {
 
         window.subjects.updateList();
 
-        function assertion() {
+        await waitFor(() => {
             return eventFired;
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
+        }, document);
     });
 
     test("list after update returns array", async () => {
@@ -55,18 +46,9 @@ describe("subjects store", () => {
 
         window.subjects.updateList();
 
-        function assertion() {
+        await waitFor(() => {
             return window.subjects.list().length > 0;
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
+        }, document);
     });
 
     test("update content emits event", async () => {
@@ -77,18 +59,9 @@ describe("subjects store", () => {
 
         window.subjects.fetchContent("Pro in antistite ferinos");
 
-        function assertion() {
+        await waitFor(() => {
             return eventFired;
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
+        }, document);
     });
 
     test("content after update returns non-empty string", async () => {
@@ -97,18 +70,9 @@ describe("subjects store", () => {
 
         window.subjects.fetchContent(subjectName);
 
-        function assertion() {
+        await waitFor(() => {
             return window.subjects.get(subjectName).content.length > 0;
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
+        }, document);
     });
 
     test("not found content rejects promise", async () => {
@@ -119,18 +83,9 @@ describe("subjects store", () => {
             err = e;
         });
 
-        function assertion() {
+        await waitFor(() => {
             return err.message.includes("not found");
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
+        }, document);
     });
 
     test("get returns mutable reference", async () => {
@@ -138,18 +93,9 @@ describe("subjects store", () => {
 
         window.subjects.fetchContent(subjectName);
 
-        function assertion() {
+        await waitFor(() => {
             return window.subjects.get(subjectName).content.length > 0;
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
+        }, document);
 
         assert(
             window.subjects.get(subjectName) ===
@@ -168,18 +114,9 @@ describe("subjects store", () => {
             err = e;
         });
 
-        function assertion() {
+        await waitFor(() => {
             return err !== undefined;
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
+        }, document);
     });
 
     test("pushing new content sets synced", async () => {
@@ -191,36 +128,18 @@ describe("subjects store", () => {
 
         window.subjects.fetchContent(subjectName);
 
-        function assertion1() {
+        await waitFor(() => {
             return eventFired;
-        }
-        await waitFor(
-            () => {
-                if (!assertion1()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion1());
+        }, document);
 
         let success = false;
         window.subjects.pushContent(subjectName).then(() => {
             success = true;
         });
 
-        function assertion2() {
+        await waitFor(() => {
             return success;
-        }
-        await waitFor(
-            () => {
-                if (!assertion2()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion2());
+        }, document);
     });
 
     test("creating subject that already exists fails", async () => {
@@ -233,18 +152,9 @@ describe("subjects store", () => {
 
         window.subjects.updateList();
 
-        function assertion() {
+        await waitFor(() => {
             return eventFired;
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
+        }, document);
 
         assert(
             window.subjects

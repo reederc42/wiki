@@ -2,7 +2,7 @@ import { describe, beforeEach, after, test } from "node:test";
 import assert from "node:assert";
 import fs from "fs";
 import { DOM } from "../test-helpers/dom.js";
-import { waitFor } from "@testing-library/dom";
+import { waitFor } from "../test-helpers/waitFor.js";
 
 describe("user store", () => {
     let dom, window, document;
@@ -34,17 +34,9 @@ describe("user store", () => {
         });
         window.user.signOut();
 
-        function assertion() {
+        await waitFor(() => {
             return eventFired;
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
+        }, document);
 
         assert(window.user.username() == "");
     });
@@ -60,30 +52,14 @@ describe("user store", () => {
 
         window.user.signIn("bob", "bobpass");
 
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
+        await waitFor(assertion, document);
 
         assert(window.user.username() == "bob");
 
         eventFired = false;
         window.user.signOut();
 
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
+        await waitFor(assertion, document);
 
         assert(window.user.username() == "");
     });
@@ -94,18 +70,9 @@ describe("user store", () => {
             err = e;
         });
 
-        function assertion() {
+        await waitFor(() => {
             return err !== undefined && err.message == "unauthorized";
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
+        }, document);
     });
 
     test("sign up new user", async () => {
@@ -114,18 +81,9 @@ describe("user store", () => {
             passed = true;
         });
 
-        function assertion() {
+        await waitFor(() => {
             return passed;
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
+        }, document);
     });
 
     test("sign up with invalid password fails", async () => {
@@ -134,18 +92,9 @@ describe("user store", () => {
             err = e;
         });
 
-        function assertion() {
+        await waitFor(() => {
             return err !== undefined && err.message == "unauthorized";
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
+        }, document);
     });
 
     test("sign up existing user fails", async () => {
@@ -154,17 +103,8 @@ describe("user store", () => {
             err = e;
         });
 
-        function assertion() {
+        await waitFor(() => {
             return err !== undefined && err.message == "unauthorized";
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
+        }, document);
     });
 });
