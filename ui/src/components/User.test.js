@@ -54,6 +54,66 @@ describe("User component", () => {
         assert(assertion());
     });
 
+    test("signed up shows signed in component", async () => {
+        window.user.signUp("testUser", "goodpass");
+
+        let wikiUser = document.createElement("wiki-user");
+        document.body.appendChild(wikiUser);
+
+        function assertion() {
+            return wikiUser.querySelector("wiki-signed-in-user");
+        }
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion());
+    });
+
+    test("sign in and up with invalid password fails", async () => {
+        let done = false;
+        window.user.signIn("testUser", "badpass").catch(() => {
+            done = true;
+        });
+
+        let wikiUser = document.createElement("wiki-user");
+        document.body.appendChild(wikiUser);
+
+        function assertion() {
+            return done;
+        }
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+        assert(assertion());
+        assert(!wikiUser.querySelector("wiki-signed-in-user"));
+
+        done = false;
+        window.user.signUp("testUser", "badpass").catch(() => {
+            done = true;
+        });
+        await waitFor(
+            () => {
+                if (!assertion()) {
+                    throw new Error("waiting");
+                }
+            },
+            { container: document },
+        );
+
+        assert(assertion());
+        assert(!wikiUser.querySelector("wiki-signed-in-user"));
+    });
+
     test("sign in and out modifies component", async () => {
         let wikiUser = document.createElement("wiki-user");
         document.body.appendChild(wikiUser);
