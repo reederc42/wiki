@@ -29,6 +29,7 @@ export const user = {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 if (!m.has(username) && password != "badpass") {
+                    m.set(username, password);
                     resolve(username);
                 } else {
                     reject(new Error("unauthorized"));

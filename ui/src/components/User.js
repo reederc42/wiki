@@ -58,23 +58,35 @@ export class SignedOutUser extends HTMLElement {
     }
 
     connectedCallback() {
-        let username, password, signInButton;
+        let username, password, signInButton, signUpButton;
 
         render(
             this,
             `
             <label for="username">Username</label>
-            <input id="username" />
+            <input id="username" autocomplete="on" />
             <label for="password">Password</label>
-            <input id="password" type="password" />
+            <input id="password" type="password" autocomplete="on" />
             <button onclick="signIn()">Sign In</button>
+            <button onclick="signUp()">Sign Up</button>
         `,
             {
                 signIn: () => {
                     signInButton.setAttribute("disabled", null);
+                    signUpButton.setAttribute("disabled", null);
                     user.signIn(username.value, password.value).catch((err) => {
                         console.error(err);
                         signInButton.removeAttribute("disabled");
+                        signUpButton.removeAttribute("disabled");
+                    });
+                },
+                signUp: () => {
+                    signInButton.setAttribute("disabled", null);
+                    signUpButton.setAttribute("disabled", null);
+                    user.signUp(username.value, password.value).catch((err) => {
+                        console.error(err);
+                        signInButton.removeAttribute("disabled");
+                        signUpButton.removeAttribute("disabled");
                     });
                 },
             },
@@ -82,7 +94,10 @@ export class SignedOutUser extends HTMLElement {
 
         username = this.querySelector("#username");
         password = this.querySelector("#password");
-        signInButton = this.querySelector("button");
+
+        const buttons = this.querySelectorAll("button");
+        signInButton = buttons[0];
+        signUpButton = buttons[1];
     }
 }
 customElements.define("wiki-signed-out-user", SignedOutUser);

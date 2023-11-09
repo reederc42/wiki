@@ -23,9 +23,14 @@ class EditSubject extends HTMLElement {
             </div>
         `,
         );
-        this.editor = ace.edit(this.querySelector("#ace-editor"));
+        const editorEl = this.querySelector("#ace-editor");
+        this.editor = ace.edit(editorEl);
         this.editor.setTheme("ace/theme/github");
         this.editor.getSession().setMode("ace/mode/markdown");
+
+        editorEl
+            .querySelector("textarea")
+            .setAttribute("name", "wiki-subject-editor");
 
         this.subject = extract(this.id);
         this.editor.setValue(this.subject.content);

@@ -162,6 +162,8 @@ class Subject extends HTMLElement {
             }
         };
 
+        this.updateButtons();
+
         document.addEventListener(
             "wiki:signal-subject-edited",
             this.updateButtons,
