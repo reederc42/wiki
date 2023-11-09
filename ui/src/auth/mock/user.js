@@ -23,7 +23,7 @@ export const user = {
         });
     },
 
-    signOut(username) {},
+    signOut() {},
 
     signUp(username, password) {
         return new Promise((resolve, reject) => {
@@ -36,4 +36,4 @@ export const user = {
             }, timeout);
         });
     },
-}
+};

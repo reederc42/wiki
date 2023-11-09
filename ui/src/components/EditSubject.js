@@ -1,5 +1,6 @@
 import { render } from "reefjs";
 import { extract } from "../store/inject";
+import { user, signal as userSignal } from "../store/user";
 import ace from "ace-builds/src-min-noconflict/ace";
 import "ace-builds/src-min-noconflict/theme-github";
 import "ace-builds/src-min-noconflict/mode-markdown";
@@ -35,6 +36,16 @@ class EditSubject extends HTMLElement {
             el.subject.synced = false;
             document.dispatchEvent(event);
         });
+
+        this.updateReadonly = () => {
+            el.editor.setReadOnly(!user.username());
+        };
+        this.updateReadonly();
+
+        document.addEventListener(
+            "reef:signal-" + userSignal,
+            this.updateReadonly,
+        );
     }
 
     getValue() {
@@ -46,6 +57,13 @@ class EditSubject extends HTMLElement {
             .getValue()
             .split("\n")[0]
             .replace(/^#?\s+/, "");
+    }
+
+    disconnectedCallback() {
+        document.removeEventListener(
+            "reef:signal-" + userSignal,
+            this.updateReadonly,
+        );
     }
 }
 customElements.define("wiki-edit-subject", EditSubject);
