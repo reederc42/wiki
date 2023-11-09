@@ -1,6 +1,7 @@
 import { describe, beforeEach, after, test } from "node:test";
 import assert from "node:assert";
 import { DOM } from "../test-helpers/dom.js";
+import { waitFor } from "../test-helpers/waitFor.js";
 import fs from "fs";
 
 describe("User component", () => {
@@ -33,27 +34,72 @@ describe("User component", () => {
         assert(wikiUser.querySelector("wiki-signed-out-user"));
     });
 
-    test("signed in shows signed in component", () => {
-        window.user.signIn("user1");
+    test("signed in shows signed in component", async () => {
+        window.user.signIn("alice", "somepass");
 
         let wikiUser = document.createElement("wiki-user");
         document.body.appendChild(wikiUser);
 
-        assert(wikiUser.querySelector("wiki-signed-in-user"));
+        await waitFor(() => {
+            return wikiUser.querySelector("wiki-signed-in-user");
+        }, document);
     });
 
-    test("sign in and out modifies component", () => {
+    test("signed up shows signed in component", async () => {
+        window.user.signUp("testUser", "goodpass");
+
         let wikiUser = document.createElement("wiki-user");
         document.body.appendChild(wikiUser);
 
-        assert(wikiUser.querySelector("wiki-signed-out-user"));
+        await waitFor(() => {
+            return wikiUser.querySelector("wiki-signed-in-user");
+        }, document);
+    });
 
-        window.user.signIn("user1");
+    test("sign in and up with invalid password fails", async () => {
+        let done = false;
+        window.user.signIn("testUser", "badpass").catch(() => {
+            done = true;
+        });
 
-        assert(wikiUser.querySelector("wiki-signed-in-user"));
+        let wikiUser = document.createElement("wiki-user");
+        document.body.appendChild(wikiUser);
+
+        await waitFor(() => {
+            return done;
+        }, document);
+        assert(!wikiUser.querySelector("wiki-signed-in-user"));
+
+        done = false;
+        window.user.signUp("testUser", "badpass").catch(() => {
+            done = true;
+        });
+        await waitFor(() => {
+            return done;
+        }, document);
+
+        assert(!wikiUser.querySelector("wiki-signed-in-user"));
+    });
+
+    test("sign in and out modifies component", async () => {
+        let wikiUser = document.createElement("wiki-user");
+        document.body.appendChild(wikiUser);
+
+        function signedOutAssertion() {
+            return wikiUser.querySelector("wiki-signed-out-user");
+        }
+        function signedInAssertion() {
+            return wikiUser.querySelector("wiki-signed-in-user");
+        }
+
+        await waitFor(signedOutAssertion, document);
+
+        window.user.signIn("user1", "passs");
+
+        await waitFor(signedInAssertion, document);
 
         window.user.signOut();
 
-        assert(wikiUser.querySelector("wiki-signed-out-user"));
+        await waitFor(signedOutAssertion, document);
     });
 });

@@ -1,4 +1,4 @@
-import { component } from "reefjs";
+import { component, render } from "reefjs";
 import { user, signal as userSignal } from "../store/user";
 
 export class User extends HTMLElement {
@@ -11,7 +11,7 @@ export class User extends HTMLElement {
             this,
             function () {
                 return `${
-                    user.value.username != ""
+                    user.username() != ""
                         ? `
                 <wiki-signed-in-user></wiki-signed-in-user>
             `
@@ -36,18 +36,17 @@ export class SignedInUser extends HTMLElement {
     }
 
     connectedCallback() {
-        function signOut() {
-            user.signOut();
-        }
-        component(
+        render(
             this,
-            function () {
-                return `
-                Username: ${user.value.username}
-                <button onclick="signOut()">Sign Out</button>
-            `;
+            `
+            Username: ${user.username()}
+            <button onclick="signOut()">Sign Out</button>
+        `,
+            {
+                signOut: () => {
+                    user.signOut();
+                },
             },
-            { events: { signOut } },
         );
     }
 }
@@ -59,24 +58,46 @@ export class SignedOutUser extends HTMLElement {
     }
 
     connectedCallback() {
-        let root = this;
-        function signIn() {
-            let username = root.querySelector("#username");
-            user.signIn(username.value);
-        }
-        component(
+        let username, password, signInButton, signUpButton;
+
+        render(
             this,
-            function () {
-                return `
-                <label for="username">Username</label>
-                <input id="username" />
-                <label for="password">Password</label>
-                <input id="password" />
-                <button onclick="signIn()">Sign In</button>
-            `;
+            `
+            <label for="username">Username</label>
+            <input id="username" autocomplete="on" />
+            <label for="password">Password</label>
+            <input id="password" type="password" autocomplete="on" />
+            <button onclick="signIn()">Sign In</button>
+            <button onclick="signUp()">Sign Up</button>
+        `,
+            {
+                signIn: () => {
+                    signInButton.setAttribute("disabled", null);
+                    signUpButton.setAttribute("disabled", null);
+                    user.signIn(username.value, password.value).catch((err) => {
+                        console.error(err);
+                        signInButton.removeAttribute("disabled");
+                        signUpButton.removeAttribute("disabled");
+                    });
+                },
+                signUp: () => {
+                    signInButton.setAttribute("disabled", null);
+                    signUpButton.setAttribute("disabled", null);
+                    user.signUp(username.value, password.value).catch((err) => {
+                        console.error(err);
+                        signInButton.removeAttribute("disabled");
+                        signUpButton.removeAttribute("disabled");
+                    });
+                },
             },
-            { events: { signIn } },
         );
+
+        username = this.querySelector("#username");
+        password = this.querySelector("#password");
+
+        const buttons = this.querySelectorAll("button");
+        signInButton = buttons[0];
+        signUpButton = buttons[1];
     }
 }
 customElements.define("wiki-signed-out-user", SignedOutUser);

@@ -1,6 +1,6 @@
 import { describe, beforeEach, after, test } from "node:test";
 import assert from "node:assert";
-import { waitFor } from "@testing-library/dom";
+import { waitFor } from "../test-helpers/waitFor.js";
 import fs from "fs";
 import { DOM } from "../test-helpers/dom.js";
 
@@ -39,18 +39,9 @@ describe("View Subject component", () => {
 
         window.subjects.fetchContent(subjectName);
 
-        function assertion() {
+        await waitFor(() => {
             return eventFired;
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
+        }, document);
 
         let subject = window.subjects.get(subjectName);
         window.inject("viewer", subject);

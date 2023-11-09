@@ -1,6 +1,6 @@
 import { describe, beforeEach, after, test } from "node:test";
 import assert from "node:assert";
-import { waitFor } from "@testing-library/dom";
+import { waitFor } from "../test-helpers/waitFor.js";
 import fs from "fs";
 import { DOM } from "../test-helpers/dom.js";
 
@@ -39,18 +39,9 @@ describe("List Subjects component", () => {
         let wikiListSubjects = document.createElement("wiki-list-subjects");
         document.body.appendChild(wikiListSubjects);
 
-        function assertion() {
+        await waitFor(() => {
             return eventFired;
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
+        }, document);
     });
 
     test("shows all subjects in links", async () => {
@@ -62,18 +53,9 @@ describe("List Subjects component", () => {
         let wikiListSubjects = document.createElement("wiki-list-subjects");
         document.body.appendChild(wikiListSubjects);
 
-        function assertion() {
+        await waitFor(() => {
             return eventFired;
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
+        }, document);
 
         assert(
             wikiListSubjects.querySelector("table").querySelectorAll("a")
@@ -90,18 +72,9 @@ describe("List Subjects component", () => {
         let wikiListSubjects = document.createElement("wiki-list-subjects");
         document.body.appendChild(wikiListSubjects);
 
-        function assertion() {
+        await waitFor(() => {
             return eventFired;
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
+        }, document);
 
         let rows = wikiListSubjects.querySelectorAll("tr");
         for (const row of rows) {
@@ -118,18 +91,9 @@ describe("List Subjects component", () => {
         let wikiListSubjects = document.createElement("wiki-list-subjects");
         document.body.appendChild(wikiListSubjects);
 
-        function assertion() {
+        await waitFor(() => {
             return eventFired;
-        }
-        await waitFor(
-            () => {
-                if (!assertion()) {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(assertion());
+        }, document);
 
         let a = [];
         let rows = wikiListSubjects.querySelectorAll("tr");

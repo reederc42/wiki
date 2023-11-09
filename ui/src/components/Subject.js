@@ -6,6 +6,7 @@ import {
     Subject as StoreSubject,
 } from "../store/subjects";
 import { router } from "../store/router";
+import { user, signal as userSignal } from "../store/user";
 
 class Subject extends HTMLElement {
     constructor() {
@@ -146,16 +147,31 @@ class Subject extends HTMLElement {
         // enable view and edit buttons, bind save button
         const buttons = this.querySelectorAll("button");
         buttons[0].removeAttribute("disabled");
-        buttons[1].removeAttribute("disabled");
+        this.editButton = buttons[1];
         this.saveButton = buttons[2];
 
-        if (!this.subject.synced && this.subject.content != "") {
-            this.saveButton.removeAttribute("disabled");
-        }
+        this.updateButtons = () => {
+            if (user.username()) {
+                el.editButton.removeAttribute("disabled");
+
+                if (!el.subject.synced && el.subject.content != "") {
+                    el.saveButton.removeAttribute("disabled");
+                }
+            } else {
+                el.editButton.setAttribute("disabled", null);
+            }
+        };
+
+        this.updateButtons();
 
         document.addEventListener(
             "wiki:signal-subject-edited",
-            this.enableSave(),
+            this.updateButtons,
+        );
+
+        document.addEventListener(
+            "reef:signal-" + userSignal,
+            this.updateButtons,
         );
     }
 
@@ -168,19 +184,14 @@ class Subject extends HTMLElement {
         );
     }
 
-    enableSave() {
-        let el = this;
-        return function () {
-            if (!el.subject.synced) {
-                el.saveButton.removeAttribute("disabled");
-            }
-        };
-    }
-
     disconnectedCallback() {
         document.removeEventListener(
             "wiki:signal-subject-edited",
-            this.enableSave(),
+            this.updateButtons,
+        );
+        document.removeEventListener(
+            "reef:signal-" + userSignal,
+            this.updateButtons,
         );
         setTitle();
     }

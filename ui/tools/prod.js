@@ -1,11 +1,4 @@
-/*eslint-env node */
-
 import { build } from "./build.js";
+import { prod } from "./build-options.js";
 
-await build(
-    {
-        minify: true,
-        drop: ["console"],
-    },
-    "prod",
-);
+await build(prod, "prod");

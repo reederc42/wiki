@@ -1,6 +1,6 @@
 import { describe, beforeEach, afterEach, after, test } from "node:test";
 import assert from "node:assert";
-import { waitFor } from "@testing-library/dom";
+import { waitFor } from "../test-helpers/waitFor.js";
 import fs from "fs";
 import { DOM } from "../test-helpers/dom.js";
 
@@ -99,15 +99,9 @@ describe("router store", () => {
 
         window.history.back();
 
-        await waitFor(
-            () => {
-                if (window.router.value.path != "/") {
-                    throw new Error("waiting");
-                }
-            },
-            { container: document },
-        );
-        assert(window.router.value.path == "/");
+        await waitFor(() => {
+            return window.router.value.path == "/";
+        }, document);
     });
 });
 
