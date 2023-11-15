@@ -1,9 +1,9 @@
 import { render } from "reefjs";
 import { extract } from "../store/inject";
 import { user, signal as userSignal } from "../store/user";
-import ace from "ace-builds/src-min-noconflict/ace";
-import "ace-builds/src-min-noconflict/theme-github";
-import "ace-builds/src-min-noconflict/mode-markdown";
+import ace from "ace-builds/src-min/ace";
+import "ace-builds/src-min/theme-github";
+import "ace-builds/src-min/mode-markdown";
 
 const signal = "subject-edited";
 const event = new Event("wiki:signal-" + signal, {
