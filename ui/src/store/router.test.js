@@ -1,7 +1,6 @@
-import { describe, beforeEach, afterEach, after, test } from "node:test";
+import { describe, beforeEach, afterEach, test } from "node:test";
 import assert from "node:assert";
 import { waitFor } from "../test-helpers/waitFor.js";
-import fs from "fs";
 import { DOM } from "../test-helpers/dom.js";
 
 describe("router store", () => {
@@ -15,7 +14,7 @@ describe("router store", () => {
         document = dom.window.document;
 
         dom.addScript(`
-            import { router, navigate } from "../src/store/router";
+            import { router, navigate } from "./src/store/router";
 
             window.router = router;
             window.navigate = navigate;
@@ -24,13 +23,6 @@ describe("router store", () => {
 
     afterEach(() => {
         console.error = previousConsoleError;
-    });
-
-    after(async () => {
-        await fs.rm("testdata", {
-            recursive: true,
-            force: true,
-        });
     });
 
     test("navigate to new place changes location", () => {

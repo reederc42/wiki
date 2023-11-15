@@ -1,6 +1,5 @@
-import { describe, beforeEach, after, test } from "node:test";
+import { describe, beforeEach, test } from "node:test";
 import assert from "node:assert";
-import fs from "fs";
 import { DOM } from "../test-helpers/dom.js";
 import { waitFor } from "../test-helpers/waitFor.js";
 
@@ -13,18 +12,11 @@ describe("user store", () => {
         document = dom.window.document;
 
         dom.addScript(`
-            import { user, signal } from "../src/store/user";
+            import { user, signal } from "./src/store/user";
 
             window.user = user;
             window.userSignal = signal;
         `);
-    });
-
-    after(async () => {
-        await fs.rm("testdata", {
-            recursive: true,
-            force: true,
-        });
     });
 
     test("sign out before signed in", async () => {

@@ -1,6 +1,5 @@
-import { describe, beforeEach, after, test } from "node:test";
+import { describe, beforeEach, test } from "node:test";
 import assert from "node:assert";
-import fs from "fs";
 import { waitFor } from "../test-helpers/waitFor.js";
 import { DOM } from "../test-helpers/dom.js";
 
@@ -13,26 +12,19 @@ describe("Subject component", () => {
         document = dom.window.document;
 
         dom.addScript(`
-            import { signal as routerSignal } from "../src/store/router";
+            import { signal as routerSignal } from "./src/store/router";
             import {
                 subjects,
                 signal as subjectsSignal
-            } from "../src/store/subjects";
-            import { user } from "../src/store/user";
-            import "../src/components/Subject";
+            } from "./src/store/subjects";
+            import { user } from "./src/store/user";
+            import "./src/components/Subject";
 
             window.routerSignal = routerSignal;
             window.subjects = subjects;
             window.subjectsSignal = subjectsSignal;
             window.user = user;
         `);
-    });
-
-    after(async () => {
-        await fs.rm("testdata", {
-            recursive: true,
-            force: true,
-        });
     });
 
     test("subject inits to view and switches to edit and back to view", async () => {

@@ -1,7 +1,6 @@
-import { describe, beforeEach, after, test } from "node:test";
+import { describe, beforeEach, test } from "node:test";
 import assert from "node:assert";
 import { waitFor } from "../test-helpers/waitFor.js";
-import fs from "fs";
 import { DOM } from "../test-helpers/dom.js";
 
 describe("View Subject component", () => {
@@ -13,21 +12,14 @@ describe("View Subject component", () => {
         document = dom.window.document;
 
         dom.addScript(`
-            import { subjects, signal } from "../src/store/subjects";
-            import { inject } from "../src/store/inject";
-            import "../src/components/ViewSubject";
+            import { subjects, signal } from "./src/store/subjects";
+            import { inject } from "./src/store/inject";
+            import "./src/components/ViewSubject";
 
             window.subjects = subjects;
             window.subjectsSignal = signal;
             window.inject = inject;
         `);
-    });
-
-    after(async () => {
-        await fs.rm("testdata", {
-            recursive: true,
-            force: true,
-        });
     });
 
     test("content is not empty if subject not empty", async () => {

@@ -1,7 +1,6 @@
-import { describe, beforeEach, after, test } from "node:test";
+import { describe, beforeEach, test } from "node:test";
 import assert from "node:assert";
 import { DOM } from "../test-helpers/dom.js";
-import fs from "fs";
 
 describe("Router component", () => {
     let dom, window, document;
@@ -12,18 +11,11 @@ describe("Router component", () => {
         document = dom.window.document;
 
         dom.addScript(`
-            import "../src/components/Router";
-            import { router } from "../src/store/router";
+            import "./src/components/Router";
+            import { router } from "./src/store/router";
 
             window.router = router;
         `);
-    });
-
-    after(async () => {
-        await fs.rm("testdata", {
-            recursive: true,
-            force: true,
-        });
     });
 
     test("root shows list of subjects", () => {

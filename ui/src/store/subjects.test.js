@@ -1,7 +1,6 @@
-import { describe, beforeEach, after, test } from "node:test";
+import { describe, beforeEach, test } from "node:test";
 import assert from "node:assert";
 import { waitFor } from "../test-helpers/waitFor.js";
-import fs from "fs";
 import { DOM } from "../test-helpers/dom.js";
 
 describe("subjects store", () => {
@@ -13,19 +12,12 @@ describe("subjects store", () => {
         document = dom.window.document;
 
         dom.addScript(`
-            import { subjects, signal, Subject } from "../src/store/subjects";
+            import { subjects, signal, Subject } from "./src/store/subjects";
 
             window.subjects = subjects;
             window.subjectsSignal = signal;
             window.Subject = Subject;
         `);
-    });
-
-    after(async () => {
-        await fs.rm("testdata", {
-            recursive: true,
-            force: true,
-        });
     });
 
     test("update list emits event", async () => {
