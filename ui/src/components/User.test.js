@@ -73,6 +73,44 @@ describe("User component", () => {
         assert(!wikiUser.querySelector("wiki-signed-in-user"));
     });
 
+    test("sign in with invalid password shows error", async () => {
+        let wikiUser = document.createElement("wiki-user");
+        document.body.appendChild(wikiUser);
+
+        let username = wikiUser.querySelector("#username");
+        let password = wikiUser.querySelector("#password");
+
+        let signIn = wikiUser.querySelectorAll("button")[0];
+
+        username.value = "testUser";
+        password.value = "badpass";
+
+        signIn.click();
+
+        await waitFor(() => {
+            return wikiUser.querySelector("span").style.display == "inline";
+        }, document);
+    });
+
+    test("sign up with invalid password shows error", async () => {
+        let wikiUser = document.createElement("wiki-user");
+        document.body.appendChild(wikiUser);
+
+        let username = wikiUser.querySelector("#username");
+        let password = wikiUser.querySelector("#password");
+
+        let signUp = wikiUser.querySelectorAll("button")[1];
+
+        username.value = "testUser";
+        password.value = "badpass";
+
+        signUp.click();
+
+        await waitFor(() => {
+            return wikiUser.querySelector("span").style.display == "inline";
+        }, document);
+    });
+
     test("sign in and out modifies component", async () => {
         let wikiUser = document.createElement("wiki-user");
         document.body.appendChild(wikiUser);
