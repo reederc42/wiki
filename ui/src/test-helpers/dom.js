@@ -1,5 +1,4 @@
 import { JSDOM } from "jsdom";
-import fs from "fs";
 import { buildSync } from "./build.js";
 
 export class DOM {
@@ -18,41 +17,19 @@ export class DOM {
     }
 
     addScript(src) {
-        let err;
-        do {
-            try {
-                let outfile;
-                let entryPoint = src;
-                if (fs.existsSync(src)) {
-                    let base = src.split("/").pop().split(".")[0];
-                    outfile = `testdata/${base}-${crypto.randomUUID()}.js`;
-                } else {
-                    outfile = `testdata/anon-${crypto.randomUUID()}.js`;
-                    entryPoint = `testdata/anon-src-${crypto.randomUUID()}.js`;
-                    fs.mkdirSync("testdata", {
-                        recursive: true,
-                    });
-                    fs.writeFileSync(entryPoint, src);
-                }
+        let buildOptions = {
+            stdin: {
+                contents: src,
+                resolveDir: ".",
+            },
+            write: false,
+        };
+        let result = buildSync(buildOptions);
 
-                buildSync(
-                    {
-                        entryPoints: [entryPoint],
-                        outfile: outfile,
-                    },
-                    "test",
-                );
-
-                let script = this.window.document.createElement("script");
-                script.textContent = fs.readFileSync(outfile);
-                this.window.document.body.appendChild(script);
-
-                err = undefined;
-                return outfile;
-            } catch (e) {
-                console.error(e);
-                err = e;
-            }
-        } while (err !== undefined);
+        let script = this.window.document.createElement("script");
+        script.textContent = new TextDecoder().decode(
+            result.outputFiles[0].contents,
+        );
+        this.window.document.head.appendChild(script);
     }
 }

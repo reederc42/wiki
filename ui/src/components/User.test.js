@@ -1,8 +1,7 @@
-import { describe, beforeEach, after, test } from "node:test";
+import { describe, beforeEach, test } from "node:test";
 import assert from "node:assert";
 import { DOM } from "../test-helpers/dom.js";
 import { waitFor } from "../test-helpers/waitFor.js";
-import fs from "fs";
 
 describe("User component", () => {
     let dom, window, document;
@@ -13,18 +12,11 @@ describe("User component", () => {
         document = dom.window.document;
 
         dom.addScript(`
-            import "../src/components/User";
-            import { user } from "../src/store/user";
+            import "./src/components/User";
+            import { user } from "./src/store/user";
 
             window.user = user;
         `);
-    });
-
-    after(async () => {
-        await fs.rm("testdata", {
-            recursive: true,
-            force: true,
-        });
     });
 
     test("signed out shows signed out component", () => {

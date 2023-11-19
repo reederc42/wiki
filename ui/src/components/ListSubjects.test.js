@@ -1,7 +1,6 @@
-import { describe, beforeEach, after, test } from "node:test";
+import { describe, beforeEach, test } from "node:test";
 import assert from "node:assert";
 import { waitFor } from "../test-helpers/waitFor.js";
-import fs from "fs";
 import { DOM } from "../test-helpers/dom.js";
 
 describe("List Subjects component", () => {
@@ -15,19 +14,12 @@ describe("List Subjects component", () => {
         document = dom.window.document;
 
         dom.addScript(`
-            import { subjects, signal } from "../src/store/subjects";
-            import "../src/components/ListSubjects";
+            import { subjects, signal } from "./src/store/subjects";
+            import "./src/components/ListSubjects";
 
             window.subjects = subjects;
             window.subjectsSignal = signal;
         `);
-    });
-
-    after(async () => {
-        await fs.rm("testdata", {
-            recursive: true,
-            force: true,
-        });
     });
 
     test("creating element updates subjects", async () => {
