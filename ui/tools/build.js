@@ -1,4 +1,4 @@
-/*eslint-env node */
+/* eslint-env node */
 
 import fs from "fs";
 import esbuild from "esbuild";
