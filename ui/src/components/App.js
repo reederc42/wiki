@@ -20,9 +20,5 @@ class App extends HTMLElement {
             { navigate },
         );
     }
-
-    disconnectedCallback() {
-        this.component.stop();
-    }
 }
 customElements.define("wiki-app", App);
