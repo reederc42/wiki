@@ -8,6 +8,8 @@ import {
 import { router } from "../store/router";
 import { user, signal as userSignal } from "../store/user";
 
+const errTimeout = 3000;
+
 class Subject extends HTMLElement {
     constructor() {
         super();
@@ -71,7 +73,7 @@ class Subject extends HTMLElement {
     }
 
     showSubject() {
-        let viewTab, editTab, viewer, editor;
+        let viewTab, editTab, viewer, editor, saveError;
         let el = this;
 
         inject("viewer", this.subject);
@@ -87,6 +89,7 @@ class Subject extends HTMLElement {
                 <button onclick="view()" disabled>View</button>
                 <button onclick="edit()" disabled>Edit</button>
                 <button onclick="save()" disabled>Save</button>
+                <span id="save-error" style="color: red;display: none"></span>
             </div>
             <div id="view" style="display: ${this.isNew ? "none" : "inline"};">
                 <wiki-view-subject id="viewer">
@@ -125,16 +128,14 @@ class Subject extends HTMLElement {
                             el.subject,
                         );
                         if (err != null) {
-                            console.error(err);
-                            el.saveButton.removeAttribute("disabled");
+                            el.handleSaveError(err);
                             return;
                         }
                         el.isNew = false;
                         el.removeAttribute("new");
                     }
                     subjectStore.pushContent(el.subjectName).catch((err) => {
-                        console.error(err);
-                        el.saveButton.removeAttribute("disabled");
+                        el.handleSaveError(err);
                     });
                 },
             },
@@ -144,6 +145,7 @@ class Subject extends HTMLElement {
         editTab = this.querySelector("#edit");
         viewer = viewTab.querySelector("#viewer");
         editor = editTab.querySelector("#editor");
+        saveError = this.querySelector("#save-error");
 
         // enable view and edit buttons, bind save button
         const buttons = this.querySelectorAll("button");
@@ -161,6 +163,17 @@ class Subject extends HTMLElement {
             } else {
                 el.editButton.setAttribute("disabled", null);
             }
+        };
+
+        this.handleSaveError = (err) => {
+            console.error(err);
+            saveError.textContent = "Error: " + err.message;
+            saveError.style.display = "inline";
+            setTimeout(() => {
+                saveError.textContent = "";
+                saveError.style.display = "none";
+            }, errTimeout);
+            el.saveButton.removeAttribute("disabled");
         };
 
         this.updateButtons();

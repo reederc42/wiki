@@ -207,7 +207,7 @@ describe("UI e2e tests", () => {
             cy.get("button").contains("Save").click();
 
             // 6. See error
-            cy.get("wiki-subject > span").should("be.visible");
+            cy.get("#save-error").should("be.visible");
         });
     });
 
