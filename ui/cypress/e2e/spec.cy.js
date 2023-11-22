@@ -1,34 +1,29 @@
 /* eslint no-undef: "off" */
 
 import { loremIpsum } from "lorem-ipsum";
+import { newUser, existingUser } from "../../src/test-helpers/mock/auth";
+import { newSubject, existingSubject } from "../../src/test-helpers/mock/api";
 
 describe("UI e2e tests", () => {
     it("Views subject list", () => {
-        // Steps:
         // 1. Visit homepage
-        // 2. See list of subjects
         cy.visit("/");
 
+        // 2. See list of subjects
         cy.get("wiki-list-subjects")
             .get("tr")
             .should("have.length.greaterThan", 0);
     });
 
-    ["In", "Up"].forEach((method) => {
-        it(`Edits existing subject from homepage [sign${method}]`, () => {
-            // Steps:
+    [
+        { method: "In", user: existingUser() },
+        { method: "Up", user: newUser() },
+    ].forEach((t) => {
+        it(`Edits existing subject from homepage [sign${t.method}]`, () => {
             // 1. Visit homepage
-            // 2. Visit random subject
-            // 3. See cannot edit
-            // 4. Sign in/up
-            // 5. Edit subject
-            // 6. Save subject
-            // 7. See changes
-            // 8. Visit home
-            // 9. Visit same subject
-            // 10. See changes
             cy.visit("/");
 
+            // 2. Visit random subject
             cy.get("wiki-list-subjects > div")
                 .next()
                 .find("a")
@@ -38,24 +33,30 @@ describe("UI e2e tests", () => {
                     cy.get("wiki-view-subject > h1").contains(
                         subject.textContent,
                     );
+
+                    // 3. See cannot edit
                     cy.get("button").contains("Edit").should("be.disabled");
-                    if (method == "In") {
-                        cy.get("#username").type("bob");
-                        cy.get("#password").type("bobpass");
-                        cy.get("button").contains("Sign In").click();
-                    } else if (method == "Up") {
-                        cy.get("#username").type("testUser");
-                        cy.get("#password").type("goodpass");
-                        cy.get("button").contains("Sign Up").click();
-                    }
+
+                    // 4. Sign in/up
+                    cy.get("#username").type(t.user.name);
+                    cy.get("#password").type(t.user.pass);
+                    cy.get("button").contains(`Sign ${t.method}`).click();
+
+                    // 5. Edit subject
                     cy.get("button").contains("Edit").should("not.be.disabled");
                     cy.get("button").contains("Save").should("be.disabled");
                     cy.get("button").contains("Edit").click();
                     cy.get("wiki-view-subject > h1")
                         .contains(subject.textContent)
                         .should("not.be.visible");
+                    cy.get("textarea").should("not.have.attr", "readonly");
                     let testText = loremIpsum();
                     cy.get("#ace-editor").type(testText);
+
+                    // 6. Save changes
+                    cy.get("button").contains("Save").click();
+
+                    // 7. See changes
                     cy.get("button").contains("View").click();
                     cy.get("wiki-view-subject > h1")
                         .contains(subject.textContent)
@@ -63,46 +64,112 @@ describe("UI e2e tests", () => {
                     cy.get("wiki-view-subject")
                         .contains(testText)
                         .should("have.length", 1);
+
+                    // 8. Visit home
+                    cy.get("a").contains("Wiki").click();
+
+                    // 9. Visit same subject
+                    cy.get("a").contains(subject.textContent).click();
+
+                    // 10. See changes
+                    cy.get("wiki-view-subject")
+                        .contains(testText)
+                        .should("have.length", 1);
                 });
         });
     });
 
-    ["In", "Up"].forEach((method) => {
-        it(`Creates new subject from homepage [sign${method}]`, () => {
-            // Steps:
+    [
+        { method: "In", user: existingUser() },
+        { method: "Up", user: newUser() },
+    ].forEach((t) => {
+        it(`Creates new subject from homepage [sign${t.method}]`, () => {
             // 1. Visit homepage
+            cy.visit("/");
+
             // 2. Create new subject
+            cy.get("a").contains("new").click();
+
             // 3. See cannot edit
+            cy.get("button").contains("Edit").should("be.disabled");
+            cy.get("textarea").should("have.attr", "readonly");
+
             // 4. Sign in/up
+            cy.get("#username").type(t.user.name);
+            cy.get("#password").type(t.user.pass);
+            cy.get("button").contains(`Sign ${t.method}`).click();
+
             // 5. Edit subject
+            cy.get("textarea").should("not.have.attr", "readonly");
+            let testText = newSubject();
+            cy.get("#ace-editor").type("# " + testText);
+
             // 6. Save subject
+            cy.get("button").contains("Save").click();
+
             // 7. See changes
+            cy.get("button").contains("View").click();
+            cy.get("wiki-view-subject")
+                .contains(testText)
+                .should("have.length", 1);
+
             // 8. Visit home
+            cy.get("a").contains("Wiki").click();
+
             // 9. See new subject
+            cy.get("a").contains(testText).should("have.length", 1);
+
             // 10. Visit same subject
+            cy.get("a").contains(testText).click();
+
             // 11. See content
+            cy.get("wiki-view-subject")
+                .contains(testText)
+                .should("have.length", 1);
         });
     });
 
+    // TODO: mock user should use local storage
     ["Out", "In", "Up"].forEach((userState) => {
         it(`Creates existing subject directly [signed ${userState}]`, () => {
-            // Steps:
+            let subject = existingSubject();
             // 1. Visit create new with existing subject
-            // 1. See redirect
+            cy.visit(`/wiki-new/${encodeURIComponent(subject)}`);
+
+            // 2. See redirect
+            cy.url().should(
+                "equal",
+                Cypress.config().baseUrl +
+                    `/wiki/${encodeURIComponent(subject)}`,
+            );
         });
     });
 
-    ["In", "Up"].forEach((method) => {
-        it(`Creates new subject directly [sign${method}]`, () => {
-            // Steps:
+    [
+        { method: "In", user: existingUser() },
+        { method: "Up", user: newUser() },
+    ].forEach((t) => {
+        it(`Creates new subject directly [sign${t.method}]`, () => {
             // 1. Visit create new with new subject
+            let subject = newSubject();
+            cy.visit(`/wiki-new/${encodeURIComponent(subject)}`);
+
             // 2. See cannot edit
+            cy.get("button").contains("Edit").should("be.disabled");
+
             // 3. Sign in/up
-            // 4. Add new content
-            // 5. See changes
+            cy.get("#username").type(t.user.name);
+            cy.get("#password").type(t.user.pass);
+            cy.get("button").contains(`Sign ${t.method}`).click();
+
             // 6. Save has no error
+            cy.get("button").contains("Save").click();
+
             // 7. Visit homepage
+            cy.get("a").contains("Wiki").click();
+
             // 8. See new subject
+            cy.get("a").contains(subject).should("have.length", 1);
         });
     });
 
