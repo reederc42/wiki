@@ -117,6 +117,10 @@ describe("UI e2e tests", () => {
             cy.get("a").contains("Wiki").click();
 
             // 9. See new subject
+            cy.get("wiki-list-subjects > div")
+                .next()
+                .find("a")
+                .should("have.length.greaterThan", 1);
             cy.get("a").contains(testText).should("have.length", 1);
 
             // 10. Visit same subject
@@ -169,22 +173,45 @@ describe("UI e2e tests", () => {
             cy.get("a").contains("Wiki").click();
 
             // 8. See new subject
+            cy.get("wiki-list-subjects > div")
+                .next()
+                .find("a")
+                .should("have.length.greaterThan", 1);
             cy.get("a").contains(subject).should("have.length", 1);
         });
     });
 
-    ["In", "Up"].forEach((method) => {
-        it(`Creates existing subject from homepage [sign${method}]`, () => {
-            // Steps:
+    [
+        { method: "In", user: existingUser() },
+        { method: "Up", user: newUser() },
+    ].forEach((t) => {
+        it(`Creates existing subject from homepage [sign${t.method}]`, () => {
             // 1. Visit create new
+            cy.visit("/");
+            cy.get("a").contains("new").click();
+
             // 2. See cannot edit
+            cy.get("button").contains("Edit").should("be.disabled");
+
             // 3. Sign in/up
+            cy.get("#username").type(t.user.name);
+            cy.get("#password").type(t.user.pass);
+            cy.get("button").contains(`Sign ${t.method}`).click();
+
             // 4. Add existing title
+            cy.get("textarea").should("not.have.attr", "readonly");
+            let subject = existingSubject();
+            cy.get("#ace-editor").type("# " + subject);
+
             // 5. Save
+            cy.get("button").contains("Save").click();
+
             // 6. See error
+            cy.get("wiki-subject > span").should("be.visible");
         });
     });
 
+    // TODO: mock user uses local storage
     ["In", "Up"].forEach((method) => {
         it(`Reloads preserves sign in state [sign${method}]`, () => {
             // Steps:
@@ -198,6 +225,7 @@ describe("UI e2e tests", () => {
         });
     });
 
+    // TODO: mock user uses local storage
     ["In", "Up"].forEach((method) => {
         it(`Is signed out after reload after expiration [sign${method}]`, () => {
             // Steps:
@@ -209,6 +237,7 @@ describe("UI e2e tests", () => {
         });
     });
 
+    // TODO: mock user uses local storage
     ["In", "Up"].forEach((method) => {
         it(`Is signed out after save after expiration [sign${method}]`, () => {
             // Steps:
