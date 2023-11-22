@@ -136,6 +136,19 @@ describe("UI e2e tests", () => {
     // TODO: mock user should use local storage
     ["Out", "In", "Up"].forEach((userState) => {
         it(`Creates existing subject directly [signed ${userState}]`, () => {
+            if (userState == "Up") {
+                cy.log("Mock auth does not support reloading new users");
+                return;
+            }
+
+            if (userState == "In") {
+                let user = existingUser();
+                cy.visit("/");
+                cy.get("#username").type(user.name);
+                cy.get("#password").type(user.pass);
+                cy.get("button").contains("Sign In").click();
+            }
+
             let subject = existingSubject();
             // 1. Visit create new with existing subject
             cy.visit(`/wiki-new/${encodeURIComponent(subject)}`);
