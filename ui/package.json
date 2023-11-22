@@ -25,6 +25,7 @@
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.1",
     "jsdom": "^22.1.0",
+    "lorem-ipsum": "^2.0.8",
     "marked": "^10.0.0",
     "reefjs": "^13.0.2",
     "yargs": "^17.7.2"
