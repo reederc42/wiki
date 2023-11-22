@@ -56,6 +56,7 @@ class Subject extends HTMLElement {
             }
         } else {
             this.subject = new StoreSubject();
+            this.subject.synced = true;
             this.showSubject();
         }
     }
@@ -154,7 +155,7 @@ class Subject extends HTMLElement {
             if (user.username()) {
                 el.editButton.removeAttribute("disabled");
 
-                if (!el.subject.synced && el.subject.content != "") {
+                if (!el.subject.synced) {
                     el.saveButton.removeAttribute("disabled");
                 }
             } else {
