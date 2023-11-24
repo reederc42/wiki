@@ -3,6 +3,8 @@ import { user as auth } from "../auth/mock/user";
 
 export const signal = "user";
 
+const localStorageKey = "user";
+
 const userStore = store(
     {
         username: "",
@@ -23,20 +25,23 @@ const userStore = store(
 );
 
 export const user = {
-    signIn(username, password) {
-        return auth.signIn(username, password).then((token) => {
-            userStore.signIn(username, token);
+    signIn(username, password, refresh = "") {
+        return auth.signIn(username, password, refresh).then((v) => {
+            setPersistentUser(username, v.refresh);
+            userStore.signIn(username, v.token);
         });
     },
 
     signOut() {
+        clearPersistentUser();
         auth.signOut();
         userStore.signOut();
     },
 
     signUp(username, password) {
-        return auth.signUp(username, password).then((token) => {
-            userStore.signIn(username, token);
+        return auth.signUp(username, password).then((v) => {
+            setPersistentUser(username, v.refresh);
+            userStore.signIn(username, v.token);
         });
     },
 
@@ -48,3 +53,29 @@ export const user = {
         return userStore.value.token;
     },
 };
+
+function setPersistentUser(username, refresh) {
+    localStorage.setItem(
+        localStorageKey,
+        JSON.stringify({
+            username,
+            refresh,
+        }),
+    );
+}
+
+function getPersistentUser() {
+    return JSON.parse(localStorage.getItem(localStorageKey));
+}
+
+function clearPersistentUser() {
+    localStorage.removeItem(localStorageKey);
+}
+
+// Check for existing user when app starts
+(() => {
+    let u = getPersistentUser();
+    if (u) {
+        user.signIn(u.username, "", u.refresh);
+    }
+})();

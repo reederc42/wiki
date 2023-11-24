@@ -11,33 +11,19 @@ for (const u of Object.getOwnPropertyNames(mockUsers)) {
     }
 }
 
-(() => {
-    console.log("getting current user");
-    let username = localStorage.getItem("userName");
-    if (username == null) {
-        console.log("user was null");
-        return;
-    }
-
-    console.log("user existed");
-    let expiration = localStorage.getItem("userExpiration");
-    let password = localStorage.getItem("userPass");
-    console.log(username, password, expiration, Date.now() > new Date(expiration).getTime());
-    if (new Date(localStorage.getItem("userExpiration")).getTime() - Date.now() > 0) {
-        console.log("user sign in");
-        user.signIn(username, localStorage.getItem("userPass"));
-    }
-})()
-
 export const user = {
-    signIn(username, password) {
+    signIn(username, password, refresh) {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 if (password == m.get(username)) {
-                    localStorage.setItem("userName", username);
-                    localStorage.setItem("userPass", password);
-                    localStorage.setItem("userExpiration", Date.now() + userLifespan);
-                    resolve(username);
+                    resolve({
+                        token: "",
+                        refresh: refreshToken(
+                            username,
+                            password,
+                            Date.now() + userLifespan,
+                        ),
+                    });
                 } else {
                     reject(new Error("unauthorized"));
                 }
@@ -45,19 +31,21 @@ export const user = {
         });
     },
 
-    signOut() {
-        localStorage.clear();
-    },
+    signOut() {},
 
     signUp(username, password) {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 if (!m.has(username) && password != "badpass") {
                     m.set(username, password);
-                    localStorage.setItem("userName", username);
-                    localStorage.setItem("userPass", password);
-                    localStorage.setItem("userExpiration", Date.now() + userLifespan);
-                    resolve(username);
+                    resolve({
+                        token: "",
+                        refresh: refreshToken(
+                            username,
+                            password,
+                            Date.now() + userLifespan,
+                        ),
+                    });
                 } else {
                     reject(new Error("unauthorized"));
                 }
@@ -65,3 +53,13 @@ export const user = {
         });
     },
 };
+
+export function refreshToken(username, password, expiration) {
+    return btoa(
+        JSON.stringify({
+            username,
+            password,
+            expiration,
+        }),
+    );
+}
