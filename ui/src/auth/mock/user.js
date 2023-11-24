@@ -1,7 +1,8 @@
 import * as mockUsers from "./users.json";
 
 const timeout = 400;
-const userLifespan = 5 * 60 * 1000; // 5 minutes
+const refreshExpiration = 1000; // 5 minutes
+const tokenExpiration = 1000;
 
 let m = new Map();
 
@@ -15,13 +16,28 @@ export const user = {
     signIn(username, password, refresh) {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
+                if (refresh != "") {
+                    let u = JSON.parse(atob(refresh));
+                    if (u.expiration < Date.now()) {
+                        reject(new Error("unauthorized"));
+                        return;
+                    }
+                    if (!m.has(u.username)) {
+                        m.set(u.username, u.password);
+                    }
+                    password = u.password;
+                }
                 if (password == m.get(username)) {
                     resolve({
-                        token: "",
-                        refresh: refreshToken(
+                        token: token(
                             username,
                             password,
-                            Date.now() + userLifespan,
+                            Date.now() + tokenExpiration,
+                        ),
+                        refresh: token(
+                            username,
+                            password,
+                            Date.now() + refreshExpiration,
                         ),
                     });
                 } else {
@@ -39,11 +55,15 @@ export const user = {
                 if (!m.has(username) && password != "badpass") {
                     m.set(username, password);
                     resolve({
-                        token: "",
-                        refresh: refreshToken(
+                        token: token(
                             username,
                             password,
-                            Date.now() + userLifespan,
+                            Date.now() + tokenExpiration,
+                        ),
+                        refresh: token(
+                            username,
+                            password,
+                            Date.now() + refreshExpiration,
                         ),
                     });
                 } else {
@@ -54,7 +74,7 @@ export const user = {
     },
 };
 
-export function refreshToken(username, password, expiration) {
+export function token(username, password, expiration) {
     return btoa(
         JSON.stringify({
             username,

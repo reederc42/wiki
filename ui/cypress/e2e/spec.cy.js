@@ -4,6 +4,9 @@ import { loremIpsum } from "lorem-ipsum";
 import { newUser, existingUser } from "../../src/test-helpers/mock/auth";
 import { newSubject, existingSubject } from "../../src/test-helpers/mock/api";
 
+const userSignInWait = 1000;
+const userExpiration = 1000 + 250;
+
 describe("UI e2e tests", () => {
     it("Views subject list", () => {
         // 1. Visit homepage
@@ -63,7 +66,7 @@ describe("UI e2e tests", () => {
                         .should("be.visible");
                     cy.get("wiki-view-subject")
                         .contains(testText)
-                        .should("have.length", 1);
+                        .should("exist");
 
                     // 8. Visit home
                     cy.get("a").contains("Wiki").click();
@@ -74,7 +77,7 @@ describe("UI e2e tests", () => {
                     // 10. See changes
                     cy.get("wiki-view-subject")
                         .contains(testText)
-                        .should("have.length", 1);
+                        .should("exist");
                 });
         });
     });
@@ -109,9 +112,7 @@ describe("UI e2e tests", () => {
 
             // 7. See changes
             cy.get("button").contains("View").click();
-            cy.get("wiki-view-subject")
-                .contains(testText)
-                .should("have.length", 1);
+            cy.get("wiki-view-subject").contains(testText).should("exist");
 
             // 8. Visit home
             cy.get("a").contains("Wiki").click();
@@ -121,15 +122,13 @@ describe("UI e2e tests", () => {
                 .next()
                 .find("a")
                 .should("have.length.greaterThan", 1);
-            cy.get("a").contains(testText).should("have.length", 1);
+            cy.get("a").contains(testText).should("exist");
 
             // 10. Visit same subject
             cy.get("a").contains(testText).click();
 
             // 11. See content
-            cy.get("wiki-view-subject")
-                .contains(testText)
-                .should("have.length", 1);
+            cy.get("wiki-view-subject").contains(testText).should("exist");
         });
     });
 
@@ -190,7 +189,7 @@ describe("UI e2e tests", () => {
                 .next()
                 .find("a")
                 .should("have.length.greaterThan", 1);
-            cy.get("a").contains(subject).should("have.length", 1);
+            cy.get("a").contains(subject).should("exist");
         });
     });
 
@@ -224,44 +223,92 @@ describe("UI e2e tests", () => {
         });
     });
 
-    // TODO: mock user uses local storage
-    ["In", "Up"].forEach((method) => {
-        it(`Reloads preserves sign in state [sign${method}]`, () => {
-            // Steps:
+    [
+        { method: "In", user: existingUser() },
+        { method: "Up", user: newUser() },
+    ].forEach((t) => {
+        it(`Reloads preserves sign in state [sign${t.method}]`, () => {
             // 1. Visit homepage
+            cy.visit("/");
+
             // 2. Sign in/up
+            cy.get("#username").type(t.user.name);
+            cy.get("#password").type(t.user.pass);
+            cy.get("button").contains(`Sign ${t.method}`).click();
+            cy.get("wiki-user").contains(t.user.name).should("exist");
+
             // 3. Reload
+            cy.reload();
+
             // 4. See signed in
+            cy.get("wiki-user").contains(t.user.name).should("exist");
+
             // 5. Sign out
+            cy.get("button").contains("Sign Out").click();
+
             // 6. Reload
+            cy.reload();
+
             // 7. See signed out
+            cy.wait(userSignInWait);
+            cy.get("wiki-user").contains(t.user.name).should("not.exist");
         });
     });
 
-    // TODO: mock user uses local storage
-    ["In", "Up"].forEach((method) => {
-        it(`Is signed out after reload after expiration [sign${method}]`, () => {
-            // Steps:
+    [{method: "In", user: existingUser()}, {method: "Up", user: newUser()}].forEach((t) => {
+        it(`Is signed out after reload after expiration [sign${t.method}]`, () => {
             // 1. Visit homepage
+            cy.visit("/");
+
             // 2. Sign in/up
+            cy.get("#username").type(t.user.name);
+            cy.get("#password").type(t.user.pass);
+            cy.get("button").contains(`Sign ${t.method}`).click();
+
             // 3. Wait until expiration
+            cy.wait(userExpiration);
+
             // 4. Reload
+            cy.reload();
+
             // 5. See signed out
+            cy.wait(userSignInWait);
+            cy.get("wiki-user").contains(t.user.name).should("not.exist");
         });
     });
 
-    // TODO: mock user uses local storage
-    ["In", "Up"].forEach((method) => {
-        it(`Is signed out after save after expiration [sign${method}]`, () => {
-            // Steps:
+    [{method: "In", user: existingUser()}, {method: "Up", user: newUser()}].forEach((t) => {
+        it(`Is signed out after save after expiration [sign${t.method}]`, () => {
             // 1. Visit create new subject
+            cy.visit(`/wiki-new/${newSubject()}`);
+
             // 2. Sign in/up
+            cy.get("#username").type(t.user.name);
+            cy.get("#password").type(t.user.pass);
+            cy.get("button").contains(`Sign ${t.method}`).click();
+
             // 3. Add new content
+            cy.get("textarea").should("not.have.attr", "readonly");
+            cy.get("#ace-editor").type(loremIpsum());
+
             // 4. Save
+            cy.get("button").contains("Save").click();
+
             // 5. Add more new content
+            cy.get("textarea").should("not.have.attr", "readonly");
+            cy.get("#ace-editor").type("\n\n" + loremIpsum());
+
             // 6. Wait until expiration
+            cy.wait(userExpiration);
+
             // 7. Save
-            // 8. See signed out
+            cy.get("button").contains("Save").click();
+
+            // 8. See save error
+            cy.get("#save-error").should("be.visible");
+
+            // 9. See signed out
+            cy.get("wiki-user").contains(t.user.name).should("not.exist");
         });
     });
 });

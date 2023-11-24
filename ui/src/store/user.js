@@ -9,16 +9,21 @@ const userStore = store(
     {
         username: "",
         token: "",
+        refresh: "",
     },
     {
-        signIn(user, username, token) {
+        signIn(user, username, token, refresh) {
+            console.log(`signed in ${username}`);
             user.username = username;
             user.token = token;
+            user.refresh = refresh;
         },
 
         signOut(user) {
+            console.log(`signed out ${user.username}`);
             user.username = "";
             user.token = "";
+            user.refresh = "";
         },
     },
     signal,
@@ -28,7 +33,9 @@ export const user = {
     signIn(username, password, refresh = "") {
         return auth.signIn(username, password, refresh).then((v) => {
             setPersistentUser(username, v.refresh);
-            userStore.signIn(username, v.token);
+            userStore.signIn(username, v.token, v.refresh);
+        }).catch(() => {
+            this.signOut();
         });
     },
 
@@ -41,7 +48,7 @@ export const user = {
     signUp(username, password) {
         return auth.signUp(username, password).then((v) => {
             setPersistentUser(username, v.refresh);
-            userStore.signIn(username, v.token);
+            userStore.signIn(username, v.token, v.refresh);
         });
     },
 
@@ -52,6 +59,10 @@ export const user = {
     token() {
         return userStore.value.token;
     },
+
+    refresh() {
+        return userStore.value.refresh;
+    }
 };
 
 function setPersistentUser(username, refresh) {
@@ -76,6 +87,8 @@ function clearPersistentUser() {
 (() => {
     let u = getPersistentUser();
     if (u) {
-        user.signIn(u.username, "", u.refresh);
+        user.signIn(u.username, "", u.refresh).catch((err) => {
+            console.error(err);
+        });
     }
 })();

@@ -64,6 +64,14 @@ class EditSubject extends HTMLElement {
             .replace(/^#?\s+/, "");
     }
 
+    disable() {
+        this.editor.setReadOnly(true);
+    }
+
+    enable() {
+        this.editor.setReadOnly(false);
+    }
+
     disconnectedCallback() {
         document.removeEventListener(
             "reef:signal-" + userSignal,
