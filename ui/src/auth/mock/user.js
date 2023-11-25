@@ -1,7 +1,7 @@
 import * as mockUsers from "./users.json";
 
 const timeout = 400;
-const refreshExpiration = 1000; // 5 minutes
+const refreshExpiration = 2000; // 5 minutes
 const tokenExpiration = 1000;
 
 let m = new Map();

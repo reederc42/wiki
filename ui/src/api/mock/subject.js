@@ -49,6 +49,7 @@ export const subject = {
                         m.set(subject, content);
                         resolve();
                     }).catch((err) => {
+                        console.log("sign in error");
                         reject(err);
                     });
                 } else {

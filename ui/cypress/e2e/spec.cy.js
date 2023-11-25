@@ -5,7 +5,7 @@ import { newUser, existingUser } from "../../src/test-helpers/mock/auth";
 import { newSubject, existingSubject } from "../../src/test-helpers/mock/api";
 
 const userSignInWait = 1000;
-const userExpiration = 1000 + 250;
+const userExpiration = 2000 + 250;
 
 describe("UI e2e tests", () => {
     it("Views subject list", () => {
@@ -292,9 +292,14 @@ describe("UI e2e tests", () => {
             cy.get("#ace-editor").type(loremIpsum());
 
             // 4. Save
+            cy.get("button").contains("Sign Out").click();
+            cy.get("#username").type(t.user.name);
+            cy.get("#password").type(t.user.pass);
+            cy.get("button").contains(`Sign In`).click();
             cy.get("button").contains("Save").click();
 
             // 5. Add more new content
+            cy.log("Trying to add more content");
             cy.get("textarea").should("not.have.attr", "readonly");
             cy.get("#ace-editor").type("\n\n" + loremIpsum());
 

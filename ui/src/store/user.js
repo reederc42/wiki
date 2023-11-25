@@ -34,8 +34,9 @@ export const user = {
         return auth.signIn(username, password, refresh).then((v) => {
             setPersistentUser(username, v.refresh);
             userStore.signIn(username, v.token, v.refresh);
-        }).catch(() => {
+        }).catch((err) => {
             this.signOut();
+            throw err;
         });
     },
 
