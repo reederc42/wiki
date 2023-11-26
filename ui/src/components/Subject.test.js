@@ -66,9 +66,7 @@ describe("Subject component", () => {
         wikiSubject.setAttribute("subj", encodeURIComponent(subjectName));
         document.body.appendChild(wikiSubject);
 
-        await waitFor(() => {
-            return eventFired;
-        }, document);
+        await waitFor(() => eventFired, document);
 
         let buttons = wikiSubject.querySelectorAll("button");
         let viewButton = buttons[0];
@@ -114,9 +112,7 @@ describe("Subject component", () => {
         wikiSubject.setAttribute("subj", encodeURIComponent(subjectName));
         document.body.appendChild(wikiSubject);
 
-        await waitFor(() => {
-            return eventFired;
-        }, document);
+        await waitFor(() => eventFired, document);
 
         assert(document.title.includes(subjectName));
     });
@@ -142,6 +138,7 @@ describe("Subject component", () => {
 
             disable() {}
         });
+
         let subjectName = "Pro in antistite ferinos";
 
         let wikiSubject = document.createElement("wiki-subject");
@@ -223,9 +220,7 @@ describe("Subject component", () => {
         wikiSubject.setAttribute("subj", encodeURIComponent(subjectName));
         document.body.appendChild(wikiSubject);
 
-        await waitFor(() => {
-            return wikiSubject.querySelector("#edit");
-        }, document);
+        await waitFor(() => wikiSubject.querySelector("#edit"), document);
 
         assert(wikiSubject.querySelector("#edit").style.display == "inline");
         assert(document.title.includes(subjectName));
@@ -247,13 +242,9 @@ describe("Subject component", () => {
         window.addEventListener("reef:signal-" + window.routerSignal, () => {
             routerEventFired = true;
         });
-        await waitFor(() => {
-            return subjectEventFired;
-        }, document);
+        await waitFor(() => subjectEventFired, document);
 
-        await waitFor(() => {
-            return routerEventFired;
-        }, document);
+        await waitFor(() => routerEventFired, document);
 
         assert(
             window.location.href.substring(window.location.origin.length) ==

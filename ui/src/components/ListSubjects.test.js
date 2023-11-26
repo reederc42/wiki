@@ -31,9 +31,7 @@ describe("List Subjects component", () => {
         let wikiListSubjects = document.createElement("wiki-list-subjects");
         document.body.appendChild(wikiListSubjects);
 
-        await waitFor(() => {
-            return eventFired;
-        }, document);
+        await waitFor(() => eventFired, document);
     });
 
     test("shows all subjects in links", async () => {
@@ -45,9 +43,7 @@ describe("List Subjects component", () => {
         let wikiListSubjects = document.createElement("wiki-list-subjects");
         document.body.appendChild(wikiListSubjects);
 
-        await waitFor(() => {
-            return eventFired;
-        }, document);
+        await waitFor(() => eventFired, document);
 
         assert(
             wikiListSubjects.querySelector("table").querySelectorAll("a")
@@ -64,9 +60,7 @@ describe("List Subjects component", () => {
         let wikiListSubjects = document.createElement("wiki-list-subjects");
         document.body.appendChild(wikiListSubjects);
 
-        await waitFor(() => {
-            return eventFired;
-        }, document);
+        await waitFor(() => eventFired, document);
 
         let rows = wikiListSubjects.querySelectorAll("tr");
         for (const row of rows) {
@@ -83,9 +77,7 @@ describe("List Subjects component", () => {
         let wikiListSubjects = document.createElement("wiki-list-subjects");
         document.body.appendChild(wikiListSubjects);
 
-        await waitFor(() => {
-            return eventFired;
-        }, document);
+        await waitFor(() => eventFired, document);
 
         let a = [];
         let rows = wikiListSubjects.querySelectorAll("tr");

@@ -31,9 +31,7 @@ describe("View Subject component", () => {
 
         window.subjects.fetchContent(subjectName);
 
-        await waitFor(() => {
-            return eventFired;
-        }, document);
+        await waitFor(() => eventFired, document);
 
         let subject = window.subjects.get(subjectName);
         window.inject("viewer", subject);

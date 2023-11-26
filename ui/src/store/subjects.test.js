@@ -31,9 +31,7 @@ describe("subjects store", () => {
 
         window.subjects.updateList();
 
-        await waitFor(() => {
-            return eventFired;
-        }, document);
+        await waitFor(() => eventFired, document);
     });
 
     test("list after update returns array", async () => {
@@ -41,9 +39,7 @@ describe("subjects store", () => {
 
         window.subjects.updateList();
 
-        await waitFor(() => {
-            return window.subjects.list().length > 0;
-        }, document);
+        await waitFor(() => window.subjects.list().length > 0, document);
     });
 
     test("update content emits event", async () => {
@@ -54,9 +50,7 @@ describe("subjects store", () => {
 
         window.subjects.fetchContent("Pro in antistite ferinos");
 
-        await waitFor(() => {
-            return eventFired;
-        }, document);
+        await waitFor(() => eventFired, document);
     });
 
     test("content after update returns non-empty string", async () => {
@@ -65,9 +59,7 @@ describe("subjects store", () => {
 
         window.subjects.fetchContent(subjectName);
 
-        await waitFor(() => {
-            return window.subjects.get(subjectName).content.length > 0;
-        }, document);
+        await waitFor(() => window.subjects.get(subjectName).content.length > 0, document);
     });
 
     test("not found content rejects promise", async () => {
@@ -78,9 +70,7 @@ describe("subjects store", () => {
             err = e;
         });
 
-        await waitFor(() => {
-            return err.message.includes("not found");
-        }, document);
+        await waitFor(() => err.message.includes("not found"), document);
     });
 
     test("get returns mutable reference", async () => {
@@ -88,9 +78,7 @@ describe("subjects store", () => {
 
         window.subjects.fetchContent(subjectName);
 
-        await waitFor(() => {
-            return window.subjects.get(subjectName).content.length > 0;
-        }, document);
+        await waitFor(() => window.subjects.get(subjectName).content.length > 0, document);
 
         assert(
             window.subjects.get(subjectName) ===
@@ -115,9 +103,7 @@ describe("subjects store", () => {
             err = e;
         });
 
-        await waitFor(() => {
-            return err !== undefined;
-        }, document);
+        await waitFor(() => err !== undefined, document);
     });
 
     test("pushing new content sets synced", async () => {
@@ -129,9 +115,7 @@ describe("subjects store", () => {
 
         window.subjects.fetchContent(subjectName);
 
-        await waitFor(() => {
-            return eventFired;
-        }, document);
+        await waitFor(() => eventFired, document);
 
         let signedIn = false;
         window.user.signIn("bob", "bobpass").then(() => {
@@ -144,9 +128,7 @@ describe("subjects store", () => {
             success = true;
         });
 
-        await waitFor(() => {
-            return success;
-        }, document);
+        await waitFor(() => success, document);
     });
 
     test("creating subject that already exists fails", async () => {
@@ -159,9 +141,7 @@ describe("subjects store", () => {
 
         window.subjects.updateList();
 
-        await waitFor(() => {
-            return eventFired;
-        }, document);
+        await waitFor(() => eventFired, document);
 
         assert(
             window.subjects
