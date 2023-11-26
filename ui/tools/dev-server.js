@@ -5,6 +5,7 @@ import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { build } from "./build.js";
 import { prod as prodBuild, dev as devBuild } from "./build-options.js";
+import fs from "fs";
 import os from "os";
 
 const argv = yargs(hideBin(process.argv)).argv;
@@ -20,6 +21,18 @@ function getAddress(iface = "", family = "IPv4") {
     }
     return "";
 }
+
+let config = JSON.parse(fs.readFileSync("./config.default.json"));
+
+if (argv.userExpiration) {
+    config.userExpiration = argv.userExpiration;
+}
+
+if (argv.apiExpiration) {
+    config.apiExpiration = argv.apiExpiration;
+}
+
+fs.writeFileSync("./src/config.json", JSON.stringify(config));
 
 const app = express();
 let port = 8080;

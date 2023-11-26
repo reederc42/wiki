@@ -3,9 +3,10 @@
 import { loremIpsum } from "lorem-ipsum";
 import { newUser, existingUser } from "../../src/test-helpers/mock/auth";
 import { newSubject, existingSubject } from "../../src/test-helpers/mock/api";
+import config from "../../src/config.json";
 
 const userSignInWait = 1000;
-const userExpiration = 2000 + 250;
+const userExpiration = config.userExpiration + 250;
 
 describe("UI e2e tests", () => {
     it("Views subject list", () => {

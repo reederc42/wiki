@@ -1,8 +1,7 @@
-import * as mockUsers from "./users.json";
+import mockUsers from "./users.json";
+import config from "../../config.json";
 
 const timeout = 400;
-const refreshExpiration = 2000; // 5 minutes
-const tokenExpiration = 1000;
 
 let m = new Map();
 
@@ -32,12 +31,12 @@ export const user = {
                         token: token(
                             username,
                             password,
-                            Date.now() + tokenExpiration,
+                            Date.now() + config.apiExpiration,
                         ),
                         refresh: token(
                             username,
                             password,
-                            Date.now() + refreshExpiration,
+                            Date.now() + config.userExpiration,
                         ),
                     });
                 } else {
@@ -58,12 +57,12 @@ export const user = {
                         token: token(
                             username,
                             password,
-                            Date.now() + tokenExpiration,
+                            Date.now() + config.apiExpiration,
                         ),
                         refresh: token(
                             username,
                             password,
-                            Date.now() + refreshExpiration,
+                            Date.now() + config.userExpiration,
                         ),
                     });
                 } else {

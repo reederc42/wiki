@@ -37,7 +37,8 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "dist/**"
+      "dist/**",
+      "src/config.json"
     ]
   },
   "eslintConfig": {
