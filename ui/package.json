@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "nodemon tools/dev-server.js",
     "build": "node tools/prod.js",
-    "test": "node --test",
+    "test": "npm run build && node --test",
     "lint": "eslint \"./**/*.js\""
   },
   "repository": {
