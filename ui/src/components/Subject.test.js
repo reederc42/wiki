@@ -38,6 +38,10 @@ describe("Subject component", () => {
                 getValue() {
                     return "";
                 }
+
+                disable() { }
+
+                enable() { }
             },
         );
 
@@ -48,7 +52,7 @@ describe("Subject component", () => {
                     super();
                 }
 
-                render() {}
+                render() { }
             },
         );
 
@@ -131,6 +135,13 @@ describe("Subject component", () => {
     });
 
     test("shows fetching before content available", async () => {
+        window.customElements.define("wiki-edit-subject", class MockEditSubject extends window.HTMLElement {
+            constructor() {
+                super();
+            }
+
+            disable() {}
+        });
         let subjectName = "Pro in antistite ferinos";
 
         let wikiSubject = document.createElement("wiki-subject");
@@ -139,12 +150,17 @@ describe("Subject component", () => {
 
         assert(wikiSubject.textContent.includes("Fetching"));
 
-        await waitFor(() => {
-            return !wikiSubject.querySelector("p");
-        }, document);
+        await waitFor(() => !wikiSubject.querySelector("p"), document);
     });
 
     test("new subject shows editor", () => {
+        window.customElements.define("wiki-edit-subject", class MockEditSubject extends window.HTMLElement {
+            constructor() {
+                super();
+            }
+
+            disable() {}
+        })
         let wikiSubject = document.createElement("wiki-subject");
         wikiSubject.setAttribute("new", null);
         document.body.appendChild(wikiSubject);
@@ -152,7 +168,7 @@ describe("Subject component", () => {
         assert(wikiSubject.querySelector("#edit").style.display == "inline");
     });
 
-    test("saving new subject adds to store", () => {
+    test("saving new subject adds to store", async () => {
         let subjectName = "brand new subject";
         window.customElements.define(
             "wiki-edit-subject",
@@ -168,6 +184,10 @@ describe("Subject component", () => {
                 getTitle() {
                     return subjectName;
                 }
+
+                disable() {}
+
+                enable() {}
             },
         );
 
@@ -175,18 +195,28 @@ describe("Subject component", () => {
         wikiSubject.setAttribute("new", null);
         document.body.appendChild(wikiSubject);
 
+        let signedIn = false;
+        window.user.signIn("bob", "bobpass").then(() => {
+            signedIn = true;
+        })
+        await waitFor(() => signedIn, document);
+
         let saveButton = wikiSubject.querySelectorAll("button")[2];
         saveButton.removeAttribute("disabled");
         saveButton.click();
 
         let wikiEditSubject = document.querySelector("wiki-edit-subject");
-        assert(
-            window.subjects.get(subjectName).content ==
-                wikiEditSubject.getValue(),
-        );
+        await waitFor(() => window.subjects.get(subjectName) && window.subjects.get(subjectName).content == wikiEditSubject.getValue(), document);
     });
 
     test("new named subject shows editor and title", async () => {
+        window.customElements.define("wiki-edit-subject", class MockEditSubject extends window.HTMLElement {
+            constructor() {
+                super();
+            }
+
+            disable() {}
+        })
         let subjectName = "a new subject";
         let wikiSubject = document.createElement("wiki-subject");
         wikiSubject.setAttribute("new", null);
@@ -227,7 +257,7 @@ describe("Subject component", () => {
 
         assert(
             window.location.href.substring(window.location.origin.length) ==
-                "/wiki/" + encodeURIComponent(subjectName),
+            "/wiki/" + encodeURIComponent(subjectName),
         );
     });
 });

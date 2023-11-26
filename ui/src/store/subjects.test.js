@@ -13,10 +13,13 @@ describe("subjects store", () => {
 
         dom.addScript(`
             import { subjects, signal, Subject } from "./src/store/subjects";
+            import { user } from "./src/store/user";
 
             window.subjects = subjects;
             window.subjectsSignal = signal;
             window.Subject = Subject;
+
+            window.user = user;
         `);
     });
 
@@ -101,6 +104,12 @@ describe("subjects store", () => {
     });
 
     test("pushing nonexistent subject fails", async () => {
+        let signedIn = false;
+        window.user.signIn("bob", "bobpass").then(() => {
+            signedIn = true;
+        })
+        await waitFor(() => signedIn, document);
+
         let err;
         window.subjects.pushContent("some subject").catch((e) => {
             err = e;
@@ -123,6 +132,12 @@ describe("subjects store", () => {
         await waitFor(() => {
             return eventFired;
         }, document);
+
+        let signedIn = false;
+        window.user.signIn("bob", "bobpass").then(() => {
+            signedIn = true;
+        })
+        await waitFor(() => signedIn, document);
 
         let success = false;
         window.subjects.pushContent(subjectName).then(() => {
