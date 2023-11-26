@@ -59,6 +59,9 @@ app.get("/wiki-new", sendIndex);
 app.get("/wiki-new/*", sendIndex);
 
 let listener = app.listen(port).address();
+if (listener == null) {
+    throw new Error(`could not listen on ${port}`);
+}
 let ifaces = ["lo0", "en0", "lo", "eth0"];
 if (argv.interface) {
     if (argv.interface instanceof Array) {
