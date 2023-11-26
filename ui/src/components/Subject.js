@@ -120,7 +120,8 @@ class Subject extends HTMLElement {
                 },
                 save: () => {
                     el.subject.content = editor.getValue();
-                    el.saveButton.setAttribute("disabled", null);
+                    el.saveButton.setAttribute("disabled", true);
+                    editor.disable();
                     if (el.isNew) {
                         el.subjectName = editor.getTitle();
                         let err = subjectStore.create(
@@ -134,9 +135,14 @@ class Subject extends HTMLElement {
                         el.isNew = false;
                         el.removeAttribute("new");
                     }
-                    subjectStore.pushContent(el.subjectName).catch((err) => {
-                        el.handleSaveError(err);
-                    });
+                    subjectStore
+                        .pushContent(el.subjectName)
+                        .catch((err) => {
+                            el.handleSaveError(err);
+                        })
+                        .finally(() => {
+                            el.updateButtons();
+                        });
                 },
             },
         );
@@ -156,12 +162,14 @@ class Subject extends HTMLElement {
         this.updateButtons = () => {
             if (user.username()) {
                 el.editButton.removeAttribute("disabled");
+                editor.enable();
 
                 if (!el.subject.synced) {
                     el.saveButton.removeAttribute("disabled");
                 }
             } else {
-                el.editButton.setAttribute("disabled", null);
+                el.editButton.setAttribute("disabled", true);
+                editor.disable();
             }
         };
 
@@ -173,7 +181,6 @@ class Subject extends HTMLElement {
                 saveError.textContent = "";
                 saveError.style.display = "none";
             }, errTimeout);
-            el.saveButton.removeAttribute("disabled");
         };
 
         this.updateButtons();

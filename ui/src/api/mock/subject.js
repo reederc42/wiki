@@ -1,4 +1,5 @@
 import * as mockSubjects from "./subjects.json";
+import { user } from "../../store/user";
 
 const timeout = 400;
 
@@ -37,6 +38,22 @@ export const subject = {
             setTimeout(() => {
                 if (subject == "error") {
                     reject(new Error("server error"));
+                    return;
+                }
+                if (!user.username()) {
+                    reject(new Error("not logged in"));
+                    return;
+                }
+                if (tokenExpired(user.token())) {
+                    user.signIn(user.username(), "", user.refresh())
+                        .then(() => {
+                            m.set(subject, content);
+                            resolve();
+                        })
+                        .catch((err) => {
+                            console.log("sign in error");
+                            reject(err);
+                        });
                 } else {
                     m.set(subject, content);
                     resolve();
@@ -45,3 +62,7 @@ export const subject = {
         });
     },
 };
+
+function tokenExpired(token) {
+    return Date.now() > JSON.parse(atob(token)).expiration;
+}

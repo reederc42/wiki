@@ -26,34 +26,42 @@ describe("user store", () => {
         });
         window.user.signOut();
 
-        await waitFor(() => {
-            return eventFired;
-        }, document);
+        await waitFor(() => eventFired, document);
 
         assert(window.user.username() == "");
     });
 
-    test("sign in and out", async () => {
-        let eventFired = false;
-        window.addEventListener("reef:signal-" + window.userSignal, () => {
-            eventFired = true;
+    ["in", "up"].forEach((method) => {
+        test(`sign ${method} and out`, async () => {
+            let eventFired = false;
+            window.addEventListener("reef:signal-" + window.userSignal, () => {
+                eventFired = true;
+            });
+
+            let user, pass;
+            if (method == "in") {
+                user = "bob";
+                pass = "bobpass";
+                window.user.signIn(user, pass);
+            } else if (method == "up") {
+                user = "newUser";
+                pass = "goodpass";
+                window.user.signUp(user, pass);
+            }
+
+            await waitFor(() => eventFired, document);
+
+            assert(window.user.username() == user);
+            assert(window.localStorage.getItem("user"));
+
+            eventFired = false;
+            window.user.signOut();
+
+            await waitFor(() => eventFired, document);
+
+            assert(window.user.username() == "");
+            assert(!window.localStorage.getItem("user"));
         });
-        function assertion() {
-            return eventFired;
-        }
-
-        window.user.signIn("bob", "bobpass");
-
-        await waitFor(assertion, document);
-
-        assert(window.user.username() == "bob");
-
-        eventFired = false;
-        window.user.signOut();
-
-        await waitFor(assertion, document);
-
-        assert(window.user.username() == "");
     });
 
     test("sign in with bad password fails", async () => {
@@ -73,9 +81,7 @@ describe("user store", () => {
             passed = true;
         });
 
-        await waitFor(() => {
-            return passed;
-        }, document);
+        await waitFor(() => passed, document);
     });
 
     test("sign up with invalid password fails", async () => {
