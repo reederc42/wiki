@@ -31,13 +31,16 @@ const userStore = store(
 
 export const user = {
     signIn(username, password, refresh = "") {
-        return auth.signIn(username, password, refresh).then((v) => {
-            setPersistentUser(username, v.refresh);
-            userStore.signIn(username, v.token, v.refresh);
-        }).catch((err) => {
-            this.signOut();
-            throw err;
-        });
+        return auth
+            .signIn(username, password, refresh)
+            .then((v) => {
+                setPersistentUser(username, v.refresh);
+                userStore.signIn(username, v.token, v.refresh);
+            })
+            .catch((err) => {
+                this.signOut();
+                throw err;
+            });
     },
 
     signOut() {
@@ -63,7 +66,7 @@ export const user = {
 
     refresh() {
         return userStore.value.refresh;
-    }
+    },
 };
 
 function setPersistentUser(username, refresh) {

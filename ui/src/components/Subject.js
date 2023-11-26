@@ -135,11 +135,14 @@ class Subject extends HTMLElement {
                         el.isNew = false;
                         el.removeAttribute("new");
                     }
-                    subjectStore.pushContent(el.subjectName).catch((err) => {
-                        el.handleSaveError(err);
-                    }).finally(() => {
-                        el.updateButtons();
-                    });
+                    subjectStore
+                        .pushContent(el.subjectName)
+                        .catch((err) => {
+                            el.handleSaveError(err);
+                        })
+                        .finally(() => {
+                            el.updateButtons();
+                        });
                 },
             },
         );

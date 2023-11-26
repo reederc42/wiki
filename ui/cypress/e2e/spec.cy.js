@@ -255,7 +255,10 @@ describe("UI e2e tests", () => {
         });
     });
 
-    [{method: "In", user: existingUser()}, {method: "Up", user: newUser()}].forEach((t) => {
+    [
+        { method: "In", user: existingUser() },
+        { method: "Up", user: newUser() },
+    ].forEach((t) => {
         it(`Is signed out after reload after expiration [sign${t.method}]`, () => {
             // 1. Visit homepage
             cy.visit("/");
@@ -277,7 +280,10 @@ describe("UI e2e tests", () => {
         });
     });
 
-    [{method: "In", user: existingUser()}, {method: "Up", user: newUser()}].forEach((t) => {
+    [
+        { method: "In", user: existingUser() },
+        { method: "Up", user: newUser() },
+    ].forEach((t) => {
         it(`Is signed out after save after expiration [sign${t.method}]`, () => {
             // 1. Visit create new subject
             cy.visit(`/wiki-new/${newSubject()}`);

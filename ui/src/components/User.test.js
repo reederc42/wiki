@@ -32,7 +32,10 @@ describe("User component", () => {
         let wikiUser = document.createElement("wiki-user");
         document.body.appendChild(wikiUser);
 
-        await waitFor(() => wikiUser.querySelector("wiki-signed-in-user"), document);
+        await waitFor(
+            () => wikiUser.querySelector("wiki-signed-in-user"),
+            document,
+        );
     });
 
     test("signed up shows signed in component", async () => {
@@ -41,7 +44,10 @@ describe("User component", () => {
         let wikiUser = document.createElement("wiki-user");
         document.body.appendChild(wikiUser);
 
-        await waitFor(() => wikiUser.querySelector("wiki-signed-in-user"), document);
+        await waitFor(
+            () => wikiUser.querySelector("wiki-signed-in-user"),
+            document,
+        );
     });
 
     test("sign in and up with invalid password fails", async () => {
@@ -79,7 +85,10 @@ describe("User component", () => {
 
         signIn.click();
 
-        await waitFor(() => wikiUser.querySelector("span").style.display == "inline", document);
+        await waitFor(
+            () => wikiUser.querySelector("span").style.display == "inline",
+            document,
+        );
     });
 
     test("sign up with invalid password shows error", async () => {
@@ -96,7 +105,10 @@ describe("User component", () => {
 
         signUp.click();
 
-        await waitFor(() => wikiUser.querySelector("span").style.display == "inline", document);
+        await waitFor(
+            () => wikiUser.querySelector("span").style.display == "inline",
+            document,
+        );
     });
 
     test("sign in and out modifies component", async () => {

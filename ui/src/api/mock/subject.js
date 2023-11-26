@@ -45,13 +45,15 @@ export const subject = {
                     return;
                 }
                 if (tokenExpired(user.token())) {
-                    user.signIn(user.username(), "", user.refresh()).then(() => {
-                        m.set(subject, content);
-                        resolve();
-                    }).catch((err) => {
-                        console.log("sign in error");
-                        reject(err);
-                    });
+                    user.signIn(user.username(), "", user.refresh())
+                        .then(() => {
+                            m.set(subject, content);
+                            resolve();
+                        })
+                        .catch((err) => {
+                            console.log("sign in error");
+                            reject(err);
+                        });
                 } else {
                     m.set(subject, content);
                     resolve();

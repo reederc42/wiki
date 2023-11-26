@@ -59,7 +59,10 @@ describe("subjects store", () => {
 
         window.subjects.fetchContent(subjectName);
 
-        await waitFor(() => window.subjects.get(subjectName).content.length > 0, document);
+        await waitFor(
+            () => window.subjects.get(subjectName).content.length > 0,
+            document,
+        );
     });
 
     test("not found content rejects promise", async () => {
@@ -78,7 +81,10 @@ describe("subjects store", () => {
 
         window.subjects.fetchContent(subjectName);
 
-        await waitFor(() => window.subjects.get(subjectName).content.length > 0, document);
+        await waitFor(
+            () => window.subjects.get(subjectName).content.length > 0,
+            document,
+        );
 
         assert(
             window.subjects.get(subjectName) ===
@@ -95,7 +101,7 @@ describe("subjects store", () => {
         let signedIn = false;
         window.user.signIn("bob", "bobpass").then(() => {
             signedIn = true;
-        })
+        });
         await waitFor(() => signedIn, document);
 
         let err;
@@ -120,7 +126,7 @@ describe("subjects store", () => {
         let signedIn = false;
         window.user.signIn("bob", "bobpass").then(() => {
             signedIn = true;
-        })
+        });
         await waitFor(() => signedIn, document);
 
         let success = false;
