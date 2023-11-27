@@ -2,3 +2,4 @@ dist/
 node_modules/
 testdata/
 src/config.json
+cypress/downloads
