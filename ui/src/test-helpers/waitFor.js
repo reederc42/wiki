@@ -1,4 +1,5 @@
 import assert from "node:assert";
+
 import { waitFor as domWaitFor } from "@testing-library/dom";
 
 export async function waitFor(

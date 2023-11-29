@@ -1,9 +1,10 @@
 /* eslint no-undef: "off" */
 
 import { loremIpsum } from "lorem-ipsum";
-import { newUser, existingUser } from "../../src/test-helpers/mock/auth";
-import { newSubject, existingSubject } from "../../src/test-helpers/mock/api";
+
 import config from "../../src/config.json";
+import { newSubject, existingSubject } from "../../src/test-helpers/mock/api";
+import { newUser, existingUser } from "../../src/test-helpers/mock/auth";
 
 const userSignInWait = 1000;
 const userExpiration = config.userExpiration + 250;

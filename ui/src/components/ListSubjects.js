@@ -1,6 +1,7 @@
 import { signal, render } from "reefjs";
-import { subjects, signal as subjectsSignal } from "../store/subjects";
+
 import { navigate } from "../store/router";
+import { subjects, signal as subjectsSignal } from "../store/subjects";
 
 const errorSignal = "list-subjects-error";
 

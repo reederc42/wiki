@@ -1,4 +1,5 @@
 import { render } from "reefjs";
+
 import { router, navigate } from "../store/router";
 
 class App extends HTMLElement {

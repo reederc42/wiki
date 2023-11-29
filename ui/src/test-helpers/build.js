@@ -1,4 +1,4 @@
-import * as esbuild from "esbuild";
+import esbuild from "esbuild";
 
 export function buildSync(options = {}) {
     let baseOptions = {

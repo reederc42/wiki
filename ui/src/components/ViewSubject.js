@@ -1,5 +1,6 @@
-import { render } from "reefjs";
 import { marked } from "marked";
+import { render } from "reefjs";
+
 import { extract } from "../store/inject";
 
 class ViewSubject extends HTMLElement {

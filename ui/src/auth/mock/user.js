@@ -1,5 +1,5 @@
-import mockUsers from "./users.json";
 import config from "../../config.json";
+import mockUsers from "./users.json";
 
 const timeout = 400;
 

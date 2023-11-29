@@ -1,7 +1,8 @@
-import { describe, beforeEach, test } from "node:test";
 import assert from "node:assert";
-import { waitFor } from "../test-helpers/waitFor.js";
+import { describe, beforeEach, test } from "node:test";
+
 import { DOM } from "../test-helpers/dom.js";
+import { waitFor } from "../test-helpers/waitFor.js";
 
 describe("View Subject component", () => {
     let dom, window, document;
