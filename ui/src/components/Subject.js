@@ -1,11 +1,12 @@
 import { render } from "reefjs";
-import { setTitle } from "../store/title";
+
 import { inject } from "../store/inject";
+import { router } from "../store/router";
 import {
     subjects as subjectStore,
     Subject as StoreSubject,
 } from "../store/subjects";
-import { router } from "../store/router";
+import { setTitle } from "../store/title";
 import { user, signal as userSignal } from "../store/user";
 
 const errTimeout = 3000;

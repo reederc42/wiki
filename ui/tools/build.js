@@ -1,7 +1,13 @@
 /* eslint-env node */
 
-import fs from "fs";
+import fs from "node:fs";
+
 import esbuild from "esbuild";
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
+
+import { prod, dev } from "./build-options.js";
+import { defaults, configure } from "./configure.js";
 
 const outdir = "dist";
 
@@ -30,3 +36,26 @@ export async function build(options = {}, env = "") {
 
     console.log(`finishing building for ${env}`);
 }
+
+async function main() {
+    const argv = yargs(hideBin(process.argv))
+        .default("build", "prod")
+        .default(defaults).argv;
+
+    configure(argv);
+
+    let options;
+    switch (argv.build) {
+        case "prod":
+            options = prod;
+            break;
+        case "dev":
+            options = dev;
+            break;
+    }
+
+    await build(options, argv.build);
+}
+
+if (process.argv.includes(import.meta.url.substring("file://".length)))
+    await main();

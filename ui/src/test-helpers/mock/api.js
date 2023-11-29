@@ -1,5 +1,6 @@
-import * as mockSubjects from "../../api/mock/subjects.json";
 import { loremIpsum } from "lorem-ipsum";
+
+import * as mockSubjects from "../../api/mock/subjects.json";
 
 let a = [];
 

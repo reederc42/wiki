@@ -1,5 +1,5 @@
-import * as mockSubjects from "./subjects.json";
 import { user } from "../../store/user";
+import mockSubjects from "./subjects.json";
 
 const timeout = 400;
 

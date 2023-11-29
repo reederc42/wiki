@@ -1,5 +1,6 @@
-import { describe, beforeEach, test } from "node:test";
 import assert from "node:assert";
+import { describe, beforeEach, test } from "node:test";
+
 import { DOM } from "../test-helpers/dom.js";
 import { waitFor } from "../test-helpers/waitFor.js";
 

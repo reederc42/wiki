@@ -1,0 +1,13 @@
+ARG NODE_VERSION="21.2.0"
+ARG CHROME_VERSION="119.0.6045.159-1"
+ARG FIREFOX_VERSION="120.0"
+ARG EDGE_VERSION=
+ARG YARN_VERSION=
+ARG CYPRESS_VERSION=
+
+FROM cypress/factory:3.2.0
+
+WORKDIR /ci
+COPY ./ui/package.json .
+COPY ./ui/package-lock.json .
+RUN npm install

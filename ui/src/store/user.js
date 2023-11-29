@@ -1,4 +1,5 @@
 import { store } from "reefjs";
+
 import { user as auth } from "../auth/mock/user";
 
 export const signal = "user";

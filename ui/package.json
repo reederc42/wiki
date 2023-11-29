@@ -5,9 +5,9 @@
   "main": "src/main.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon tools/dev-server.js",
-    "build": "node tools/prod.js",
-    "test": "node --test",
+    "dev": "nodemon tools/serve.js",
+    "build": "node tools/build.js",
+    "test": "node tools/configure.js && node --test",
     "lint": "eslint \"./**/*.js\""
   },
   "repository": {
@@ -37,7 +37,8 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "dist/**"
+      "dist/**",
+      "src/config.json"
     ]
   },
   "eslintConfig": {
