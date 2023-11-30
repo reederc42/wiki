@@ -7,7 +7,9 @@ ARG CYPRESS_VERSION=
 
 FROM cypress/factory:3.2.0
 
+USER 1000:1000
+
 WORKDIR /ci
-COPY ./ui/package.json .
-COPY ./ui/package-lock.json .
-RUN npm install
+COPY --chown=1000:1000 ./ui/package.json .
+COPY --chown=1000:1000 ./ui/package-lock.json .
+RUN npm install --verbose

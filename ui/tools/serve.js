@@ -7,8 +7,8 @@ import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
 import { build } from "./build.js";
-import { prod as prodBuild, dev as devBuild } from "./build-options.js";
-import { defaults, configure } from "./configure.js";
+import { options } from "./build-options.js";
+import { configure } from "./configure.js";
 
 function getAddress(iface = "", family = "IPv4") {
     let i = os.networkInterfaces()[iface];
@@ -25,23 +25,19 @@ function getAddress(iface = "", family = "IPv4") {
 async function main() {
     const argv = yargs(hideBin(process.argv))
         .default("build", "dev")
-        .default(defaults)
+        .default("api", "mock")
         .default("port", 8080)
         .default("interface", ["lo0", "en0", "lo", "eth0"]).argv;
 
-    configure(argv);
+    configure(argv, argv.api);
 
-    let buildOpts;
-    switch (argv.build) {
-        case "prod":
-            buildOpts = prodBuild;
-            break;
-        case "dev":
-            buildOpts = devBuild;
-            break;
-    }
-
-    await build(buildOpts, argv.build);
+    await build(
+        {
+            ...options[argv.build],
+            ...options[argv.api],
+        },
+        argv.build,
+    );
 
     const app = express();
     const dist = process.cwd() + "/dist";
@@ -50,9 +46,7 @@ async function main() {
     function sendIndex(_, res) {
         res.sendFile(`${dist}/index.html`);
     }
-    app.get("/wiki/*", sendIndex);
-    app.get("/wiki-new", sendIndex);
-    app.get("/wiki-new/*", sendIndex);
+    app.get("/*", sendIndex);
 
     const listener = app.listen(argv.port).address();
     if (listener == null) {
