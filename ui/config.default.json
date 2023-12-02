@@ -1,4 +1,10 @@
 {
-    "userExpiration": 300000,
-    "apiExpiration": 120000
+    "server": {
+        "apiBaseURL": "http://localhost:8080",
+        "authBaseURL": "http://localhost:8080"
+    },
+    "mock": {
+        "userExpiration": 300000,
+        "apiExpiration": 120000
+    }
 }

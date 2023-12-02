@@ -6,8 +6,9 @@ import esbuild from "esbuild";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
-import { prod, dev } from "./build-options.js";
-import { defaults, configure } from "./configure.js";
+import { options } from "./build-options.js";
+import { configure } from "./configure.js";
+import { isMain } from "./is-main.js";
 
 const outdir = "dist";
 
@@ -40,22 +41,17 @@ export async function build(options = {}, env = "") {
 async function main() {
     const argv = yargs(hideBin(process.argv))
         .default("build", "prod")
-        .default(defaults).argv;
+        .default("api", "mock").argv;
 
-    configure(argv);
+    configure(argv, argv.api);
 
-    let options;
-    switch (argv.build) {
-        case "prod":
-            options = prod;
-            break;
-        case "dev":
-            options = dev;
-            break;
-    }
-
-    await build(options, argv.build);
+    await build(
+        {
+            ...options[argv.build],
+            ...options[argv.api],
+        },
+        argv.build,
+    );
 }
 
-if (process.argv.includes(import.meta.url.substring("file://".length)))
-    await main();
+if (isMain(import.meta.url)) await main();
