@@ -5,6 +5,8 @@ import fs from "node:fs";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
+import { isMain } from "./is-main.js";
+
 const configFile = "./src/config.json";
 export const defaults = JSON.parse(fs.readFileSync("config.default.json"));
 
@@ -23,4 +25,4 @@ function main() {
     configure(argv, argv.api);
 }
 
-if (process.argv.includes(import.meta.url.substring("file://".length))) main();
+if (isMain(import.meta.url)) main();

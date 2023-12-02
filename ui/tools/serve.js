@@ -9,6 +9,7 @@ import { hideBin } from "yargs/helpers";
 import { build } from "./build.js";
 import { options } from "./build-options.js";
 import { configure } from "./configure.js";
+import { isMain } from "./is-main.js";
 
 function getAddress(iface = "", family = "IPv4") {
     let i = os.networkInterfaces()[iface];
@@ -78,5 +79,4 @@ async function main() {
     }
 }
 
-if (process.argv.includes(import.meta.url.substring("file://".length)))
-    await main();
+if (isMain(import.meta.url)) await main();

@@ -8,6 +8,7 @@ import { hideBin } from "yargs/helpers";
 
 import { options } from "./build-options.js";
 import { configure } from "./configure.js";
+import { isMain } from "./is-main.js";
 
 const outdir = "dist";
 
@@ -53,5 +54,4 @@ async function main() {
     );
 }
 
-if (process.argv.includes(import.meta.url.substring("file://".length)))
-    await main();
+if (isMain(import.meta.url)) await main();
