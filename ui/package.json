@@ -8,7 +8,8 @@
     "dev": "nodemon tools/serve.js",
     "build": "node tools/build.js",
     "test": "node tools/configure.js && node --test",
-    "lint": "eslint \"./**/*.js\""
+    "lint": "eslint \"./**/*.js\"",
+    "update": "npx npm-check-updates -u"
   },
   "repository": {
     "type": "git",
@@ -17,24 +18,24 @@
   "author": "Chris Reeder <reederc42@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@testing-library/dom": "^9.3.3",
-    "ace-builds": "^1.31.2",
-    "core-js": "^3.33.3",
-    "esbuild": "^0.19.8",
+    "@testing-library/dom": "^9.3.4",
+    "ace-builds": "^1.32.3",
+    "core-js": "^3.35.0",
+    "esbuild": "^0.19.11",
     "esbuild-plugin-resolve": "^2.0.0",
-    "eslint": "^8.54.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-prettier": "^5.0.1",
-    "jsdom": "^23.0.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "jsdom": "^23.2.0",
     "lorem-ipsum": "^2.0.8",
-    "marked": "^11.0.0",
+    "marked": "^11.1.1",
     "reefjs": "^13.0.2",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "cypress": "^13.6.0",
+    "cypress": "^13.6.2",
     "express": "^4.18.2",
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.2"
   },
   "nodemonConfig": {
     "ignore": [
