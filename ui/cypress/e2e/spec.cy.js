@@ -229,7 +229,7 @@ describe("UI e2e tests", () => {
         { method: "In", user: existingUser() },
         { method: "Up", user: newUser() },
     ].forEach((t) => {
-        it(`Reloads preserves sign in state [sign${t.method}]`, () => {
+        it(`Reload preserves sign in state [sign${t.method}]`, () => {
             // 1. Visit homepage
             cy.visit("/");
 
