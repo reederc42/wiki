@@ -159,7 +159,7 @@ mod tests {
         let re = Regex::new("wiki").unwrap();
 
         let input = Arc::new(FilterInput{
-            assets: assets,
+            assets,
             entrypoint: "index.html".to_string(),
             path_validator: re,
         });
@@ -180,7 +180,7 @@ mod tests {
         let re = Regex::new("wiki").unwrap();
 
         let input = Arc::new(FilterInput{
-            assets: assets,
+            assets,
             entrypoint: "index.html".to_string(),
             path_validator: re,
         });
@@ -201,7 +201,7 @@ mod tests {
         let re = Regex::new("/wiki").unwrap();
 
         let input = Arc::new(FilterInput{
-            assets: assets,
+            assets,
             entrypoint: "index.html".to_string(),
             path_validator: re,
         });
