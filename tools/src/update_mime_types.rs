@@ -39,7 +39,7 @@ pub async fn cmd(args: Args) {
     w.flush().unwrap();
 }
 
-fn nginx_to_map<'a>(nginx_mime_types: &'a str) -> HashMap<&'a str, &'a str> {
+fn nginx_to_map(nginx_mime_types: &str) -> HashMap<&str, &str> {
     let types_re = Regex::new(TYPES_RE).unwrap();
     let line_re = Regex::new(LINE_RE).unwrap();
 
@@ -94,7 +94,7 @@ mod tests {
             ("txt", "text/plain"),
         ]);
 
-        let actual = nginx_to_map(&mime_types);
+        let actual = nginx_to_map(mime_types);
 
         assert_eq!(actual, expected);
     }
@@ -105,7 +105,7 @@ mod tests {
         let line = "    application/json    json";
         let expected = vec![("json", "application/json")];
 
-        let actual = line_to_tuples(&line, &re).unwrap();
+        let actual = line_to_tuples(line, &re).unwrap();
 
         assert_eq!(actual, expected);
 
@@ -115,7 +115,7 @@ mod tests {
             ("htm", "text/html"),
         ];
 
-        let actual = line_to_tuples(&line, &re).unwrap();
+        let actual = line_to_tuples(line, &re).unwrap();
 
         assert_eq!(actual, expected);
 
@@ -125,7 +125,7 @@ mod tests {
             ("txt", "text/plain"),
         ];
 
-        let actual = line_to_tuples(&line, &re).unwrap();
+        let actual = line_to_tuples(line, &re).unwrap();
 
         assert_eq!(actual, expected);
     }
@@ -158,6 +158,6 @@ mod tests {
             re.captures(types_response).map(|m| m.extract()).unwrap();
 
         assert!(types.contains("This is my stuff"));
-        assert!(!types.contains("}"));
+        assert!(!types.contains('}'));
     }
 }
