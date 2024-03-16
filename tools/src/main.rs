@@ -1,6 +1,5 @@
 use clap::{Parser, Subcommand};
 
-mod http;
 mod update_mime_types;
 
 #[derive(Parser, Debug)]
@@ -16,10 +15,11 @@ enum Commands {
     UpdateMimeTypes(update_mime_types::Args),
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let args = Cli::parse();
 
     match args.command {
-        Commands::UpdateMimeTypes(a) => update_mime_types::cmd(a),
+        Commands::UpdateMimeTypes(a) => update_mime_types::cmd(a).await,
     }
 }
