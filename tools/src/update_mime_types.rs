@@ -2,7 +2,7 @@ use std::{collections::HashMap, fs::File, io::{BufWriter, Write}};
 
 use regex::Regex;
 
-const DEFAULT_OUTPUT: &str = "wiki/src/mime_types.json";
+const DEFAULT_OUTPUT: &str = "wiki/src/mime_types.yaml";
 const DEFAULT_SOURCE_URL: &str = 
     "https://raw.githubusercontent.com/nginx/nginx/master/conf/mime.types";
 
@@ -32,10 +32,13 @@ pub async fn cmd(args: Args) {
         .text()
         .await.unwrap();
 
-    let m = nginx_to_map(&body);
+    let mut m = nginx_to_map(&body);
+
+    // map is not included so it must be added manually
+    m.insert("map", "application/json");
 
     let mut w = BufWriter::new(f);
-    serde_json::to_writer(&mut w, &m).unwrap();
+    serde_yaml::to_writer(&mut w, &m).unwrap();
     w.flush().unwrap();
 }
 

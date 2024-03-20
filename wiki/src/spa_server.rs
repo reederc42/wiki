@@ -4,6 +4,8 @@
 // the entry point if the validation passes.
 // TODO: fix up docs.
 
+const MIME_TYPES: &str = "./wiki/src/mime_types.yaml";
+
 use std::{collections::HashMap, ffi::OsStr, fs::{self, DirEntry}, io, path::Path, sync::Arc};
 
 use regex::Regex;
@@ -73,7 +75,9 @@ fn found(asset: &Asset) -> Response<Vec<u8>> {
 
 pub fn build_assets(dir: &Path) -> io::Result<HashMap<String, Asset>> {
     let mut assets = HashMap::new();
-    let content_types = build_content_types_map();
+    let content_types_str = fs::read_to_string(MIME_TYPES).unwrap();
+    let content_types: HashMap<&str, &str> =
+        serde_yaml::from_str(&content_types_str).unwrap();
 
     let mut cb = |entry: &DirEntry| -> io::Result<()> {
         let content = match fs::read(entry.path()) {
@@ -83,6 +87,7 @@ pub fn build_assets(dir: &Path) -> io::Result<HashMap<String, Asset>> {
 
         let path = entry.path();
         let ext = path.extension().and_then(OsStr::to_str).unwrap();
+        println!("{:?}", ext);
         let content_type = String::from(*content_types.get(ext).unwrap());
 
         let asset = Asset{content_type, content};
@@ -116,18 +121,6 @@ fn visit_files(dir: &Path, cb: &mut dyn FnMut(&DirEntry) -> io::Result<()>) -> i
         }
     }
     Ok(())
-}
-
-fn build_content_types_map() -> HashMap<&'static str, &'static str> {
-    let mut m = HashMap::new();
-
-    m.insert("ico", "image/x-icon");
-    m.insert("map", "application/json");
-    m.insert("json", "application/json");
-    m.insert("html", "text/html");
-    m.insert("js", "application/javascript");
-
-    m
 }
 
 #[cfg(test)]

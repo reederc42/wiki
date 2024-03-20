@@ -16,5 +16,5 @@ async fn main() {
         path_validator: Regex::new(r"^$|wiki(:?-new)?").unwrap(),
     }));
 
-    warp::serve(filter).bind(([127, 0, 0, 1], 8080)).await;
+    warp::serve(filter).bind(([0, 0, 0, 0], 8080)).await;
 }
