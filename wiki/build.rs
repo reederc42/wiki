@@ -58,7 +58,10 @@ fn build_assets(dir: &Path) -> Vec<Asset> {
             return
         }
 
-        let content = fs::read(p).unwrap();
+        let content = match fs::read(p) {
+            Err(_) => return,
+            Ok(c) => c,
+        };
 
         let ext = p.extension().and_then(OsStr::to_str).unwrap();
         let content_type = String::from(*content_types.get(ext).unwrap());
