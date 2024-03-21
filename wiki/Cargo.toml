@@ -3,9 +3,16 @@ name = "wiki"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+phf = "0.11.2"
 regex = "1.10.3"
-tokio = { version = "1", features = ["full"] }
-warp = "0.3"
+serde_yaml = "0.9.33"
+tokio = { version = "1.36.0", features = ["full"] }
+warp = "0.3.6"
+
+[build-dependencies]
+phf_codegen = "0.11.2"
+serde_yaml = "0.9.33"
+
+[dev-dependencies]
+phf = { version = "0.11.2", features = ["macros"] }
