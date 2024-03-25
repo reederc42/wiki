@@ -67,11 +67,7 @@ fn line_to_tuples<'a>(
     line: &'a str,
     re: &Regex,
 ) -> Option<Vec<(&'a str, &'a str)>> {
-    let Some((_, [mime_type, extensions])) =
-        re.captures(line).map(|m| m.extract()) else {
-            return None;
-        };
-
+    let (_, [mime_type, extensions]) = re.captures(line).map(|m| m.extract())?;
     Some(extensions.split(' ').map(|ext| (ext, mime_type)).collect())
 }
 

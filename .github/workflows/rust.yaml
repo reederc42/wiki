@@ -1,4 +1,4 @@
-name: Rust CI
+name: Rust Check
 
 on:
   push:
@@ -16,6 +16,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Set Rust version
+      run: rustup update 1.77.0 && rustup default 1.77.0
 
     - name: Lint
       run: cargo clippy --all-targets --all-features
