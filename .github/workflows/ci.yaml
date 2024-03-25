@@ -1,19 +1,61 @@
-Name: Continuous Integration
+name: CI
 
 on:
-  workflow_run:
-    workflows:
-    - Node.js Check
-    - Rust Check
-    types:
-    - completed
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  RUSTFLAGS: "-Dwarnings"
 
 jobs:
+  nodejs:
+    runs-on: ubuntu-latest
 
-  on-success:
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 21.7.1
 
+    - name: Install
+      run: npm install --omit=dev
+      working-directory: ./ui
+
+    - name: Lint
+      run: npm run lint
+      working-directory: ./ui
+
+    - name: Test
+      run: npm run test
+      working-directory: ./ui
+
+    - name: Build
+      run: npm run build
+      working-directory: ./ui
+
+  rust:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set Rust version
+      run: |
+        rustup update 1.77.0        &&\
+        rustup default 1.77.0       &&\
+        rustup component add clippy
+
+    - name: Lint
+      run: cargo clippy --all-targets --all-features
+
+    - name: Test
+      run: cargo test
+
+  ci:
     runs-on: self-hosted
-    if: ${{ github.event.workflow_run.conclusion == 'success'}}
 
     steps:
     - uses: actions/checkout@v4
