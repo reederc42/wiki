@@ -1,0 +1,27 @@
+Name: Continuous Integration
+
+on:
+  workflow_run:
+    workflows:
+    - Node.js Check
+    - Rust Check
+    types:
+    - completed
+
+jobs:
+
+  on-success:
+
+    runs-on: self-hosted
+    if: ${{ github.event.workflow_run.conclusion == 'success'}}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set Rust version
+      run: |
+        rustup update 1.77.0  &&\
+        rustup default 1.77.0
+
+    - name: Run CI
+      run: cargo run --bin tools ci --all
