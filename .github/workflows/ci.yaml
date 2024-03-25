@@ -55,6 +55,10 @@ jobs:
       run: cargo test
 
   ci:
+    needs:
+    - nodejs
+    - rust
+
     runs-on: self-hosted
 
     steps:
@@ -62,8 +66,7 @@ jobs:
 
     - name: Set Rust version
       run: |
-        rustup update 1.77.0  &&\
-        rustup default 1.77.0
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.77.0
 
     - name: Run CI
-      run: cargo run --bin tools ci --all
+      run: $HOME/.cargo/bin/cargo run --bin tools ci --all
