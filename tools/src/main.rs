@@ -1,6 +1,5 @@
 use clap::{Parser, Subcommand};
 
-mod ci;
 mod update_mime_types;
 
 #[derive(Parser, Debug)]
@@ -14,9 +13,6 @@ struct Cli {
 enum Commands {
     /// Updates MIME types
     UpdateMimeTypes(update_mime_types::Args),
-
-    /// Automated CI
-    CI(ci::Args),
 }
 
 #[tokio::main]
@@ -25,6 +21,5 @@ async fn main() {
 
     match args.command {
         Commands::UpdateMimeTypes(a) => update_mime_types::cmd(a).await,
-        Commands::CI(a) => ci::cmd(a),
     }
 }
