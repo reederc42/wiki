@@ -1,12 +1,14 @@
+use crate::*;
+
 pub struct BuildImages {}
 
-impl crate::ci::Stage for BuildImages {
+impl Stage for BuildImages {
     fn name(&self) -> String {
         String::from("build_images")
     }
 
     // run builds test and build images
-    fn run(&self, context: &crate::ci::Context, config: &crate::ci::Config) -> Option<Box<dyn std::error::Error>> {
+    fn run(&self, context: &Context, config: &Config) -> Error {
         config.builder.build(
             &format!("wiki-ci:build-{}", context.id),
             "images/build.Dockerfile",
