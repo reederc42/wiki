@@ -122,7 +122,7 @@ impl Builder for Docker {
 }
 
 impl Runner for Docker {
-    fn run(&self, context: &str, script: &str) -> Error {
+    fn run(&self, _context: &str, _script: &str) -> Error {
         Ok(())
     }
 }
