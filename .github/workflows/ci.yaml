@@ -16,7 +16,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Use Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: 21.7.1
 
@@ -65,20 +65,20 @@ jobs:
       image: rust:1.77.0
       volumes:
       - /var/run/docker.sock
+      env:
+        BUILD_ID: ${{ github.job }}-${{ github.run_id }}
 
     steps:
     - uses: actions/checkout@v4
 
     - name: Install Docker CLI
       run: |
-          # Add Docker's official GPG key:
           apt-get update
           apt-get install ca-certificates curl
           install -m 0755 -d /etc/apt/keyrings
           curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
           chmod a+r /etc/apt/keyrings/docker.asc
 
-          # Add the repository to Apt sources:
           echo \
             "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
             $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
@@ -88,4 +88,4 @@ jobs:
           apt-get install -y docker-ce-cli
 
     - name: Run CI
-      run: cargo run --bin ci -- build_images
+      run: cargo run --bin ci -- --all

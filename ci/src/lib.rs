@@ -40,7 +40,7 @@ pub fn cmd(args: Cli) {
         return;
     }
 
-    let context = Context { id: "12345" };
+    let context = Context { id: &std::env::var("BUILD_ID").unwrap() };
     let config = Config {
         runner: Box::new(Docker{}),
         builder: Box::new(Docker{}),
