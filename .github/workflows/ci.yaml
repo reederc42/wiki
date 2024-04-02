@@ -63,14 +63,9 @@ jobs:
 
     container:
       image: rust:1.77.0
-      volumes:
-      - ${{ github.workspace }}:${{ github.workspace }}
-      options:
-      - -w
-      - ${{ github.workspace }}
 
     steps:
     - uses: actions/checkout@v4
 
     - name: Build CI
-      run: cargo build --bin ci
+      run: cargo run --bin ci -- --list
