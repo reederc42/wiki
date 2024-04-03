@@ -5,7 +5,7 @@ FROM node:${NODE_VERSION}
 ARG NPM_VERSION="10.5.0"
 ARG RUST_VERSION="1.77.0"
 
-RUN npm install -g npm@${NPM_VERSION}
+RUN npm install --verbose -g npm@${NPM_VERSION}
 
 USER 1000:1000
 

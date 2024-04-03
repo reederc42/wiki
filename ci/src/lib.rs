@@ -31,6 +31,7 @@ pub fn cmd(args: Cli) {
     let all_stages: Vec<Box<dyn Stage>> = vec![
         Box::new(stages::build_images::BuildImages{}),
         Box::new(stages::nodejs_checks::NodeJSChecks{}),
+        Box::new(stages::rust_checks::RustChecks{}),
     ];
 
     if args.list {
@@ -42,7 +43,9 @@ pub fn cmd(args: Cli) {
 
     let context = Rc::new(Context {
         id: std::env::var("BUILD_ID").unwrap_or(String::from("local")),
-        cwd: String::from(std::env::current_dir().unwrap().to_str().unwrap()),
+        cwd: std::env::var("HOST_WORKDIR").unwrap_or(
+            String::from(std::env::current_dir().unwrap().to_str().unwrap())
+        ),
     });
     let docker = Rc::new(Docker{
         context: context.clone(),
@@ -131,6 +134,7 @@ impl Runner for Docker {
         let cmd = Command::new("docker")
             .args([
                 "run",
+                "--rm",
                 "-v",
                 &format!("{}:{}", self.context.cwd, self.context.cwd),
                 "-w",
