@@ -44,8 +44,8 @@ jobs:
 
     - name: Set Rust version
       run: |
-        rustup update 1.77.0        &&\
-        rustup default 1.77.0       &&\
+        rustup update 1.77.1        &&\
+        rustup default 1.77.1       &&\
         rustup component add clippy
 
     - name: Lint
@@ -75,7 +75,7 @@ jobs:
           -v ${{ github.workspace }}:${{ github.workspace }} \
           -w ${{ github.workspace }} \
           -u 1000:1000 \
-          rust:1.77.0 \
+          rust:1.77.1 \
           sh -c 'cargo build --bin ci'
 
     - name: Run CI
