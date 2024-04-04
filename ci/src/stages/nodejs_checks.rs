@@ -8,8 +8,9 @@ impl Stage for NodeJSChecks {
     }
 
     // run runs unit tests and linters for Node.js source
-    fn run(&self, _context: &Context, config: &Config) -> Error {
+    fn run(&self, _context: &Context, config: &Config) -> Result<(), Error> {
         config.runner.run("build", r"
+            set -xe
             ln -s /ci/node_modules ./ui/node_modules || true
             cd ui
             npm run lint

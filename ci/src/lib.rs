@@ -1,7 +1,8 @@
-use std::{process::Command, rc::Rc};
+use std::rc::Rc;
 
 use clap::Parser;
 
+mod docker;
 mod stages;
 
 #[macro_export]
@@ -32,6 +33,7 @@ pub fn cmd(args: Cli) {
         Box::new(stages::build_images::BuildImages{}),
         Box::new(stages::nodejs_checks::NodeJSChecks{}),
         Box::new(stages::rust_checks::RustChecks{}),
+        Box::new(stages::dev_e2e::DevE2E{}),
     ];
 
     if args.list {
@@ -47,7 +49,7 @@ pub fn cmd(args: Cli) {
             String::from(std::env::current_dir().unwrap().to_str().unwrap())
         ),
     });
-    let docker = Rc::new(Docker{
+    let docker = Rc::new(docker::Docker{
         context: context.clone(),
     });
     let config = Config {
@@ -62,9 +64,11 @@ pub fn cmd(args: Cli) {
             }
         }
     }
+
+    println!("CI Passed!");
 }
 
-pub type Error = Result<(), Box<dyn std::error::Error>>;
+pub type Error = Box<dyn std::error::Error>;
 
 pub struct Context {
     pub id: String,
@@ -76,95 +80,20 @@ pub struct Config {
     pub builder: Rc<dyn Builder>,
 }
 
+pub trait BackgroundServer {
+    fn addr(&self) -> String;
+}
+
 pub trait Runner {
-    fn run(&self, context: &str, script: &str) -> Error;
+    fn run(&self, context: &str, script: &str) -> Result<(), Error>;
+    fn run_background_server(&self, context: &str, script: &str) -> Result<Box<dyn BackgroundServer>, Error>;
 }
 
 pub trait Builder {
-    fn build(&self, tag: &str, dockerfile: &str, context: &str) -> Error;
+    fn build(&self, tag: &str, dockerfile: &str, context: &str) -> Result<(), Error>;
 }
 
 pub trait Stage {
     fn name(&self) -> String;
-    fn run(&self, context: &Context, config: &Config) -> Error;
-}
-
-struct Docker {
-    context: Rc<Context>,
-}
-
-impl Builder for Docker {
-    fn build(&self, tag: &str, dockerfile: &str, context: &str) -> Error {
-        let cmd = Command::new("docker")
-            .args([
-                "build",
-                "-t",
-                tag,
-                "-f",
-                dockerfile,
-                context,
-            ])
-            .spawn();
-
-        match cmd {
-            Ok(mut c) => {
-                match c.wait() {
-                    Ok(s) => {
-                        match s.code() {
-                            Some(code) => {
-                                if code != 0 {
-                                    Err(error!("Received non-zero exit status: {}", code))
-                                } else {
-                                    Ok(())
-                                }
-                            },
-                            None => Err(error!("Process terminated with signal")),
-                        }
-                    },
-                    Err(e) => Err(Box::new(e)),
-                }
-            },
-            Err(e) => Err(Box::new(e)),
-        }
-    }
-}
-
-impl Runner for Docker {
-    fn run(&self, context: &str, script: &str) -> Error {
-        let cmd = Command::new("docker")
-            .args([
-                "run",
-                "--rm",
-                "-v",
-                &format!("{}:{}", self.context.cwd, self.context.cwd),
-                "-w",
-                &self.context.cwd,
-                &format!("{}:{}-{}", "wiki-ci", context, self.context.id),
-                "sh",
-                "-c",
-                script,
-            ])
-            .spawn();
-
-        match cmd {
-            Ok(mut c) => {
-                match c.wait() {
-                    Ok(s) => {
-                        match s.code() {
-                            Some(code) => {
-                                if code != 0 {
-                                    Err(error!("Received non-zero exit status: {}", code))
-                                } else {
-                                    Ok(())
-                                }
-                            },
-                            None => Err(error!("Process terminated with signal")),
-                        }
-                    },
-                    Err(e) => Err(Box::new(e)),
-                }
-            },
-            Err(e) => Err(Box::new(e)),
-        }
-    }
+    fn run(&self, context: &Context, config: &Config) -> Result<(), Error>;
 }

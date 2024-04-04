@@ -8,7 +8,7 @@ impl Stage for BuildImages {
     }
 
     // run builds test and build images
-    fn run(&self, context: &Context, config: &Config) -> Error {
+    fn run(&self, context: &Context, config: &Config) -> Result<(), Error> {
         config.builder.build(
             &format!("wiki-ci:build-{}", context.id),
             "images/build.Dockerfile",
