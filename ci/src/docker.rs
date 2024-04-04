@@ -116,6 +116,17 @@ impl Drop for DockerBackgroundServer {
     fn drop(&mut self) {
         Command::new("docker")
             .args([
+                "logs",
+                &self.id,
+            ])
+            .spawn()
+            .unwrap_or_else(|_| panic!("Failed to collect logs: {}", self.id))
+            .wait()
+            .unwrap_or_else(|_| panic!("Failed to collect logs: {}", self.id));
+
+
+        Command::new("docker")
+            .args([
                 "stop",
                 &self.id,
             ])
