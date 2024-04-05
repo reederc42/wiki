@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  RUSTFLAGS: "-Dwarnings"
+
+jobs:
+  nodejs:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 21.7.1
+
+    - name: Install
+      run: npm install --omit=dev
+      working-directory: ./ui
+
+    - name: Lint
+      run: npm run lint
+      working-directory: ./ui
+
+    - name: Test
+      run: npm run test
+      working-directory: ./ui
+
+    - name: Build
+      run: npm run build
+      working-directory: ./ui
+
+  rust:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set Rust version
+      run: |
+        rustup update 1.77.1        &&\
+        rustup default 1.77.1       &&\
+        rustup component add clippy
+
+    - name: Lint
+      run: cargo clippy --all-targets --all-features
+
+    - name: Test
+      run: cargo test
+
+  ci:
+    needs:
+    - nodejs
+    - rust
+
+    runs-on: self-hosted
+
+    env:
+      BUILD_ID: ${{ github.job }}-${{ github.run_id }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build CI
+      run: |
+        docker \
+          run \
+          --rm \
+          -v ${{ github.workspace }}:${{ github.workspace }} \
+          -w ${{ github.workspace }} \
+          -u 1000:1000 \
+          rust:1.77.1 \
+          sh -c 'cargo build --bin ci'
+
+    - name: Run CI
+      run: ./target/debug/ci --all
