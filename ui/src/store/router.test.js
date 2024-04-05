@@ -29,7 +29,6 @@ describe("router store", () => {
     test("navigate to new place changes location", () => {
         window.router.navigate("/wiki/someSubject");
 
-        // assert(false, "forced error");
         assert(getPath(window.location) == "/wiki/someSubject");
     });
 
