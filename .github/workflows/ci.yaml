@@ -79,4 +79,4 @@ jobs:
           sh -c 'cargo build --bin ci'
 
     - name: Run CI
-      run: ./target/debug/ci --all
+      run: ./target/debug/ci --github-logger --all

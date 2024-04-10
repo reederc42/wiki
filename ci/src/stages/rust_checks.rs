@@ -3,8 +3,8 @@ use crate::*;
 pub struct RustChecks {}
 
 impl Stage for RustChecks {
-    fn name(&self) -> String {
-        String::from("rust_checks")
+    fn name(&self) -> &'static str {
+        "Rust_Checks"
     }
 
     // run runs unit tests and linters for Rust

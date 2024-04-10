@@ -16,4 +16,5 @@ Wiki CI runs all steps required to accept code.
 
 ### End-to-end (e2e) tests
 
-* ui dev server
+* node dev server
+* rust dev server

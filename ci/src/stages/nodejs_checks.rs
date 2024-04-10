@@ -3,8 +3,8 @@ use crate::*;
 pub struct NodeJSChecks {}
 
 impl Stage for NodeJSChecks {
-    fn name(&self) -> String {
-        String::from("nodejs_checks")
+    fn name(&self) -> &'static str {
+        "NodeJS_Checks"
     }
 
     // run runs unit tests and linters for Node.js source

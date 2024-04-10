@@ -2,9 +2,14 @@ use crate::*;
 
 pub struct DevE2E {}
 
+const BROWSERS: [&str; 2] = [
+    "firefox",
+    "chrome",
+];
+
 impl Stage for DevE2E {
-    fn name(&self) -> String {
-        String::from("dev_e2e")
+    fn name(&self) -> &'static str {
+        "Dev_E2E"
     }
 
     // run e2e tests against dev servers
@@ -27,12 +32,8 @@ fn node_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
 
     config.runner.run("e2e", &format!(r"
         set -xe
-        ln -s /ci/node_modules ./ui/node_modules || true
-        cd ui
-        node tools/configure.js --user-expiration {1} --api-expiration {1}
-        npx cypress run --browser firefox --config baseUrl=http://{0}:8080
-        npx cypress run --browser chrome --config baseUrl=http://{0}:8080
-    ", server.addr(), expiration))
+        {}
+    ", make_cypress_script(expiration, &server.addr(), &BROWSERS)))
 }
 
 fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
@@ -52,10 +53,17 @@ fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
 
     config.runner.run("e2e", &format!(r"
         set -xe
+        {}
+    ", make_cypress_script(expiration, &server.addr(), &BROWSERS)))
+}
+
+fn make_cypress_script(expiration: u32, server_addr: &str, browsers: &[&str]) -> String {
+    format!(r"
         ln -s /ci/node_modules ./ui/node_modules || true
         cd ui
-        node tools/configure.js --user-expiration {1} --api-expiration {1}
-        npx cypress run --browser firefox --config baseUrl=http://{0}:8080
-        npx cypress run --browser chrome --config baseUrl=http://{0}:8080
-    ", server.addr(), expiration))
+        node tools/configure.js --user-expiration {0} --api-expiration {0}
+        for b in {1}; do
+            npx cypress run --browser $b --config baseUrl=http://{2}:8080
+        done
+    ", expiration, browsers.join(" "), server_addr)
 }
