@@ -16,3 +16,16 @@ WORKDIR /ci
 COPY --chown=1000:1000 ./ui/package.json .
 COPY --chown=1000:1000 ./ui/package-lock.json .
 RUN npm install --verbose
+
+RUN mkdir wiki
+RUN cd wiki &&\
+    cargo new ci &&\
+    cargo new tools &&\
+    cargo new wiki
+COPY --chown=1000:1000 ./Cargo.lock ./wiki/
+COPY --chown=1000:1000 ./Cargo.toml ./wiki/
+COPY --chown=1000:1000 ./ci/Cargo.toml ./wiki/ci/
+COPY --chown=1000:1000 ./tools/Cargo.toml ./wiki/tools/
+COPY --chown=1000:1000 ./wiki/Cargo.toml ./wiki/wiki/
+RUN cd wiki &&\
+    cargo fetch -vv

@@ -70,12 +70,18 @@ jobs:
     - name: Build CI
       run: |
         docker \
+          build \
+          -t wiki-ci:build-$BUILD_ID \
+          -f images/build.Dockerfile \
+          .
+
+        docker \
           run \
           --rm \
           -v ${{ github.workspace }}:${{ github.workspace }} \
           -w ${{ github.workspace }} \
           -u 1000:1000 \
-          rust:1.77.1 \
+          wiki-ci:build-$BUILD_ID \
           sh -c 'cargo build --bin ci'
 
     - name: Run CI
