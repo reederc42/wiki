@@ -12,6 +12,7 @@ impl Stage for NodeJSChecks {
         config.runner.run("build", r"
             set -xe
             ln -s /ci/node_modules ./ui/node_modules || true
+            export ESLINT_USE_FLAT_CONFIG=false
             cd ui
             npm run lint
             npm run test

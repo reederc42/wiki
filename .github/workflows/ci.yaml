@@ -79,7 +79,6 @@ jobs:
           --rm \
           -v ${{ github.workspace }}:${{ github.workspace }} \
           -w ${{ github.workspace }} \
-          -u 1000:1000 \
           wiki-ci:build-$BUILD_ID \
           sh -c 'cargo build --bin ci'
 

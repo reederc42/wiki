@@ -14,9 +14,11 @@ ARG CYPRESS_VERSION=
 
 FROM cypress/factory:3.5.4
 
-USER 1000:1000
+ARG NPM_VERSION="10.5.2"
+
+RUN [ "$(npm --version)" = "${NPM_VERSION}" ] || npm install --verbose -g npm@${NPM_VERSION}
 
 WORKDIR /ci
-COPY --chown=1000:1000 ./ui/package.json .
-COPY --chown=1000:1000 ./ui/package-lock.json .
+COPY ./ui/package.json .
+COPY ./ui/package-lock.json .
 RUN npm install --verbose
