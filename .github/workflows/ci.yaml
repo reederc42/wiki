@@ -9,6 +9,7 @@ on:
 env:
   RUSTFLAGS: "-Dwarnings"
   BUILD_ID: ${{ github.job }}-${{ github.run_id }}
+  ESLINT_USE_FLAT_CONFIG: false
 
 jobs:
   nodejs:
