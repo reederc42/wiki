@@ -1,44 +1,35 @@
-use std::{convert::Infallible, sync::Arc};
+use std::{convert::Infallible, future::Future, sync::Arc};
 
-use warp::{filters::BoxedFilter, http::{Response, StatusCode}, path::Tail, reject::Rejection, reply::Reply, Filter};
+use warp::{filters::{path::Tail, BoxedFilter}, http::{Response, StatusCode}, reject::Rejection, reply::Reply, Filter};
 
-pub mod error;
-pub mod persistence;
-pub mod subject;
+use crate::error::Error;
 
-use subject::Subject;
+pub trait Subject {
+    fn create(&self, user: &str, title: &str, content: &str) -> impl Future<Output = Result<String, Error>> + Send;
+    fn read(&self, title: &str) -> impl Future<Output = Result<String, Error>> + Send;
+    fn update(&self, user: &str, title: &str, content: &str) -> impl Future<Output = Result<String, Error>> + Send;
+}
 
-pub fn subject_filter<P>(persistence: Option<Arc<P>>) -> BoxedFilter<(impl Reply,)>
+pub fn filter<S>(provider: Option<Arc<S>>) -> BoxedFilter<(impl Reply,)>
 where
-    P: Subject + Send + Sync + 'static
+    S: Subject + Send + Sync + 'static
 {
-    let base = warp::path("api");
-
-    match persistence {
+    match provider {
         None => {
-            base.and_then(disabled_handler)
+            warp::any()
+                .and_then(disabled_handler)
                 .recover(error_handler)
                 .boxed()
         },
         Some(p) => {
-            base.and(warp::get())
+            warp::get()
                 .map(move || p.clone())
                 .and(warp::path::tail())
                 .and_then(read_handler)
                 .recover(error_handler)
                 .boxed()
-        },
+        }
     }
-}
-
-async fn disabled_handler() -> Result<Response<String>, Rejection> {
-    println!("Rejected api request");
-    Err(warp::reject::custom(error::Error::NotFound("".to_string())))
-}
-
-#[allow(dead_code)]
-async fn create_handler<P: Subject>(_persistence: P) -> Result<Response<()>, Rejection> {
-    Err(warp::reject::not_found())
 }
 
 async fn read_handler<P: Subject>(persistence: Arc<P>, tail: Tail) -> Result<Response<String>, Rejection>
@@ -55,19 +46,19 @@ async fn read_handler<P: Subject>(persistence: Arc<P>, tail: Tail) -> Result<Res
     }
 }
 
-#[allow(dead_code)]
-async fn update_handler<P: Subject>(_persistence: Arc<P>) -> Result<Response<()>, Rejection> {
-    Err(warp::reject::not_found())
+async fn disabled_handler() -> Result<Response<String>, Rejection> {
+    println!("Rejected api request");
+    Err(warp::reject::custom(Error::NotFound("".to_string())))
 }
 
 async fn error_handler(err: Rejection) -> Result<Response<String>, Infallible> {
-    if let Some(api_error) = err.find::<error::Error>() {
+    if let Some(api_error) = err.find::<Error>() {
         let (status, msg) = match api_error {
-            error::Error::Internal(msg) => (
+            Error::Internal(msg) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 msg,
             ),
-            error::Error::NotFound(msg) => (
+            Error::NotFound(msg) => (
                 StatusCode::NOT_FOUND,
                 msg,
             ),

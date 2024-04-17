@@ -1,4 +1,4 @@
-use crate::api::{error::Error, subject::Subject};
+use crate::{api::subject::Subject, error::Error};
 
 pub struct Postgres {
     #[allow(dead_code)]
@@ -28,7 +28,7 @@ impl Postgres {
 }
 
 impl Subject for Postgres {
-    async fn create(&self, _user: &str, _title: &str, _content: &str) -> Result<(), Error> {
+    async fn create(&self, _user: &str, _title: &str, _content: &str) -> Result<String, Error> {
         Err(Error::Internal(String::from("unimplemented")))
     }
 
@@ -37,7 +37,7 @@ impl Subject for Postgres {
         Err(Error::Internal(String::from("unimplemented")))
     }
 
-    async fn update(&self, _user: &str, _title: &str, _content: &str) -> Result<(), Error> {
+    async fn update(&self, _user: &str, _title: &str, _content: &str) -> Result<String, Error> {
         Err(Error::Internal(String::from("unimplemented")))
     }
 }
