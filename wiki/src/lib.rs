@@ -6,7 +6,8 @@ mod spa_server;
 
 use std::sync::Arc;
 
-use api::subject::{self, Subject};
+use api::subject;
+
 use clap::Parser;
 use regex::Regex;
 use warp::Filter;
@@ -39,11 +40,13 @@ pub async fn run(args: Cli) {
     }));
 
     let db = if args.enable_postgres {
-        Some(Arc::new(persistence::postgres::Postgres::new(
+        let mut db = persistence::postgres::Postgres::new(
             &args.postgres_host,
             &args.postgres_user,
             &args.postgres_database,
-        ).await.unwrap()))
+        ).await.unwrap();
+        db.migrate().await.unwrap();
+        Some(Arc::new(db))
     } else {
         None
     };
@@ -56,7 +59,8 @@ pub async fn run(args: Cli) {
                 async move {
                     tokio::signal::ctrl_c()
                         .await
-                        .unwrap();
+                        .ok();
+                    println!("Shutting down");
                 }
             );
     fut.await;

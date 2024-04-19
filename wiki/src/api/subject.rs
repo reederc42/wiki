@@ -14,28 +14,33 @@ pub fn filter<S>(provider: Option<Arc<S>>) -> BoxedFilter<(impl Reply,)>
 where
     S: Subject + Send + Sync + 'static
 {
-    match provider {
-        None => {
-            warp::any()
-                .and_then(disabled_handler)
-                .recover(error_handler)
-                .boxed()
-        },
-        Some(p) => {
-            warp::get()
-                .map(move || p.clone())
-                .and(warp::path::tail())
-                .and_then(read_handler)
-                .recover(error_handler)
-                .boxed()
-        }
+    if provider.is_none() {
+        return warp::any()
+            .and_then(disabled_handler)
+            .recover(error_handler)
+            .boxed();
     }
+
+    let provider = provider.unwrap();
+
+    read_filter(provider)
+        .recover(error_handler)
+        .boxed()
 }
 
-async fn read_handler<P: Subject>(persistence: Arc<P>, tail: Tail) -> Result<Response<String>, Rejection>
+fn read_filter<S: Subject>(provider: Arc<S>) -> impl Filter<Extract = (Response<String>,), Error = Rejection>
+where
+    S: Subject + Send + Sync + 'static
 {
+    warp::get()
+        .map(move || provider.clone())
+        .and(warp::path::tail())
+        .and_then(read_handler)
+}
+
+async fn read_handler<S: Subject>(provider: Arc<S>, tail: Tail) -> Result<Response<String>, Rejection> {
     let title = tail.as_str();
-    match persistence.read(title).await {
+    match provider.read(title).await {
         Ok(content) => {
             Ok(Response::builder()
                 .header("Content-Type", "text/text")

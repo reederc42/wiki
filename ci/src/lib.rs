@@ -104,8 +104,13 @@ pub trait BackgroundServer {
 }
 
 pub trait Runner {
-    fn run(&self, context: &str, script: &str) -> Result<(), Error>;
-    fn run_background_server(&self, context: &str, script: &str) -> Result<Box<dyn BackgroundServer>, Error>;
+    fn run(&self, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>) -> Result<(), Error>;
+    fn run_background(&self, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>) -> Result<Box<dyn BackgroundServer>, Error>;
+}
+
+pub enum ExecutionContext<'a> {
+    Internal(&'a str),
+    External(&'a str),
 }
 
 pub trait Builder {

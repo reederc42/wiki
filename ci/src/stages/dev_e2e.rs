@@ -23,38 +23,83 @@ impl Stage for DevE2E {
 }
 
 fn node_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
-    let server = config.runner.run_background_server("build", &format!(r"
-        set -xe
-        ln -s /ci/node_modules ./ui/node_modules || true
-        cd ui
-        npm run dev -- --user-expiration {0} --api-expiration {0}
-    ", expiration))?;
+    let server = config.runner.run_background(
+        ExecutionContext::Internal("build"),
+        Vec::new(),
+        true,
+        vec![
+            "sh",
+            "-c",
+            &format!(r"
+                set -xe
+                ln -s /ci/node_modules ./ui/node_modules || true
+                cd ui
+                npm run dev -- --user-expiration {0} --api-expiration {0}
+            ", expiration),
+        ]
+    )?;
 
-    config.runner.run("e2e", &format!(r"
-        set -xe
-        {}
-    ", make_cypress_script(expiration, &server.addr(), &BROWSERS)))
+    config.runner.run(
+        ExecutionContext::Internal("e2e"),
+        Vec::new(),
+        true,
+        vec![
+            "sh",
+            "-c",
+            &format!(r"
+                set -xe
+                {}
+            ", make_cypress_script(expiration, &server.addr(), &BROWSERS))
+        ]
+    )
 }
 
 fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
-    config.runner.run("build", &format!(r"
-        set -xe
-        ln -s /ci/node_modules ./ui/node_modules || true
-        cd ui
-        npm run build -- --build dev --user-expiration {0} --api-expiration {0}
-        cd ..
-        cargo build --bin wiki
-    ", expiration))?;
+    config.runner.run(
+        ExecutionContext::Internal("build"),
+        Vec::new(),
+        true,
+        vec![
+            "sh",
+            "-c",
+            &format!(r"
+                set -xe
+                ln -s /ci/node_modules ./ui/node_modules || true
+                cd ui
+                npm run build -- --build dev --user-expiration {0} --api-expiration {0}
+                cd ..
+                cargo build --bin wiki
+            ", expiration),
+        ],
+    )?;
 
-    let server = config.runner.run_background_server("build", r"
-        set -xe
-        ./target/debug/wiki
-    ")?;
+    let server = config.runner.run_background(
+        ExecutionContext::Internal("build"),
+        Vec::new(),
+        true,
+        vec![
+            "sh",
+            "-c",
+            r"
+                set -xe
+                ./target/debug/wiki
+            ",
+        ],
+    )?;
 
-    config.runner.run("e2e", &format!(r"
-        set -xe
-        {}
-    ", make_cypress_script(expiration, &server.addr(), &BROWSERS)))
+    config.runner.run(
+        ExecutionContext::Internal("e2e"),
+        Vec::new(),
+        true,
+        vec![
+            "sh",
+            "-c",
+            &format!(r"
+                set -xe
+                {}
+            ", make_cypress_script(expiration, &server.addr(), &BROWSERS)),
+        ],
+    )
 }
 
 fn make_cypress_script(expiration: u32, server_addr: &str, browsers: &[&str]) -> String {
