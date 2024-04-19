@@ -12,8 +12,13 @@ ARG EDGE_VERSION=
 ARG YARN_VERSION=
 ARG CYPRESS_VERSION=
 
+# Latest cypress factory version: https://hub.docker.com/r/cypress/factory/tags
 FROM cypress/factory:3.5.4
 
+ARG CI_USER="root"
+USER ${CI_USER}
+
+# Latest NPM version: https://www.npmjs.com/package/npm
 ARG NPM_VERSION="10.5.2"
 
 RUN [ "$(npm --version)" = "${NPM_VERSION}" ] || npm install --verbose -g npm@${NPM_VERSION}

@@ -11,6 +11,12 @@ env:
   BUILD_ID: ${{ github.job }}-${{ github.run_id }}
   ESLINT_USE_FLAT_CONFIG: false
 
+  # Latest Node.js version: https://nodejs.org/en
+  NODE_VERSION: 21.7.3
+
+  # Latest Rust version: https://www.rust-lang.org/
+  RUST_VERSION: 1.77.2
+
 jobs:
   nodejs:
     runs-on: ubuntu-latest
@@ -20,7 +26,7 @@ jobs:
     - name: Use Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 21.7.3
+        node-version: ${{ env.NODE_VERSION }}
 
     - name: Install
       run: npm install --omit=dev
@@ -46,8 +52,10 @@ jobs:
 
     - name: Set Rust version
       run: |
-        rustup update 1.77.2        &&\
-        rustup default 1.77.2       &&\
+        [ "$(rustc --version | awk '{ print $2 }')" = "$RUST_VERSION" ] ||\
+          rustup update "$RUST_VERSION" &&\
+          rustup default "$RUST_VERSION"
+
         rustup component add clippy
 
     - name: Lint

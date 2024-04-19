@@ -1,10 +1,15 @@
+# Latest Node.js version: https://nodejs.org/en
 ARG NODE_VERSION="21.7.3"
 
 FROM node:${NODE_VERSION}
 
-USER root:root
+ARG CI_USER="root"
+USER ${CI_USER}
 
+# Latest NPM version: https://www.npmjs.com/package/npm
 ARG NPM_VERSION="10.5.2"
+
+# Latest Rust version: https://www.rust-lang.org/
 ARG RUST_VERSION="1.77.2"
 
 RUN [ "$(npm --version)" = "${NPM_VERSION}" ] || npm install --verbose -g npm@${NPM_VERSION}
