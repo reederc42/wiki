@@ -26,6 +26,10 @@ pub struct Cli {
     /// Print all stages in order
     #[arg(short, long)]
     list: bool,
+
+    /// Enable GitHub-formatted logger
+    #[arg(short, long)]
+    github_logger: bool,
 }
 
 pub fn cmd(args: Cli) {
@@ -57,15 +61,30 @@ pub fn cmd(args: Cli) {
         builder: docker.clone(),
     };
 
+    let mut stages_run = 0;
+    let all_stages_len = all_stages.len();
     for s in all_stages {
-        if args.all || args.stages.contains(&s.name()) {
+        if args.all || args.stages.iter().any(|stage| stage == s.name() ) {
+            if args.github_logger {
+                println!("::group::Stage: {}", s.name());
+            }
             if let Err(e) = s.run(&context, &config) {
                 panic!("Error: {:?}", e);
             }
+            if args.github_logger {
+                println!("::endgroup::");
+            }
+            stages_run += 1;
         }
     }
 
-    println!("CI Passed!");
+    if stages_run == 0 {
+        println!("No stages run");
+    } else if stages_run < all_stages_len {
+        println!("{}/{} stages run, partial CI pass", stages_run, all_stages_len);
+    } else {
+        println!("{}/{} stages run, CI passed!", stages_run, all_stages_len);
+    }
 }
 
 pub type Error = Box<dyn std::error::Error>;
@@ -85,8 +104,13 @@ pub trait BackgroundServer {
 }
 
 pub trait Runner {
-    fn run(&self, context: &str, script: &str) -> Result<(), Error>;
-    fn run_background_server(&self, context: &str, script: &str) -> Result<Box<dyn BackgroundServer>, Error>;
+    fn run(&self, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>) -> Result<(), Error>;
+    fn run_background(&self, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>) -> Result<Box<dyn BackgroundServer>, Error>;
+}
+
+pub enum ExecutionContext<'a> {
+    Internal(&'a str),
+    External(&'a str),
 }
 
 pub trait Builder {
@@ -94,6 +118,6 @@ pub trait Builder {
 }
 
 pub trait Stage {
-    fn name(&self) -> String;
+    fn name(&self) -> &'static str;
     fn run(&self, context: &Context, config: &Config) -> Result<(), Error>;
 }

@@ -3,8 +3,8 @@ use crate::*;
 pub struct BuildImages {}
 
 impl Stage for BuildImages {
-    fn name(&self) -> String {
-        String::from("build_images")
+    fn name(&self) -> &'static str {
+        "Build_Images"
     }
 
     // run builds test and build images

@@ -1,18 +1,31 @@
-ARG NODE_VERSION="21.7.1"
+ARG NODE_VERSION="21.7.3"
 
 FROM node:${NODE_VERSION}
 
-ARG NPM_VERSION="10.5.1"
-ARG RUST_VERSION="1.77.1"
+USER root:root
 
-RUN npm install --verbose -g npm@${NPM_VERSION}
+ARG NPM_VERSION="10.5.2"
+ARG RUST_VERSION="1.77.2"
 
-USER 1000:1000
+RUN [ "$(npm --version)" = "${NPM_VERSION}" ] || npm install --verbose -g npm@${NPM_VERSION}
 
-ENV PATH=$PATH:/home/node/.cargo/bin
+ENV PATH=$PATH:/root/.cargo/bin
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain ${RUST_VERSION}
 
 WORKDIR /ci
-COPY --chown=1000:1000 ./ui/package.json .
-COPY --chown=1000:1000 ./ui/package-lock.json .
+COPY ./ui/package.json .
+COPY ./ui/package-lock.json .
 RUN npm install --verbose
+
+RUN mkdir wiki
+RUN cd wiki &&\
+    cargo new ci &&\
+    cargo new tools &&\
+    cargo new wiki
+COPY ./Cargo.lock ./wiki/
+COPY ./Cargo.toml ./wiki/
+COPY ./ci/Cargo.toml ./wiki/ci/
+COPY ./tools/Cargo.toml ./wiki/tools/
+COPY ./wiki/Cargo.toml ./wiki/wiki/
+RUN cd wiki &&\
+    cargo fetch -vv

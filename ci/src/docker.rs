@@ -6,6 +6,42 @@ pub struct Docker {
     pub context: Rc<Context>,
 }
 
+impl Docker {
+    fn build_docker_args(&self, background: bool, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>) -> Vec<String> {
+        let mut args: Vec<String> = vec![
+            "run",
+            "--rm",
+        ].into_iter().map(|a| a.to_string()).collect();
+
+        if background {
+            args.push("-d".to_string());
+        }
+
+        if include_source {
+            args.append(&mut vec![
+                "-v",
+                &format!("{}:{}", self.context.cwd, self.context.cwd),
+                "-w",
+                &self.context.cwd,
+            ].into_iter().map(|a| a.to_string()).collect());
+        }
+
+        for e in env {
+            args.push("-e".to_string());
+            args.push(e.to_string());
+        }
+
+        match context {
+            ExecutionContext::Internal(i) => args.push(format!("{}:{}-{}", "wiki-ci", i, self.context.id)),
+            ExecutionContext::External(i) => args.push(i.to_string()),
+        }
+
+        args.extend(cmd.into_iter().map(|a| a.to_string()).collect::<Vec<String>>());
+
+        args
+    }
+}
+
 impl Builder for Docker {
     fn build(&self, tag: &str, dockerfile: &str, context: &str) -> Result<(), Error> {
         let cmd = Command::new("docker")
@@ -43,20 +79,11 @@ impl Builder for Docker {
 }
 
 impl Runner for Docker {
-    fn run(&self, context: &str, script: &str) -> Result<(), Error> {
+    fn run(&self, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>) -> Result<(), Error> {
+        let args = self.build_docker_args(false, context, env, include_source, cmd);
+
         let cmd = Command::new("docker")
-            .args([
-                "run",
-                "--rm",
-                "-v",
-                &format!("{}:{}", self.context.cwd, self.context.cwd),
-                "-w",
-                &self.context.cwd,
-                &format!("{}:{}-{}", "wiki-ci", context, self.context.id),
-                "sh",
-                "-c",
-                script,
-            ])
+            .args(args)
             .spawn();
 
         match cmd {
@@ -81,28 +108,18 @@ impl Runner for Docker {
         }
     }
 
-    fn run_background_server(&self, context: &str, script: &str) -> Result<Box<dyn BackgroundServer>, Error> {
+    fn run_background(&self, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>) -> Result<Box<dyn BackgroundServer>, Error> {
+        let args = self.build_docker_args(true, context, env, include_source, cmd);
+
         let output = Command::new("docker")
-            .args([
-                "run",
-                "--rm",
-                "-d",
-                "-v",
-                &format!("{}:{}", self.context.cwd, self.context.cwd),
-                "-w",
-                &self.context.cwd,
-                &format!("{}:{}-{}", "wiki-ci", context, self.context.id),
-                "sh",
-                "-c",
-                script,
-            ])
+            .args(args)
             .output();
 
         match output {
             Ok(o) => {
                 let s = std::str::from_utf8(&o.stdout).unwrap().trim_end();
                 Ok(Box::new(DockerBackgroundServer{ id: s.to_string() }))
-            }
+            },
             Err(e) => Err(Box::new(e)),
         }
     }

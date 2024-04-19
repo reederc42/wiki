@@ -8,6 +8,8 @@ on:
 
 env:
   RUSTFLAGS: "-Dwarnings"
+  BUILD_ID: ${{ github.job }}-${{ github.run_id }}
+  ESLINT_USE_FLAT_CONFIG: false
 
 jobs:
   nodejs:
@@ -18,7 +20,7 @@ jobs:
     - name: Use Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 21.7.1
+        node-version: 21.7.3
 
     - name: Install
       run: npm install --omit=dev
@@ -44,8 +46,8 @@ jobs:
 
     - name: Set Rust version
       run: |
-        rustup update 1.77.1        &&\
-        rustup default 1.77.1       &&\
+        rustup update 1.77.2        &&\
+        rustup default 1.77.2       &&\
         rustup component add clippy
 
     - name: Lint
@@ -61,22 +63,24 @@ jobs:
 
     runs-on: self-hosted
 
-    env:
-      BUILD_ID: ${{ github.job }}-${{ github.run_id }}
-
     steps:
     - uses: actions/checkout@v4
 
     - name: Build CI
       run: |
         docker \
+          build \
+          -t wiki-ci:build-$BUILD_ID \
+          -f images/build.Dockerfile \
+          .
+
+        docker \
           run \
           --rm \
           -v ${{ github.workspace }}:${{ github.workspace }} \
           -w ${{ github.workspace }} \
-          -u 1000:1000 \
-          rust:1.77.1 \
+          wiki-ci:build-$BUILD_ID \
           sh -c 'cargo build --bin ci'
 
     - name: Run CI
-      run: ./target/debug/ci --all
+      run: ./target/debug/ci --github-logger --all

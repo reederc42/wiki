@@ -8,20 +8,7 @@ use std::sync::Arc;
 
 use phf::Map;
 use regex::Regex;
-use warp::{
-    filters::{
-        path::Tail,
-        BoxedFilter,
-    },
-    http::{
-        Response,
-        status::StatusCode,
-    },
-    reject,
-    reject::Rejection,
-    reply::Reply,
-    Filter,
-};
+use warp::{Filter, filters::{path::Tail, BoxedFilter}, http::{Response, status::StatusCode}, reject::{self, Rejection}, reply::Reply};
 
 #[derive(Debug)]
 pub struct Asset {
