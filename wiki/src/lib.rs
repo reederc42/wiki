@@ -12,6 +12,7 @@ use clap::Parser;
 use regex::Regex;
 use warp::Filter;
 
+
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 pub struct Cli {
@@ -46,12 +47,13 @@ pub async fn run(args: Cli) {
             &args.postgres_database,
         ).await.unwrap();
         db.migrate().await.unwrap();
-        Some(Arc::new(db))
+        Some(db)
     } else {
         None
     };
 
-    let filter = ui_filter.or(api::filter().and(subject::filter(db)));
+    let filter = ui_filter
+        .or(api::filter().and(subject::filter(Arc::new(db))));
 
     let (_, fut) = warp::serve(filter)
             .bind_with_graceful_shutdown(
@@ -64,4 +66,5 @@ pub async fn run(args: Cli) {
                 }
             );
     fut.await;
+    println!("Shut down");
 }

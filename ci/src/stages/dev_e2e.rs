@@ -24,7 +24,7 @@ impl Stage for DevE2E {
 
 fn node_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
     let server = config.runner.run_background(
-        ExecutionContext::Internal("build"),
+        ExecutionContext::Build,
         Vec::new(),
         true,
         vec![
@@ -40,7 +40,7 @@ fn node_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
     )?;
 
     config.runner.run(
-        ExecutionContext::Internal("e2e"),
+        ExecutionContext::E2E,
         Vec::new(),
         true,
         vec![
@@ -56,7 +56,7 @@ fn node_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
 
 fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
     config.runner.run(
-        ExecutionContext::Internal("build"),
+        ExecutionContext::Build,
         Vec::new(),
         true,
         vec![
@@ -74,7 +74,7 @@ fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
     )?;
 
     let server = config.runner.run_background(
-        ExecutionContext::Internal("build"),
+        ExecutionContext::Build,
         Vec::new(),
         true,
         vec![
@@ -88,7 +88,7 @@ fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
     )?;
 
     config.runner.run(
-        ExecutionContext::Internal("e2e"),
+        ExecutionContext::E2E,
         Vec::new(),
         true,
         vec![

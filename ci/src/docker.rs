@@ -2,8 +2,12 @@ use std::process::Command;
 
 use crate::*;
 
+// Latest postgres image: https://hub.docker.com/_/postgres/tags
+const POSTGRES_IMAGE: &str = "postgres:16-alpine";
+
 pub struct Docker {
     pub context: Rc<Context>,
+    pub user: String,
 }
 
 impl Docker {
@@ -12,6 +16,12 @@ impl Docker {
             "run",
             "--rm",
         ].into_iter().map(|a| a.to_string()).collect();
+
+        // Postgres cannot change user
+        if !self.user.is_empty() && !matches!(context, ExecutionContext::Postgres) {
+            args.push("-u".into());
+            args.push(self.user.clone());
+        }
 
         if background {
             args.push("-d".to_string());
@@ -27,13 +37,14 @@ impl Docker {
         }
 
         for e in env {
-            args.push("-e".to_string());
-            args.push(e.to_string());
+            args.push("-e".into());
+            args.push(e.into());
         }
 
         match context {
-            ExecutionContext::Internal(i) => args.push(format!("{}:{}-{}", "wiki-ci", i, self.context.id)),
-            ExecutionContext::External(i) => args.push(i.to_string()),
+            ExecutionContext::Build => args.push(format!("wiki-ci:build-{}", self.context.id)),
+            ExecutionContext::E2E => args.push(format!("wiki-ci:e2e-{}", self.context.id)),
+            ExecutionContext::Postgres => args.push(POSTGRES_IMAGE.into()),
         }
 
         args.extend(cmd.into_iter().map(|a| a.to_string()).collect::<Vec<String>>());
@@ -47,6 +58,8 @@ impl Builder for Docker {
         let cmd = Command::new("docker")
             .args([
                 "build",
+                "--build-arg",
+                "CI_USER=1000:1000",
                 "-t",
                 tag,
                 "-f",

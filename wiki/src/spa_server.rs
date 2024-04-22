@@ -8,7 +8,7 @@ use std::sync::Arc;
 
 use phf::Map;
 use regex::Regex;
-use warp::{Filter, filters::{path::Tail, BoxedFilter}, http::{Response, status::StatusCode}, reject::{self, Rejection}, reply::Reply};
+use warp::{Filter, filters::path::Tail, http::{Response, status::StatusCode}, reject::{self, Rejection}, reply::Reply};
 
 #[derive(Debug)]
 pub struct Asset {
@@ -22,13 +22,12 @@ pub struct FilterInput {
     pub path_validator: Regex,
 }
 
-pub fn filter(input: Arc<FilterInput>) -> BoxedFilter<(impl Reply,)>
+pub fn filter(input: Arc<FilterInput>) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone
 {
     warp::get()
         .map(move || input.clone())
         .and(warp::path::tail())
         .and_then(handler)
-        .boxed()
 }
 
 async fn handler(input: Arc<FilterInput>, path: Tail) -> Result<Response<&'static [u8]>, Rejection>

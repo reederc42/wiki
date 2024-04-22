@@ -30,6 +30,10 @@ pub struct Cli {
     /// Enable GitHub-formatted logger
     #[arg(short, long)]
     github_logger: bool,
+
+    /// Override container user
+    #[arg(long, default_value="")]
+    container_user: String,
 }
 
 pub fn cmd(args: Cli) {
@@ -55,6 +59,7 @@ pub fn cmd(args: Cli) {
     });
     let docker = Rc::new(docker::Docker{
         context: context.clone(),
+        user: args.container_user,
     });
     let config = Config {
         runner: docker.clone(),
@@ -108,9 +113,10 @@ pub trait Runner {
     fn run_background(&self, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>) -> Result<Box<dyn BackgroundServer>, Error>;
 }
 
-pub enum ExecutionContext<'a> {
-    Internal(&'a str),
-    External(&'a str),
+pub enum ExecutionContext {
+    Build,
+    E2E,
+    Postgres,
 }
 
 pub trait Builder {

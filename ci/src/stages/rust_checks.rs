@@ -10,14 +10,14 @@ impl Stage for RustChecks {
     // run runs unit tests and linters for Rust
     fn run(&self, _context: &Context, config: &Config) -> Result<(), Error> {
         let db = config.runner.run_background(
-            ExecutionContext::External("postgres:16-alpine"),
+            ExecutionContext::Postgres,
             vec!["POSTGRES_HOST_AUTH_METHOD=trust"],
             false,
             Vec::new(),
         )?;
 
         config.runner.run(
-            ExecutionContext::Internal("build"),
+            ExecutionContext::Build,
             Vec::new(),
             true,
             vec![

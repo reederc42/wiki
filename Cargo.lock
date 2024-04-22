@@ -1942,6 +1942,7 @@ dependencies = [
 name = "wiki"
 version = "0.1.0"
 dependencies = [
+ "bytes",
  "clap",
  "phf",
  "phf_codegen",

@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+bytes = "1.6.0"
 clap = "4.5.4"
 phf = "0.11.2"
 rand = "0.8.5"

@@ -1,10 +1,8 @@
-// Configure and create api filter
-
-use warp::{filters::BoxedFilter, Filter};
+use warp::{reject::Rejection, Filter};
 
 pub mod subject;
 
-pub fn filter() -> BoxedFilter<()>
+pub fn filter() -> impl Filter<Extract = (), Error = Rejection> + Clone
 {
-    warp::path("api").and(warp::path("v1")).boxed()
+    warp::path!("api" / "v1" / ..)
 }

@@ -31,13 +31,13 @@ mod embedded {
 }
 
 impl Subject for Postgres {
-    async fn create(&self, user: &str, title: &str, content: &str) -> Result<String, Error> {
+    async fn create(&self, user: &str, title: &str, content: &str) -> Result<(), Error> {
         let r = self.client.query(r"
             INSERT INTO subjects VALUES ($1, $2, $3);
         ", &[&title, &user, &content]).await;
 
         match r {
-            Ok(_) => Ok("".into()),
+            Ok(_) => Ok(()),
             Err(err) => Err(Error::Internal(err.to_string())),
         }
     }
@@ -62,7 +62,7 @@ impl Subject for Postgres {
         }
     }
 
-    async fn update(&self, user: &str, title: &str, content: &str) -> Result<String, Error> {
+    async fn update(&self, user: &str, title: &str, content: &str) -> Result<(), Error> {
         let r = self.client.execute(r"
             UPDATE subjects
             SET user_id = $1, content = $2
@@ -75,7 +75,7 @@ impl Subject for Postgres {
                 if rows < 1 {
                     Err(Error::NotFound(title.to_string()))
                 } else {
-                    Ok("".into())
+                    Ok(())
                 }
             },
             Err(err) => Err(Error::Internal(err.to_string()))
