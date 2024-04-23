@@ -18,9 +18,11 @@ FROM cypress/factory:3.5.4
 # Latest NPM version: https://www.npmjs.com/package/npm
 ARG NPM_VERSION="10.5.2"
 
+USER root:root
+
 RUN [ "$(npm --version)" = "${NPM_VERSION}" ] || npm install --verbose -g npm@${NPM_VERSION}
 
-ARG CI_USER=0
+ARG CI_USER=root:root
 USER ${CI_USER}
 
 WORKDIR /ci

@@ -74,7 +74,7 @@ impl Builder for Docker {
 
         let mut finished_print = None;
         if self.verbose {
-            finished_print = Some(print_command(cmd));
+            finished_print = Some(print_command(cmd, false));
         }
 
         let res = cmd.spawn();
@@ -115,7 +115,7 @@ impl Runner for Docker {
 
         let mut finished_print = None;
         if self.verbose {
-            finished_print = Some(print_command(cmd));
+            finished_print = Some(print_command(cmd, false));
         }
 
         let res = cmd.spawn();
@@ -154,7 +154,7 @@ impl Runner for Docker {
 
         let mut finished_print = None;
         if self.verbose {
-            finished_print = Some(print_command(cmd));
+            finished_print = Some(print_command(cmd, true));
         }
 
         let output = cmd.output();
@@ -226,7 +226,7 @@ impl BackgroundServer for DockerBackgroundServer {
     }
 }
 
-fn print_command(cmd: &Command) -> Box<dyn FnOnce()> {
+fn print_command(cmd: &Command, background: bool) -> Box<dyn FnOnce()> {
     let program = cmd.get_program().to_string_lossy();
 
     let full_cmd = format!(
@@ -245,11 +245,19 @@ fn print_command(cmd: &Command) -> Box<dyn FnOnce()> {
 
     let id = format!("{}-{}", program, cmd_hash);
 
-    println!("Executing command [id: {}]:\n```", id);
+    if background {
+        println!("Executing background command [id: {}]:\n```", id);
+    } else {
+        println!("Executing command [id: {}]:\n```", id);
+    }
     println!("{}", full_cmd);
     println!("```");
 
     Box::new(move || {
-        println!("Command completed [id: {}]", id);
+        if background {
+            println!("Background command completed [id: {}]", id);
+        } else {
+            println!("Command completed [id: {}]", id);
+        }
     })
 }
