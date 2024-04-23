@@ -63,8 +63,6 @@ impl Builder for Docker {
         let mut prog = Command::new("docker");
         let cmd = prog.args([
                 "build",
-                "--build-arg",
-                "CI_USER=1000:1000",
                 "-t",
                 tag,
                 "-f",
