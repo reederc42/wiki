@@ -31,10 +31,6 @@ pub struct Cli {
     #[arg(short, long)]
     github_logger: bool,
 
-    /// Override container user
-    #[arg(long, default_value="")]
-    container_user: String,
-
     /// Print commands that will be executed
     #[arg(short, long)]
     verbose: bool,
@@ -63,7 +59,6 @@ pub fn cmd(args: Cli) {
     });
     let docker = Rc::new(docker::Docker{
         context: context.clone(),
-        user: args.container_user,
         verbose: args.verbose,
     });
     let config = Config {

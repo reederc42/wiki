@@ -9,7 +9,6 @@ const POSTGRES_IMAGE: &str = "postgres:16-alpine";
 
 pub struct Docker {
     pub context: Rc<Context>,
-    pub user: String,
     pub verbose: bool,
 }
 
@@ -21,12 +20,6 @@ impl Docker {
             "run",
             "--rm",
         ].into_iter().map(|a| a.to_string()).collect();
-
-        // Postgres cannot change user
-        if !self.user.is_empty() && !matches!(context, ExecutionContext::Postgres) {
-            args.push("-u".into());
-            args.push(self.user.clone());
-        }
 
         if background {
             args.push("-d".to_string());
