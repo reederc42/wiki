@@ -34,6 +34,10 @@ pub struct Cli {
     /// Override container user
     #[arg(long, default_value="")]
     container_user: String,
+
+    /// Print commands that will be executed
+    #[arg(short, long)]
+    verbose: bool,
 }
 
 pub fn cmd(args: Cli) {
@@ -60,6 +64,7 @@ pub fn cmd(args: Cli) {
     let docker = Rc::new(docker::Docker{
         context: context.clone(),
         user: args.container_user,
+        verbose: args.verbose,
     });
     let config = Config {
         runner: docker.clone(),

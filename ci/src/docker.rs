@@ -1,5 +1,7 @@
 use std::process::Command;
 
+use sha2::{Digest, Sha256};
+
 use crate::*;
 
 // Latest postgres image: https://hub.docker.com/_/postgres/tags
@@ -8,7 +10,10 @@ const POSTGRES_IMAGE: &str = "postgres:16-alpine";
 pub struct Docker {
     pub context: Rc<Context>,
     pub user: String,
+    pub verbose: bool,
 }
+
+const CMD_HASH_LENGTH: usize = 7;
 
 impl Docker {
     fn build_docker_args(&self, background: bool, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>) -> Vec<String> {
@@ -55,8 +60,8 @@ impl Docker {
 
 impl Builder for Docker {
     fn build(&self, tag: &str, dockerfile: &str, context: &str) -> Result<(), Error> {
-        let cmd = Command::new("docker")
-            .args([
+        let mut prog = Command::new("docker");
+        let cmd = prog.args([
                 "build",
                 "--build-arg",
                 "CI_USER=1000:1000",
@@ -65,12 +70,22 @@ impl Builder for Docker {
                 "-f",
                 dockerfile,
                 context,
-            ])
-            .spawn();
+            ]);
 
-        match cmd {
+        let mut finished_print = None;
+        if self.verbose {
+            finished_print = Some(print_command(cmd));
+        }
+
+        let res = cmd.spawn();
+
+        match res {
             Ok(mut c) => {
-                match c.wait() {
+                let res = c.wait();
+                if let Some(f) = finished_print {
+                    f();
+                }
+                match res {
                     Ok(s) => {
                         match s.code() {
                             Some(code) => {
@@ -95,13 +110,23 @@ impl Runner for Docker {
     fn run(&self, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>) -> Result<(), Error> {
         let args = self.build_docker_args(false, context, env, include_source, cmd);
 
-        let cmd = Command::new("docker")
-            .args(args)
-            .spawn();
+        let mut prog = Command::new("docker");
+        let cmd = prog.args(args);
 
-        match cmd {
+        let mut finished_print = None;
+        if self.verbose {
+            finished_print = Some(print_command(cmd));
+        }
+
+        let res = cmd.spawn();
+
+        match res {
             Ok(mut c) => {
-                match c.wait() {
+                let res = c.wait();
+                if let Some(f) = finished_print {
+                    f();
+                }
+                match res{
                     Ok(s) => {
                         match s.code() {
                             Some(code) => {
@@ -124,14 +149,23 @@ impl Runner for Docker {
     fn run_background(&self, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>) -> Result<Box<dyn BackgroundServer>, Error> {
         let args = self.build_docker_args(true, context, env, include_source, cmd);
 
-        let output = Command::new("docker")
-            .args(args)
-            .output();
+        let mut prog = Command::new("docker");
+        let cmd = prog.args(args);
+
+        let mut finished_print = None;
+        if self.verbose {
+            finished_print = Some(print_command(cmd));
+        }
+
+        let output = cmd.output();
 
         match output {
             Ok(o) => {
                 let s = std::str::from_utf8(&o.stdout).unwrap().trim_end();
-                Ok(Box::new(DockerBackgroundServer{ id: s.to_string() }))
+                Ok(Box::new(DockerBackgroundServer{
+                    id: s.to_string(),
+                    finished_print,
+                }))
             },
             Err(e) => Err(Box::new(e)),
         }
@@ -140,10 +174,11 @@ impl Runner for Docker {
 
 struct DockerBackgroundServer {
     id: String,
+    finished_print: Option<Box<dyn FnOnce()>>,
 }
 
 impl Drop for DockerBackgroundServer {
-    fn drop(&mut self) {
+    fn drop(&mut self) { 
         Command::new("docker")
             .args([
                 "logs",
@@ -164,6 +199,10 @@ impl Drop for DockerBackgroundServer {
             .unwrap_or_else(|_| panic!("Failed to stop container: {}", self.id))
             .wait()
             .unwrap_or_else(|_| panic!("Failed to stop container: {}", self.id));
+
+        if let Some(f) = self.finished_print.take() {
+            f();
+        }
     }
 }
 
@@ -185,4 +224,32 @@ impl BackgroundServer for DockerBackgroundServer {
             container[0]["NetworkSettings"]["IPAddress"].as_str().unwrap()
         )
     }
+}
+
+fn print_command(cmd: &Command) -> Box<dyn FnOnce()> {
+    let program = cmd.get_program().to_string_lossy();
+
+    let full_cmd = format!(
+        "{} {}",
+        program,
+        cmd.get_args()
+            .map(|a| a.to_string_lossy())
+            .collect::<Vec<_>>()
+            .join(" "),
+    );
+
+    let cmd_hash: String = format!("{:x}", Sha256::digest(&full_cmd))
+        .chars()
+        .take(CMD_HASH_LENGTH)
+        .collect();
+
+    let id = format!("{}-{}", program, cmd_hash);
+
+    println!("Executing command [id: {}]:\n```", id);
+    println!("{}", full_cmd);
+    println!("```");
+
+    Box::new(move || {
+        println!("Command completed [id: {}]", id);
+    })
 }
