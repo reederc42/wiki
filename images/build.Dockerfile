@@ -9,6 +9,9 @@ ARG NPM_VERSION="10.5.2"
 # Latest Rust version: https://www.rust-lang.org/
 ARG RUST_VERSION="1.77.2"
 
+# Latest nextest version: https://github.com/nextest-rs/nextest/releases
+ARG NEXTEST_VERSION="0.9"
+
 USER root
 
 RUN [ "$(npm --version)" = "${NPM_VERSION}" ] || npm install --verbose -g npm@${NPM_VERSION}
@@ -21,6 +24,8 @@ ENV PATH=${PATH}:${CARGO_HOME}/bin
 RUN mkdir -p ${CARGO_HOME} ${RUSTUP_HOME}
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |\
     sh -s -- -y --default-toolchain ${RUST_VERSION}
+
+RUN cargo install nextest --version ${NEXTEST_VERSION} --locked
 
 COPY ./ui/package.json .
 COPY ./ui/package-lock.json .

@@ -27,7 +27,8 @@ impl Stage for RustChecks {
                     set -xe
                     RUSTFLAGS='-Dwarnings' cargo clippy --all-targets --all-features
                     export WIKI_CI_TEST_POSTGRES_HOST={}
-                    cargo test --all-targets --all-features -- --include-ignored
+                    cargo nextest run --run-ignored all --config-file .nextest-config.toml
+                    mv target/nextest/rust-unit.xml test_results/
                 ", &db.addr()),
             ],
         )
