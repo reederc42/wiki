@@ -10,7 +10,7 @@ ARG NPM_VERSION="10.5.2"
 ARG RUST_VERSION="1.77.2"
 
 # Latest nextest version: https://github.com/nextest-rs/nextest/releases
-ARG NEXTEST_VERSION="0.9"
+ARG NEXTEST_VERSION="^0.9"
 
 USER root
 
@@ -25,7 +25,7 @@ RUN mkdir -p ${CARGO_HOME} ${RUSTUP_HOME}
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |\
     sh -s -- -y --default-toolchain ${RUST_VERSION}
 
-RUN cargo install nextest --version ${NEXTEST_VERSION} --locked
+RUN cargo install cargo-nextest --version ${NEXTEST_VERSION} --locked
 
 COPY ./ui/package.json .
 COPY ./ui/package-lock.json .

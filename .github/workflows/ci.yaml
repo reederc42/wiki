@@ -101,7 +101,7 @@ jobs:
     - name: Test Results
       uses: dorny/test-reporter@v1
       with:
-        name: Wiki CI
+        name: Wiki CI Test Results
         path: test_results/*.xml
         reporter: java-junit
       if: always()

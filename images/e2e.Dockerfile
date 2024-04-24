@@ -2,10 +2,10 @@
 ARG NODE_VERSION="21.7.3"
 
 # Latest Chrome version: https://www.ubuntuupdates.org/package/google_chrome/stable/main/base/google-chrome-stable
-ARG CHROME_VERSION="123.0.6312.122-1"
+ARG CHROME_VERSION="124.0.6367.78-1"
 
 # Latest Firefox version: https://www.mozilla.org/en-US/firefox/releases/
-ARG FIREFOX_VERSION="124.0.2"
+ARG FIREFOX_VERSION="125.0.2"
 
 # Disable other browsers
 ARG EDGE_VERSION=

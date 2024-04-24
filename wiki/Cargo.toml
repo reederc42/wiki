@@ -9,15 +9,15 @@ clap = "4.5.4"
 phf = "0.11.2"
 rand = "0.8.5"
 refinery = { version = "0.8.14", features = ["tokio-postgres"] }
-regex = "1.10.3"
-serde_yaml = "0.9.33"
-tokio = { version = "1.36.0", features = ["full"] }
+regex = "1.10.4"
+serde_yaml = "0.9.34"
+tokio = { version = "1.37.0", features = ["full"] }
 tokio-postgres = "0.7.10"
-warp = "0.3.6"
+warp = "0.3.7"
 
 [build-dependencies]
 phf_codegen = "0.11.2"
-serde_yaml = "0.9.33"
+serde_yaml = "0.9.34"
 
 [dev-dependencies]
 phf = { version = "0.11.2", features = ["macros"] }

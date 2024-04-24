@@ -2,7 +2,7 @@ use std::{collections::HashMap, fs::File, io::{BufWriter, Write}};
 
 use regex::Regex;
 
-const DEFAULT_OUTPUT: &str = "wiki/src/mime_types.yaml";
+const DEFAULT_OUTPUT: &str = "wiki/mime_types.yaml";
 const DEFAULT_SOURCE_URL: &str = 
     "https://raw.githubusercontent.com/nginx/nginx/master/conf/mime.types";
 
