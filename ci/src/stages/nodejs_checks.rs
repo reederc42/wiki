@@ -10,7 +10,7 @@ impl Stage for NodeJSChecks {
     // run runs unit tests and linters for Node.js source
     fn run(&self, _context: &Context, config: &Config) -> Result<(), Error> {
         config.runner.run(
-            ExecutionContext::Internal("build"),
+            ExecutionContext::Build,
             Vec::new(),
             true,
             vec![
@@ -22,7 +22,11 @@ impl Stage for NodeJSChecks {
                     export ESLINT_USE_FLAT_CONFIG=false
                     cd ui
                     npm run lint
-                    npm run test
+                    npm run test -- \
+                        --test-reporter=spec \
+                        --test-reporter-destination=stdout \
+                        --test-reporter=junit \
+                        --test-reporter-destination=../test_results/nodejs-unit-test.xml
                 ",
             ],
         )

@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{fs, rc::Rc};
 
 use clap::Parser;
 
@@ -11,6 +11,8 @@ macro_rules! error {
         Box::<dyn std::error::Error>::from(format!($($arg)*))
     };
 }
+
+const TEST_RESULTS_DIR: &str = "./test_results";
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -30,6 +32,10 @@ pub struct Cli {
     /// Enable GitHub-formatted logger
     #[arg(short, long)]
     github_logger: bool,
+
+    /// Print commands that will be executed
+    #[arg(short, long)]
+    verbose: bool,
 }
 
 pub fn cmd(args: Cli) {
@@ -52,6 +58,7 @@ pub fn cmd(args: Cli) {
         cwd: std::env::var("HOST_WORKDIR").unwrap_or(
             String::from(std::env::current_dir().unwrap().to_str().unwrap())
         ),
+        verbose: args.verbose,
     });
     let docker = Rc::new(docker::Docker{
         context: context.clone(),
@@ -60,6 +67,17 @@ pub fn cmd(args: Cli) {
         runner: docker.clone(),
         builder: docker.clone(),
     };
+
+    match fs::remove_dir_all(TEST_RESULTS_DIR) {
+        Ok(_) => {},
+        Err(err) => {
+            match err.kind() {
+                std::io::ErrorKind::NotFound => {},
+                _ => panic!("{:?}", err),
+            }
+        },
+    }
+    fs::create_dir(TEST_RESULTS_DIR).unwrap();
 
     let mut stages_run = 0;
     let all_stages_len = all_stages.len();
@@ -92,6 +110,7 @@ pub type Error = Box<dyn std::error::Error>;
 pub struct Context {
     pub id: String,
     pub cwd: String,
+    pub verbose: bool,
 }
 
 pub struct Config {
@@ -108,9 +127,10 @@ pub trait Runner {
     fn run_background(&self, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>) -> Result<Box<dyn BackgroundServer>, Error>;
 }
 
-pub enum ExecutionContext<'a> {
-    Internal(&'a str),
-    External(&'a str),
+pub enum ExecutionContext {
+    Build,
+    E2E,
+    Postgres,
 }
 
 pub trait Builder {

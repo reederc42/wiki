@@ -1,0 +1,3 @@
+[profile.default.junit]
+path = "rust-unit.xml"
+report-name = "Rust Unit Tests"

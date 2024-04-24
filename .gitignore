@@ -1,4 +1,5 @@
 /target
+/test_results
 
 # generated files
 wiki/src/dist.rs

@@ -39,19 +39,19 @@ pub async fn run(args: Cli) {
         path_validator: Regex::new(r"^$|wiki(:?-new)?").unwrap(),
     }));
 
-    let db = if args.enable_postgres {
+    let db = Arc::new(if args.enable_postgres {
         let mut db = persistence::postgres::Postgres::new(
             &args.postgres_host,
             &args.postgres_user,
             &args.postgres_database,
         ).await.unwrap();
         db.migrate().await.unwrap();
-        Some(Arc::new(db))
+        Some(db)
     } else {
         None
-    };
+    });
 
-    let filter = ui_filter.or(api::filter().and(subject::filter(db)));
+    let filter = api::filter().and(subject::filter(db)).or(ui_filter);
 
     let (_, fut) = warp::serve(filter)
             .bind_with_graceful_shutdown(
@@ -64,4 +64,5 @@ pub async fn run(args: Cli) {
                 }
             );
     fut.await;
+    println!("Shut down");
 }
