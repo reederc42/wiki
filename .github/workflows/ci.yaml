@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: ["main"]
 
+permissions:
+  checks: write
+  contents: write
+  pull-requests: write
+
 env:
   RUSTFLAGS: "-Dwarnings"
   BUILD_ID: ${{ github.job }}-${{ github.run_id }}
@@ -92,3 +97,11 @@ jobs:
 
     - name: Run CI
       run: ./target/debug/ci -v --github-logger --all
+
+    - name: Test Results
+      uses: dorny/test-reporter@v1
+      with:
+        name: Wiki CI
+        path: test_results/*.xml
+        reporter: java-junit
+      if: always()

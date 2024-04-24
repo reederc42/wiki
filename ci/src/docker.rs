@@ -9,7 +9,6 @@ const POSTGRES_IMAGE: &str = "postgres:16-alpine";
 
 pub struct Docker {
     pub context: Rc<Context>,
-    pub verbose: bool,
 }
 
 const CMD_HASH_LENGTH: usize = 7;
@@ -18,7 +17,6 @@ impl Docker {
     fn build_docker_args(&self, background: bool, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>) -> Vec<String> {
         let mut args: Vec<String> = vec![
             "run",
-            "--rm",
         ].into_iter().map(|a| a.to_string()).collect();
 
         if background {
@@ -64,7 +62,7 @@ impl Builder for Docker {
             ]);
 
         let mut finished_print = None;
-        if self.verbose {
+        if self.context.verbose {
             finished_print = Some(print_command(cmd, false));
         }
 
@@ -105,7 +103,7 @@ impl Runner for Docker {
         let cmd = prog.args(args);
 
         let mut finished_print = None;
-        if self.verbose {
+        if self.context.verbose {
             finished_print = Some(print_command(cmd, false));
         }
 
@@ -144,7 +142,7 @@ impl Runner for Docker {
         let cmd = prog.args(args);
 
         let mut finished_print = None;
-        if self.verbose {
+        if self.context.verbose {
             finished_print = Some(print_command(cmd, true));
         }
 
@@ -169,7 +167,17 @@ struct DockerBackgroundServer {
 }
 
 impl Drop for DockerBackgroundServer {
-    fn drop(&mut self) { 
+    fn drop(&mut self) {
+        Command::new("docker")
+            .args([
+                "stop",
+                &self.id,
+            ])
+            .spawn()
+            .unwrap_or_else(|_| panic!("Failed to stop container: {}", self.id))
+            .wait()
+            .unwrap_or_else(|_| panic!("Failed to stop container: {}", self.id));
+
         Command::new("docker")
             .args([
                 "logs",
@@ -180,16 +188,15 @@ impl Drop for DockerBackgroundServer {
             .wait()
             .unwrap_or_else(|_| panic!("Failed to collect logs: {}", self.id));
 
-
         Command::new("docker")
             .args([
-                "stop",
+                "rm",
                 &self.id,
             ])
             .spawn()
-            .unwrap_or_else(|_| panic!("Failed to stop container: {}", self.id))
+            .unwrap_or_else(|_| panic!("Failed to remove container: {}", self.id))
             .wait()
-            .unwrap_or_else(|_| panic!("Failed to stop container: {}", self.id));
+            .unwrap_or_else(|_| panic!("Failed to remove container: {}", self.id));
 
         if let Some(f) = self.finished_print.take() {
             f();
