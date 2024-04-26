@@ -46,13 +46,11 @@ async function main() {
 
     configure(argv, argv.api);
 
-    let opts = merge([
+    await build([
         options[argv.build],
         apiOptions[argv.api],
         authOptions[argv.auth],
-    ]);
-
-    await build(opts, argv.build);
+    ], argv.build);
 }
 
 if (isMain(import.meta.url)) await main();

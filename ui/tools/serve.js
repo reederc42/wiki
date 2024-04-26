@@ -7,7 +7,7 @@ import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
 import { build } from "./build.js";
-import { options } from "./build-options.js";
+import { options, apiOptions, authOptions, merge } from "./build-options.js";
 import { configure } from "./configure.js";
 import { isMain } from "./is-main.js";
 
@@ -27,18 +27,17 @@ async function main() {
     const argv = yargs(hideBin(process.argv))
         .default("build", "dev")
         .default("api", "mock")
+        .default("auth", "mock")
         .default("port", 8080)
         .default("interface", ["lo0", "en0", "lo", "eth0"]).argv;
 
     configure(argv, argv.api);
 
-    await build(
-        {
-            ...options[argv.build],
-            ...options[argv.api],
-        },
-        argv.build,
-    );
+    await build([
+        options[argv.build],
+        apiOptions[argv.api],
+        authOptions[argv.auth],
+    ], argv.build);
 
     const app = express();
     const dist = process.cwd() + "/dist";

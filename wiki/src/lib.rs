@@ -1,4 +1,5 @@
 mod api;
+mod auth;
 mod dist;
 mod error;
 mod persistence;
