@@ -14,7 +14,9 @@ export const options = {
     dev: {
         sourcemap: true,
     },
+};
 
+export const apiOptions = {
     mock: {
         plugins: [],
     },
@@ -23,8 +25,44 @@ export const options = {
         plugins: [
             resolve({
                 "../api/mock/subject": "../api/server/subject",
-                "../auth/mock/user": "../auth/server/user",
-            }),
-        ],
+            })
+        ]
+    }
+}
+
+export const authOptions = {
+    mock: {
+        plugins: [],
     },
-};
+
+    server: {
+        plugins: [
+            resolve({
+                "../auth/mock/user": "../auth/server/user",
+            })
+        ]
+    },
+}
+
+export function merge(objs) {
+    if (!Array.isArray(objs)) {
+        throw "objs must be array";
+    }
+
+    var out = objs[0];
+    for (var i = 1; i < objs.length; i++) {
+        for (var k in objs[i]) {
+            if (Array.isArray(objs[i][k])) {
+                if (!(k in out)) {
+                    out[k] = [];
+                }
+
+                out[k] = out[k].concat(objs[i][k]);
+            } else {
+                out[k] = objs[i][k];
+            }
+        }
+    }
+
+    return out;
+}

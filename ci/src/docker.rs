@@ -14,10 +14,14 @@ pub struct Docker {
 const CMD_HASH_LENGTH: usize = 7;
 
 impl Docker {
-    fn build_docker_args(&self, background: bool, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>) -> Vec<String> {
+    fn build_docker_args(&self, background: bool, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>, remove: bool) -> Vec<String> {
         let mut args: Vec<String> = vec![
             "run",
         ].into_iter().map(|a| a.to_string()).collect();
+
+        if remove {
+            args.push("--rm".to_string());
+        }
 
         if background {
             args.push("-d".to_string());
@@ -97,7 +101,7 @@ impl Builder for Docker {
 
 impl Runner for Docker {
     fn run(&self, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>) -> Result<(), Error> {
-        let args = self.build_docker_args(false, context, env, include_source, cmd);
+        let args = self.build_docker_args(false, context, env, include_source, cmd, true);
 
         let mut prog = Command::new("docker");
         let cmd = prog.args(args);
@@ -136,7 +140,7 @@ impl Runner for Docker {
     }
 
     fn run_background(&self, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>) -> Result<Box<dyn BackgroundServer>, Error> {
-        let args = self.build_docker_args(true, context, env, include_source, cmd);
+        let args = self.build_docker_args(true, context, env, include_source, cmd, false);
 
         let mut prog = Command::new("docker");
         let cmd = prog.args(args);

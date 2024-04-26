@@ -6,7 +6,7 @@ import esbuild from "esbuild";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
-import { options } from "./build-options.js";
+import { options, apiOptions, authOptions, merge } from "./build-options.js";
 import { configure } from "./configure.js";
 import { isMain } from "./is-main.js";
 
@@ -41,17 +41,18 @@ export async function build(options = {}, env = "") {
 async function main() {
     const argv = yargs(hideBin(process.argv))
         .default("build", "prod")
-        .default("api", "mock").argv;
+        .default("api", "mock")
+        .default("auth", "mock").argv;
 
     configure(argv, argv.api);
 
-    await build(
-        {
-            ...options[argv.build],
-            ...options[argv.api],
-        },
-        argv.build,
-    );
+    let opts = merge([
+        options[argv.build],
+        apiOptions[argv.api],
+        authOptions[argv.auth],
+    ]);
+
+    await build(opts, argv.build);
 }
 
 if (isMain(import.meta.url)) await main();

@@ -46,10 +46,7 @@ fn node_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
         vec![
             "sh",
             "-c",
-            &format!(r"
-                set -xe
-                {}
-            ", make_cypress_script(expiration, &server.addr(), "node-dev", &BROWSERS))
+            &cypress_script(expiration, &server.addr(), "node-dev", &BROWSERS),
         ]
     )
 }
@@ -94,16 +91,14 @@ fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
         vec![
             "sh",
             "-c",
-            &format!(r"
-                set -xe
-                {}
-            ", make_cypress_script(expiration, &server.addr(), "rust-dev", &BROWSERS)),
+            &cypress_script(expiration, &server.addr(), "rust-dev", &BROWSERS),
         ],
     )
 }
 
-fn make_cypress_script(expiration: u32, server_addr: &str, stage_name: &str, browsers: &[&str]) -> String {
+fn cypress_script(expiration: u32, server_addr: &str, stage_name: &str, browsers: &[&str]) -> String {
     format!(r"
+        set -xe
         ln -s /ci/node_modules ./ui/node_modules || true
         cd ui
         node tools/configure.js --user-expiration {0} --api-expiration {0}
@@ -113,7 +108,7 @@ fn make_cypress_script(expiration: u32, server_addr: &str, stage_name: &str, bro
                 --config baseUrl=http://{2}:8080 \
                 --reporter=cypress-multi-reporters \
                 --reporter-options=configFile=ci-cypress-reporter-config.json
-                mv e2e-test-tmp.xml ../test_results/{3}-$b-e2e.xml
+            mv e2e-test-tmp.xml ../test_results/{3}-$b-e2e.xml
         done
     ", expiration, browsers.join(" "), server_addr, stage_name)
 }
