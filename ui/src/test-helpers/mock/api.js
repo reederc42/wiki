@@ -2,6 +2,8 @@ import { loremIpsum } from "lorem-ipsum";
 
 import * as mockSubjects from "../../api/mock/subjects.json";
 
+const maxTextLength = 256;
+
 let a = [];
 
 for (const s of Object.getOwnPropertyNames(mockSubjects)) {
@@ -12,14 +14,14 @@ for (const s of Object.getOwnPropertyNames(mockSubjects)) {
 
 export function newSubject() {
     let subject = newSubjectTitle();
-    while ((!subject) in a) {
+    while (!(subject in a)) {
         subject = newSubjectTitle();
     }
     return subject;
 }
 
 function newSubjectTitle() {
-    return "Test: " + loremIpsum().replace(".", "");
+    return "Test: " + loremIpsum().slice(0, maxTextLength).replace(".", "");
 }
 
 export function existingSubject() {

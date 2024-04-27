@@ -31,9 +31,26 @@ mod embedded {
 }
 
 impl Subject for Postgres {
+    async fn list(&self) -> Result<Vec<String>, Error> {
+        let r = self.client.query(r"
+            SELECT title
+            FROM subjects;
+        ", &[]).await;
+
+        match r {
+            Ok(rows) => Ok(
+                rows.into_iter()
+                    .map(|r| r.get(0))
+                    .collect::<Vec<String>>()
+            ),
+            Err(err) => Err(Error::Internal(err.to_string())),
+        }
+    }
+
     async fn create(&self, user: &str, title: &str, content: &str) -> Result<(), Error> {
         let r = self.client.query(r"
-            INSERT INTO subjects VALUES ($1, $2, $3);
+            INSERT INTO subjects
+            VALUES ($1, $2, $3);
         ", &[&title, &user, &content]).await;
 
         match r {
@@ -203,8 +220,21 @@ mod tests {
 
         // 4. Update subject and assert has new content
         let r = harness.db.update("test_user", "Exists", &new_content).await;
-        assert!(r.is_ok(), "{:?}", r);
+        assert!(r.is_ok());
         let r = harness.db.read("Exists").await;
         assert_eq!(r.unwrap(), new_content);
+
+        // 5. List subjects
+        let r = harness.db.create("test_user", "Exists2", "Some content").await;
+        assert!(r.is_ok());
+        let r = harness.db.list().await;
+        let mut actual = r.unwrap();
+        actual.sort();
+        let mut expected: Vec<String> = vec![
+            "Exists".into(),
+            "Exists2".into(),
+        ];
+        expected.sort();
+        assert_eq!(actual, expected);
     }
 }

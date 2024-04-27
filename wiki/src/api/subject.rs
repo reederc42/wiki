@@ -6,6 +6,7 @@ use warp::{reject::Rejection, reply::Reply, Filter};
 use crate::error::Error;
 
 pub trait Subject {
+    fn list(&self) -> impl Future<Output = Result<Vec<String>, Error>> + Send;
     fn create(&self, user: &str, title: &str, content: &str) -> impl Future<Output = Result<(), Error>> + Send;
     fn read(&self, title: &str) -> impl Future<Output = Result<String, Error>> + Send;
     fn update(&self, user: &str, title: &str, content: &str) -> impl Future<Output = Result<(), Error>> + Send;
@@ -16,6 +17,7 @@ where
     S: Subject + Send + Sync + 'static
 {
     disabled(provider.clone())
+        .or(list(provider.clone()))
         .or(read(provider.clone()))
         .or(update(provider.clone()))
         .or(create(provider))
@@ -26,8 +28,20 @@ where
     S: Subject + Send + Sync + 'static
 {
     warp::path!("subject" / String)
+        .or(warp::path!("subjects").map(|| "".to_string()))
+        .unify()
         .and(with_subject_provider(provider))
         .and_then(handlers::disabled)
+}
+
+fn list<S>(provider: Arc<Option<S>>) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone
+where
+    S: Subject + Send + Sync + 'static
+{
+    warp::path!("subjects")
+        .and(warp::get())
+        .and(with_subject_provider(provider))
+        .then(handlers::list)
 }
 
 fn read<S>(provider: Arc<Option<S>>) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone
@@ -46,7 +60,7 @@ where
 {
     warp::path!("subject" / String)
         .and(warp::put())
-        .and(warp::header::exact("Content-Type", "text/text"))
+        .and(warp::header::exact("Content-Type", "text/plain"))
         .and(with_authorization())
         .and(with_subject_provider(provider))
         .and(warp::body::bytes())
@@ -59,7 +73,7 @@ where
 {
     warp::path!("subject" / String)
         .and(warp::post())
-        .and(warp::header::exact("Content-Type", "text/text"))
+        .and(warp::header::exact("Content-Type", "text/plain"))
         .and(with_authorization())
         .and(with_subject_provider(provider))
         .and(warp::body::bytes())
@@ -97,16 +111,7 @@ mod handlers {
 
     use crate::error::Error;
 
-    use super::Subject;
-
-    pub async fn disabled<S: Subject>(_title: String, provider: Arc<Option<S>>) -> Result<impl Reply, Rejection> {
-        match provider.as_ref() {
-            Some(_) => Err(warp::reject()),
-            None => Ok(
-                warp::reply::with_status(warp::reply(), StatusCode::NOT_FOUND)
-            ),
-        }
-    }
+    use super::Subject; 
 
     fn error_response(err: Error) -> Response<String> {
         let (msg, status_code) = match err {
@@ -122,11 +127,31 @@ mod handlers {
             .unwrap()
     }
 
+    pub async fn disabled<S: Subject>(_title: String, provider: Arc<Option<S>>) -> Result<impl Reply, Rejection> {
+        match provider.as_ref() {
+            Some(_) => Err(warp::reject()),
+            None => Ok(
+                warp::reply::with_status(warp::reply(), StatusCode::NOT_FOUND)
+            ),
+        }
+    }
+
+    pub async fn list<S: Subject>(provider: Arc<Option<S>>) -> Response<String> {
+        let provider = provider.as_ref().as_ref().unwrap();
+        match provider.list().await {
+            Ok(titles) => Response::builder()
+                .header("Content-Type", "text/plain")
+                .body(titles.join("\n"))
+                .unwrap(),
+            Err(err) => error_response(err),
+        }
+    }
+
     pub async fn read<S: Subject>(title: String, provider: Arc<Option<S>>) -> Response<String> {
         let provider = provider.as_ref().as_ref().unwrap();
         match provider.read(&title).await {
             Ok(content) => Response::builder()
-                .header("Content-Type", "text/text")
+                .header("Content-Type", "text/plain")
                 .body(content)
                 .unwrap(),
             Err(err) => error_response(err),
@@ -186,6 +211,7 @@ mod handlers {
 
 #[cfg(test)]
 mod tests {
+    use bytes::Bytes;
     use warp::http::StatusCode;
 
     use crate::error::Error;
@@ -193,12 +219,25 @@ mod tests {
     use super::*;
 
     struct TestSubjectProvider {
+        list_response: Result<Vec<String>, Error>,
         read_response: Result<String, Error>,
         update_response: Result<(), Error>,
         create_response: Result<(), Error>,
     }
 
     impl Subject for TestSubjectProvider {
+        async fn list(&self) -> Result<Vec<String>, Error> {
+            match &self.list_response {
+                Ok(titles) => Ok(titles.to_vec()),
+                Err(err) => match err {
+                    Error::Internal(msg) => Err(Error::Internal(msg.clone())),
+                    Error::NotFound(msg) => Err(Error::NotFound(msg.clone())),
+                    Error::BadRequest(msg) => Err(Error::BadRequest(msg.clone())),
+                    Error::Unauthorized => Err(Error::Unauthorized),
+                }
+            }
+        }
+
         async fn read(&self, _title: &str) -> Result<String, Error>{
             match &self.read_response {
                 Ok(content) => Ok(content.clone()),
@@ -236,14 +275,30 @@ mod tests {
         }
     }
 
-    #[tokio::test]
-    async fn test_read() {
-        let good_provider = TestSubjectProvider {
+    fn good_provider() -> TestSubjectProvider {
+        TestSubjectProvider {
+            list_response: Ok(vec![
+                "Good Subject 1".into(),
+                "Good Subject 2".into(),
+            ]),
             read_response: Ok("Good content".into()),
             update_response: Ok(()),
             create_response: Ok(())
-        };
-        let good_filter = read(Arc::new(Some(good_provider)));
+        }
+    }
+
+    fn error_provider() -> TestSubjectProvider {
+        TestSubjectProvider {
+            list_response: Err(Error::Internal("test error".into())),
+            read_response: Err(Error::Internal("test error".into())),
+            update_response: Err(Error::Internal("test error".into())),
+            create_response: Err(Error::Internal("test error".into())),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_read() {
+        let good_filter = read(Arc::new(Some(good_provider())));
         fn good_request() -> warp::test::RequestBuilder {
             warp::test::request()
                 .path("/subject/some_title")
@@ -278,31 +333,21 @@ mod tests {
         assert_eq!(res.body(), "Good content");
 
         // 4. Provider error is returned
-        let error_provider = TestSubjectProvider {
-            read_response: Err(Error::Internal("my error".into())),
-            update_response: Ok(()),
-            create_response: Ok(()),
-        };
-        let filter = read(Arc::new(Some(error_provider)));
+        let filter = read(Arc::new(Some(error_provider())));
         let res = good_request()
                 .reply(&filter)
                 .await;
         assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
-        assert_eq!(res.body(), "my error");
+        assert_eq!(res.body(), "test error");
     }
 
     #[tokio::test]
     async fn test_update() {
-        let good_provider = TestSubjectProvider {
-            read_response: Ok("".into()),
-            update_response: Ok(()),
-            create_response: Ok(()),
-        };
-        let good_filter = update(Arc::new(Some(good_provider)));
+        let good_filter = update(Arc::new(Some(good_provider())));
         fn good_request() -> warp::test::RequestBuilder {
             warp::test::request()
                 .path("/subject/some_title")
-                .header("Content-Type", "text/text")
+                .header("Content-Type", "text/plain")
                 .header("Authorization", "Basic bob:pass")
                 .method("PUT")
                 .body("Good content")
@@ -348,7 +393,7 @@ mod tests {
         // 5. Unauthorized
         let res = warp::test::request()
             .path("/subject/some_title")
-            .header("Content-Type", "text/text")
+            .header("Content-Type", "text/plain")
             .method("PUT")
             .body("Good content")
             .reply(&good_filter)
@@ -368,31 +413,21 @@ mod tests {
         );
 
         // 7. Provider error is returned
-        let provider = TestSubjectProvider {
-            read_response: Ok("".into()),
-            update_response: Err(Error::Internal("my error".into())),
-            create_response: Ok(()),
-        };
-        let filter = update(Arc::new(Some(provider)));
+        let filter = update(Arc::new(Some(error_provider())));
         let res = good_request()
                 .reply(&filter)
                 .await;
         assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
-        assert_eq!(res.body(), "my error");
+        assert_eq!(res.body(), "test error");
     }
 
     #[tokio::test]
     async fn test_create() {
-        let good_provider = TestSubjectProvider {
-            read_response: Ok("".into()),
-            update_response: Ok(()),
-            create_response: Ok(()),
-        };
-        let good_filter = create(Arc::new(Some(good_provider)));
+        let good_filter = create(Arc::new(Some(good_provider())));
         fn good_request() -> warp::test::RequestBuilder {
             warp::test::request()
                 .path("/subject/some_title")
-                .header("Content-Type", "text/text")
+                .header("Content-Type", "text/plain")
                 .header("Authorization", "Basic bob:pass")
                 .method("POST")
                 .body("Good content")
@@ -431,7 +466,7 @@ mod tests {
         // 4. Bad body
         let res = warp::test::request()
                 .path("/subject/some_title")
-                .header("Content-Type", "text/text")
+                .header("Content-Type", "text/plain")
                 .header("Authorization", "Basic bob:pass")
                 .method("POST")
                 .reply(&good_filter)
@@ -446,34 +481,33 @@ mod tests {
         );
 
         // 6. Provider error is returned
-        let provider = TestSubjectProvider {
-            read_response: Ok("".into()),
-            update_response: Ok(()),
-            create_response: Err(Error::Internal("my error".into())),
-        };
-        let filter = create(Arc::new(Some(provider)));
+        let filter = create(Arc::new(Some(error_provider())));
         let res = good_request()
                 .reply(&filter)
                 .await;
         assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
-        assert_eq!(res.body(), "my error");
+        assert_eq!(res.body(), "test error");
     }
 
     #[tokio::test]
     async fn test_filter() {
-        let good_provider = TestSubjectProvider {
-            read_response: Ok("Good content".into()),
-            update_response: Ok(()),
-            create_response: Ok(()),
-        };
-        let error_provider = TestSubjectProvider {
-            read_response: Err(Error::Internal("test error".into())),
-            update_response: Err(Error::Internal("test error".into())),
-            create_response: Err(Error::Internal("test error".into())),
-        };
+        let good_filter = filter(Arc::new(Some(good_provider())));
+        let error_filter = filter(Arc::new(Some(error_provider())));
 
-        let good_filter = filter(Arc::new(Some(good_provider)));
-        let error_filter = filter(Arc::new(Some(error_provider)));
+        // 1. List success/fail
+        let res = warp::test::request()
+            .path("/subjects")
+            .reply(&good_filter)
+            .await;
+        assert_eq!(res.body(), &Bytes::from([
+                "Good Subject 1".to_string(),
+                "Good Subject 2".to_string(),
+            ].join("\n")));
+        let res = warp::test::request()
+            .path("/subjects")
+            .reply(&error_filter)
+            .await;
+        assert_ne!(res.status(), StatusCode::OK);
 
         // 1. Read success/fail
         let res = warp::test::request()
@@ -491,7 +525,7 @@ mod tests {
         fn good_update_request() -> warp::test::RequestBuilder {
             warp::test::request()
                 .path("/subject/some_title")
-                .header("Content-Type", "text/text")
+                .header("Content-Type", "text/plain")
                 .header("Authorization", "Basic bob:pass")
                 .method("PUT")
                 .body("Good content")
@@ -509,7 +543,7 @@ mod tests {
         fn good_create_request() -> warp::test::RequestBuilder {
             warp::test::request()
                 .path("/subject/some_title")
-                .header("Content-Type", "text/text")
+                .header("Content-Type", "text/plain")
                 .header("Authorization", "Basic bob:pass")
                 .method("POST")
                 .body("Good content")
@@ -525,20 +559,27 @@ mod tests {
 
         let disabled_filter = filter::<TestSubjectProvider>(Arc::new(None));
 
-        // 4. Disabled read
+        // 4. Disabled list
+        let res = warp::test::request()
+            .path("/subjects/")
+            .reply(&disabled_filter)
+            .await;
+        assert_eq!(res.status(), StatusCode::NOT_FOUND);
+
+        // 5. Disabled read
         let res = warp::test::request()
             .path("/subject/some_title")
             .reply(&disabled_filter)
             .await;
         assert_eq!(res.status(), StatusCode::NOT_FOUND);
 
-        // 5. Disabled update
+        // 6. Disabled update
         let res = good_update_request()
             .reply(&disabled_filter)
             .await;
         assert_eq!(res.status(), StatusCode::NOT_FOUND);
 
-        // 6. Disabled create
+        // 7. Disabled create
         let res = good_create_request()
             .reply(&disabled_filter)
             .await;

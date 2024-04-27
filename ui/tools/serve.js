@@ -33,11 +33,14 @@ async function main() {
 
     configure(argv, argv.api);
 
-    await build([
-        options[argv.build],
-        apiOptions[argv.api],
-        authOptions[argv.auth],
-    ], argv.build);
+    await build(
+        merge([
+            options[argv.build],
+            apiOptions[argv.api],
+            authOptions[argv.auth],
+        ]),
+        argv.build,
+    );
 
     const app = express();
     const dist = process.cwd() + "/dist";

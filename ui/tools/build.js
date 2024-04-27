@@ -26,6 +26,7 @@ export async function build(options = {}, env = "") {
         outfile: outdir + "/index.js",
         logLevel: "info",
     };
+
     await esbuild.build({
         ...baseOptions,
         ...options,
@@ -46,11 +47,14 @@ async function main() {
 
     configure(argv, argv.api);
 
-    await build([
-        options[argv.build],
-        apiOptions[argv.api],
-        authOptions[argv.auth],
-    ], argv.build);
+    await build(
+        merge([
+            options[argv.build],
+            apiOptions[argv.api],
+            authOptions[argv.auth],
+        ]),
+        argv.build,
+    );
 }
 
 if (isMain(import.meta.url)) await main();

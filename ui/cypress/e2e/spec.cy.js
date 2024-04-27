@@ -6,6 +6,7 @@ import config from "../../src/config.json";
 import { newSubject, existingSubject } from "../../src/test-helpers/mock/api";
 import { newUser, existingUser } from "../../src/test-helpers/mock/auth";
 
+const maxTextLength = 256;
 const userSignInWait = 1000;
 const userExpiration = config.userExpiration + 250;
 
@@ -55,7 +56,7 @@ describe("UI e2e tests", () => {
                         .contains(subject.textContent)
                         .should("not.be.visible");
                     cy.get("textarea").should("not.have.attr", "readonly");
-                    let testText = loremIpsum();
+                    let testText = randomText();
                     cy.get("#ace-editor").type(testText);
 
                     // 6. Save changes
@@ -107,10 +108,11 @@ describe("UI e2e tests", () => {
             // 5. Edit subject
             cy.get("textarea").should("not.have.attr", "readonly");
             let testText = newSubject();
-            cy.get("#ace-editor").type("# " + testText);
+            cy.get("#ace-editor").type("# " + testText, { delay: 2 });
 
             // 6. Save subject
             cy.get("button").contains("Save").click();
+            cy.wait(500);
 
             // 7. See changes
             cy.get("button").contains("View").click();
@@ -297,7 +299,7 @@ describe("UI e2e tests", () => {
 
             // 3. Add new content
             cy.get("textarea").should("not.have.attr", "readonly");
-            cy.get("#ace-editor").type(loremIpsum());
+            cy.get("#ace-editor").type(randomText());
 
             // 4. Save
             cy.get("button").contains("Sign Out").click();
@@ -309,7 +311,7 @@ describe("UI e2e tests", () => {
             // 5. Add more new content
             cy.log("Trying to add more content");
             cy.get("textarea").should("not.have.attr", "readonly");
-            cy.get("#ace-editor").type("\n\n" + loremIpsum());
+            cy.get("#ace-editor").type("\n\n" + randomText());
 
             // 6. Wait until expiration
             cy.wait(userExpiration);
@@ -328,4 +330,8 @@ describe("UI e2e tests", () => {
 
 function randomElement(list = []) {
     return list[Math.floor(Math.random() * list.length)];
+}
+
+function randomText(length = maxTextLength) {
+    return loremIpsum().slice(0, length);
 }

@@ -25,10 +25,10 @@ export const apiOptions = {
         plugins: [
             resolve({
                 "../api/mock/subject": "../api/server/subject",
-            })
-        ]
-    }
-}
+            }),
+        ],
+    },
+};
 
 export const authOptions = {
     mock: {
@@ -39,10 +39,10 @@ export const authOptions = {
         plugins: [
             resolve({
                 "../auth/mock/user": "../auth/server/user",
-            })
-        ]
+            }),
+        ],
     },
-}
+};
 
 export function merge(objs) {
     if (!Array.isArray(objs)) {

@@ -36,6 +36,9 @@ pub struct Cli {
     /// Print commands that will be executed
     #[arg(short, long)]
     verbose: bool,
+
+    #[arg(short, long)]
+    fail_fast: bool,
 }
 
 pub fn cmd(args: Cli) {
@@ -79,29 +82,47 @@ pub fn cmd(args: Cli) {
     }
     fs::create_dir(TEST_RESULTS_DIR).unwrap();
 
-    let mut stages_run = 0;
+    let mut stages_passed: usize = 0;
+    let mut stages_failed: usize = 0;
     let all_stages_len = all_stages.len();
     for s in all_stages {
         if args.all || args.stages.iter().any(|stage| stage == s.name() ) {
             if args.github_logger {
                 println!("::group::Stage: {}", s.name());
             }
+
             if let Err(e) = s.run(&context, &config) {
-                panic!("Error: {:?}", e);
+                println!("Stage error: {:?}", e);
+                stages_failed += 1;
+                if args.fail_fast {
+                    println!("::endgroup::");
+                    break;
+                }
+            } else {
+                stages_passed += 1;
             }
+
             if args.github_logger {
                 println!("::endgroup::");
             }
-            stages_run += 1;
         }
     }
 
-    if stages_run == 0 {
-        println!("No stages run");
-    } else if stages_run < all_stages_len {
-        println!("{}/{} stages run, partial CI pass", stages_run, all_stages_len);
+    print!("{}/{} passed, ", stages_passed, stages_passed + stages_failed);
+    if stages_passed + stages_failed == all_stages_len {
+        if stages_failed == 0 {
+            println!("CI passed!");
+            std::process::exit(0);
+        } else {
+            println!("Ci failed.");
+            std::process::exit(1);
+        }
+    } else if stages_failed == 0 {
+            println!("partial CI pass.");
+            std::process::exit(0);
     } else {
-        println!("{}/{} stages run, CI passed!", stages_run, all_stages_len);
+            println!("partial CI fail.");
+            std::process::exit(1);
     }
 }
 

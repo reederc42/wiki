@@ -74,7 +74,7 @@ class Subject extends HTMLElement {
     }
 
     showSubject() {
-        let viewTab, editTab, viewer, editor, saveError;
+        let viewTab, editTab, viewer, editor, saveError, saveErrorRedirect;
         let el = this;
 
         inject("viewer", this.subject);
@@ -91,6 +91,9 @@ class Subject extends HTMLElement {
                 <button onclick="edit()" disabled>Edit</button>
                 <button onclick="save()" disabled>Save</button>
                 <span id="save-error" style="color: red;display: none"></span>
+                <span id="save-error-redirect" style="color: red;display: none">
+                    Please make your changes at <a></a>
+                </span>
             </div>
             <div id="view" style="display: ${this.isNew ? "none" : "inline"};">
                 <wiki-view-subject id="viewer">
@@ -123,21 +126,19 @@ class Subject extends HTMLElement {
                     el.subject.content = editor.getValue();
                     el.saveButton.setAttribute("disabled", true);
                     editor.disable();
+                    let promise;
                     if (el.isNew) {
                         el.subjectName = editor.getTitle();
-                        let err = subjectStore.create(
-                            el.subjectName,
-                            el.subject,
-                        );
-                        if (err != null) {
-                            el.handleSaveError(err);
-                            return;
-                        }
-                        el.isNew = false;
-                        el.removeAttribute("new");
+                        promise = subjectStore
+                            .create(el.subjectName, el.subject)
+                            .then(() => {
+                                el.isNew = false;
+                                el.removeAttribute("new");
+                            });
+                    } else {
+                        promise = subjectStore.pushContent(el.subjectName);
                     }
-                    subjectStore
-                        .pushContent(el.subjectName)
+                    promise
                         .catch((err) => {
                             el.handleSaveError(err);
                         })
@@ -153,6 +154,7 @@ class Subject extends HTMLElement {
         viewer = viewTab.querySelector("#viewer");
         editor = editTab.querySelector("#editor");
         saveError = this.querySelector("#save-error");
+        saveErrorRedirect = this.querySelector("#save-error-redirect");
 
         // enable view and edit buttons, bind save button
         const buttons = this.querySelectorAll("button");
@@ -178,10 +180,23 @@ class Subject extends HTMLElement {
             console.error(err);
             saveError.textContent = "Error: " + err.message;
             saveError.style.display = "inline";
-            setTimeout(() => {
-                saveError.textContent = "";
-                saveError.style.display = "none";
-            }, errTimeout);
+            if (err.message.includes("already exists")) {
+                saveError.textContent += ".";
+                saveErrorRedirect.style.display = "inline";
+                let target = saveErrorRedirect.querySelector("a");
+                let title = editor.getTitle();
+                target.setAttribute("onclick", "navigate()");
+                target.setAttribute(
+                    "href",
+                    "/wiki/" + encodeURIComponent(title),
+                );
+                target.textContent = title;
+            } else {
+                setTimeout(() => {
+                    saveError.textContent = "";
+                    saveError.style.display = "none";
+                }, errTimeout);
+            }
         };
 
         this.updateButtons();
