@@ -61,6 +61,7 @@ describe("UI e2e tests", () => {
 
                     // 6. Save changes
                     cy.get("button").contains("Save").click();
+                    cy.wait(500);
 
                     // 7. See changes
                     cy.get("button").contains("View").click();

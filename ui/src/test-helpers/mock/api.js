@@ -14,7 +14,7 @@ for (const s of Object.getOwnPropertyNames(mockSubjects)) {
 
 export function newSubject() {
     let subject = newSubjectTitle();
-    while (!(subject in a)) {
+    while (subject in a) {
         subject = newSubjectTitle();
     }
     return subject;

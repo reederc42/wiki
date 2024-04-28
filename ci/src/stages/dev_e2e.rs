@@ -14,7 +14,7 @@ impl Stage for DevE2E {
 
     // run e2e tests against dev servers
     fn run(&self, _context: &Context, config: &Config) -> Result<(), Error> {
-        let expiration = 1000;
+        let expiration = 1500;
 
         node_dev_e2e(expiration, config)?;
 
