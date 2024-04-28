@@ -79,7 +79,7 @@ fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
             "-c",
             r"
                 set -xe
-                ./target/debug/wiki
+                RUST_LOG=info ./target/debug/wiki
             ",
         ],
     )?;
