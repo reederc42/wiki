@@ -10,6 +10,7 @@ use std::sync::Arc;
 use api::subject;
 
 use clap::Parser;
+use log::*;
 use regex::Regex;
 use warp::Filter;
 
@@ -34,6 +35,9 @@ pub struct Cli {
 }
 
 pub async fn run(args: Cli) {
+    pretty_env_logger::init();
+    info!("initialized logging");
+
     let ui_filter = spa_server::filter(Arc::new(spa_server::FilterInput{
         assets: &dist::DIST,
         entrypoint: "index.html",
@@ -54,16 +58,17 @@ pub async fn run(args: Cli) {
 
     let filter = api::filter().and(subject::filter(db)).or(ui_filter);
 
-    let (_, fut) = warp::serve(filter)
+    let (addr, fut) = warp::serve(filter)
             .bind_with_graceful_shutdown(
                 ([0, 0, 0, 0], 8080),
                 async move {
                     tokio::signal::ctrl_c()
                         .await
                         .ok();
-                    println!("Shutting down");
+                    info!("Shutting down");
                 }
             );
+    info!("Serving http at http://{}", addr);
     fut.await;
-    println!("Shut down");
+    info!("Shut down");
 }

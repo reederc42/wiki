@@ -28,6 +28,7 @@ pub fn filter(input: Arc<FilterInput>) -> impl Filter<Extract = (impl Reply,), E
         .map(move || input.clone())
         .and(warp::path::tail())
         .and_then(handler)
+        .with(warp::log("wiki::ui"))
 }
 
 async fn handler(input: Arc<FilterInput>, path: Tail) -> Result<Response<&'static [u8]>, Rejection>
@@ -40,7 +41,6 @@ async fn handler(input: Arc<FilterInput>, path: Tail) -> Result<Response<&'stati
     match assets.get(path) {
         Some(asset) => Ok(found(asset)),
         None => {
-            println!("Testing path: {}", path);
             if path_validator.is_match(path) {
                 Ok(found(assets.get(entrypoint).unwrap()))
             } else {

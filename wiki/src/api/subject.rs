@@ -21,6 +21,7 @@ where
         .or(read(provider.clone()))
         .or(update(provider.clone()))
         .or(create(provider))
+        .with(warp::log("wiki::api"))
 }
 
 fn disabled<S>(provider: Arc<Option<S>>) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone
