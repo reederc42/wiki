@@ -10,7 +10,8 @@ use std::sync::Arc;
 use api::subject;
 
 use clap::Parser;
-use log::*;
+use log::{info, LevelFilter};
+use pretty_env_logger::env_logger::Target;
 use regex::Regex;
 use warp::Filter;
 
@@ -32,10 +33,24 @@ pub struct Cli {
     /// If enabled, Postgres database
     #[arg(long, default_value="postgres")]
     postgres_database: String,
+
+    /// Enable debug logs
+    #[arg(short, long)]
+    debug: bool,
 }
 
 pub async fn run(args: Cli) {
-    pretty_env_logger::init();
+    pretty_env_logger::formatted_timed_builder()
+        .filter_level({
+            if args.debug {
+                LevelFilter::Debug
+            } else {
+                LevelFilter::Info
+            }
+        })
+        .target(Target::Stdout)
+        .init();
+
     info!("initialized logging");
 
     let ui_filter = spa_server::filter(Arc::new(spa_server::FilterInput{

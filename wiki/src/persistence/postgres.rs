@@ -1,3 +1,5 @@
+use log::{info, error};
+
 use crate::{api::subject::Subject, error::Error};
 
 pub struct Postgres {
@@ -14,13 +16,8 @@ impl Postgres {
 
     pub async fn migrate(&mut self) -> Result<(), Error> {
         match embedded::migrations::runner().run_async(&mut self.client).await {
-            Ok(r) => {
-                for m in r.applied_migrations() {
-                    println!("Applied: {}", m.name());
-                }
-                Ok(())
-            },
-            Err(e) => Err(Error::Internal(e.to_string()))
+            Ok(_) => Ok(()),
+            Err(e) => Err(Error::Internal(e.to_string())),
         }
     }
 }
@@ -88,7 +85,6 @@ impl Subject for Postgres {
 
         match r {
             Ok(rows) => {
-                println!("Rows updated: {}", rows);
                 if rows < 1 {
                     Err(Error::NotFound(title.to_string()))
                 } else {
@@ -111,10 +107,10 @@ async fn connect(host: &str, user: &str, database: &str) -> Result<tokio_postgre
         Ok((client, connection)) => {
             tokio::spawn(async move {
                 if let Err(e) = connection.await {
-                    eprintln!("connection error: {}", e);
+                    error!(target: "persistence/postgres", "connection error: {}", e);
                 }
             });
-            println!("Connected to database");
+            info!(target: "persistence/postgres", "Connected to database");
             Ok(client)
         },
     }
