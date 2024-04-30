@@ -15,6 +15,8 @@ use pretty_env_logger::env_logger::Target;
 use regex::Regex;
 use warp::Filter;
 
+use crate::auth::mock_user;
+
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 pub struct Cli {
@@ -71,7 +73,9 @@ pub async fn run(args: Cli) {
         None
     });
 
-    let filter = api::filter().and(subject::filter(db)).or(ui_filter);
+    let filter = api::filter()
+        .and(subject::filter(db, Arc::new(mock_user::Mock::new())))
+        .or(ui_filter);
 
     let (addr, fut) = warp::serve(filter)
             .bind_with_graceful_shutdown(

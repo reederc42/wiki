@@ -2112,6 +2112,7 @@ dependencies = [
 name = "wiki"
 version = "0.1.0"
 dependencies = [
+ "base64 0.22.0",
  "bytes",
  "clap",
  "log",
@@ -2121,6 +2122,7 @@ dependencies = [
  "rand",
  "refinery",
  "regex",
+ "serde_json",
  "serde_yaml",
  "tokio",
  "tokio-postgres",

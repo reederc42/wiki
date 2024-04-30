@@ -1,6 +1,6 @@
 use log::{info, error};
 
-use crate::{api::subject::Subject, error::Error};
+use crate::{api::subject::Subjects, error::Error};
 
 pub struct Postgres {
     client: tokio_postgres::Client,
@@ -27,7 +27,7 @@ mod embedded {
     embed_migrations!("./src/persistence/migrations");
 }
 
-impl Subject for Postgres {
+impl Subjects for Postgres {
     async fn list(&self) -> Result<Vec<String>, Error> {
         let r = self.client.query(r"
             SELECT title

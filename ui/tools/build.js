@@ -43,9 +43,10 @@ async function main() {
     const argv = yargs(hideBin(process.argv))
         .default("build", "prod")
         .default("api", "mock")
-        .default("auth", "mock").argv;
+        .default("auth", "mock")
+        .argv;
 
-    configure(argv, argv.api);
+    configure(argv, argv.api, argv.auth);
 
     await build(
         merge([

@@ -1,118 +1,114 @@
 use std::{convert::Infallible, future::Future, sync::Arc};
 
-use regex::Regex;
 use warp::{reject::Rejection, reply::Reply, Filter};
 
-use crate::error::Error;
+use crate::{auth::user::Users, error::Error};
 
-pub trait Subject {
+pub trait Subjects {
     fn list(&self) -> impl Future<Output = Result<Vec<String>, Error>> + Send;
     fn create(&self, user: &str, title: &str, content: &str) -> impl Future<Output = Result<(), Error>> + Send;
     fn read(&self, title: &str) -> impl Future<Output = Result<String, Error>> + Send;
     fn update(&self, user: &str, title: &str, content: &str) -> impl Future<Output = Result<(), Error>> + Send;
 }
 
-pub fn filter<S>(provider: Arc<Option<S>>) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone
+pub fn filter<S, U>(subjects: Arc<Option<S>>, users: Arc<U>) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone
 where
-    S: Subject + Send + Sync + 'static
+    S: Subjects + Send + Sync + 'static,
+    U: Users + Send + Sync + 'static
 {
-    disabled(provider.clone())
-        .or(list(provider.clone()))
-        .or(read(provider.clone()))
-        .or(update(provider.clone()))
-        .or(create(provider))
+    disabled(subjects.clone())
+        .or(list(subjects.clone()))
+        .or(read(subjects.clone()))
+        .or(update(subjects.clone(), users.clone()))
+        .or(create(subjects, users))
         .with(warp::log("wiki::api"))
 }
 
-fn disabled<S>(provider: Arc<Option<S>>) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone
+fn disabled<S>(subjects: Arc<Option<S>>) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone
 where
-    S: Subject + Send + Sync + 'static
+    S: Subjects + Send + Sync + 'static
 {
     warp::path!("subject" / String)
         .or(warp::path!("subjects").map(|| "".to_string()))
         .unify()
-        .and(with_subject_provider(provider))
+        .and(with_subjects(subjects))
         .and_then(handlers::disabled)
 }
 
-fn list<S>(provider: Arc<Option<S>>) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone
+fn list<S>(subjects: Arc<Option<S>>) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone
 where
-    S: Subject + Send + Sync + 'static
+    S: Subjects + Send + Sync + 'static
 {
     warp::path!("subjects")
         .and(warp::get())
-        .and(with_subject_provider(provider))
+        .and(with_subjects(subjects))
         .then(handlers::list)
 }
 
-fn read<S>(provider: Arc<Option<S>>) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone
+fn read<S>(subjects: Arc<Option<S>>) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone
 where
-    S: Subject + Send + Sync + 'static
+    S: Subjects + Send + Sync + 'static
 {
     warp::path!("subject" / String)
         .and(warp::get())
-        .and(with_subject_provider(provider))
+        .and(with_subjects(subjects))
         .then(handlers::read)
 }
 
-fn update<S>(provider: Arc<Option<S>>) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone
+fn update<S, U>(subjects: Arc<Option<S>>, users: Arc<U>) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone
 where
-    S: Subject + Send + Sync + 'static
+    S: Subjects + Send + Sync + 'static,
+    U: Users + Send + Sync + 'static
 {
     warp::path!("subject" / String)
         .and(warp::put())
         .and(warp::header::exact("Content-Type", "text/plain"))
-        .and(with_authorization())
-        .and(with_subject_provider(provider))
+        .and(warp::header("Authorization").or(warp::any().map(|| "".to_string())).unify())
+        .and(with_users(users))
+        .and(with_subjects(subjects))
         .and(warp::body::bytes())
         .then(handlers::update)
 }
 
-fn create<S>(provider: Arc<Option<S>>) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone
+fn create<S, U>(subjects: Arc<Option<S>>, users: Arc<U>) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone
 where
-    S: Subject + Send + Sync + 'static
+    S: Subjects + Send + Sync + 'static,
+    U: Users + Send + Sync + 'static
 {
     warp::path!("subject" / String)
         .and(warp::post())
         .and(warp::header::exact("Content-Type", "text/plain"))
-        .and(with_authorization())
-        .and(with_subject_provider(provider))
+        .and(warp::header("Authorization").or(warp::any().map(|| "".to_string())).unify())
+        .and(with_users(users))
+        .and(with_subjects(subjects))
         .and(warp::body::bytes())
         .then(handlers::create)
 }
 
-fn with_subject_provider<S>(subject_provider: Arc<Option<S>>) -> impl Filter<Extract = (Arc<Option<S>>,), Error = Infallible> + Clone
+fn with_subjects<S>(subjects: Arc<Option<S>>) -> impl Filter<Extract = (Arc<Option<S>>,), Error = Infallible> + Clone
 where
-    S: Subject + Send + Sync + 'static
+    S: Subjects + Send + Sync + 'static
 {
-    warp::any().map(move || subject_provider.clone())
+    warp::any().map(move || subjects.clone())
 }
 
-fn with_authorization() -> impl Filter<Extract = (Result<String, ()>,), Error = Infallible> + Clone {
-    warp::header("Authorization")
-        .map(|header: String| {
-            let re = Regex::new("Basic (.+):.+").unwrap();
-            match re.captures(&header) {
-                Some(captures) => {
-                    let (_, [username]) = captures.extract();
-                    Ok(username.into())
-                },
-                None => Err(()),
-            }
-        })
-        .or(warp::any().map(|| Err(())))
-        .unify()
+fn with_users<U>(users: Arc<U>) -> impl Filter<Extract = (Arc<U>,), Error = Infallible> + Clone
+where
+    U: Users + Send + Sync + 'static
+{
+    warp::any().map(move || users.clone())
 }
 
 mod handlers {
     use std::sync::Arc;
 
     use bytes::Bytes;
+    use log::error;
     use warp::{http::{Response, StatusCode}, reject::Rejection, reply::Reply};
 
-    use crate::error::Error;
+    use crate::{auth::user::Users, error::Error};
 
-    use super::Subject; 
+    use super::Subjects; 
 
     fn error_response(err: Error) -> Response<String> {
         let (msg, status_code) = match err {
@@ -128,7 +124,7 @@ mod handlers {
             .unwrap()
     }
 
-    pub async fn disabled<S: Subject>(_title: String, provider: Arc<Option<S>>) -> Result<impl Reply, Rejection> {
+    pub async fn disabled<S: Subjects>(_title: String, provider: Arc<Option<S>>) -> Result<impl Reply, Rejection> {
         match provider.as_ref() {
             Some(_) => Err(warp::reject()),
             None => Ok(
@@ -137,7 +133,7 @@ mod handlers {
         }
     }
 
-    pub async fn list<S: Subject>(provider: Arc<Option<S>>) -> Response<String> {
+    pub async fn list<S: Subjects>(provider: Arc<Option<S>>) -> Response<String> {
         let provider = provider.as_ref().as_ref().unwrap();
         match provider.list().await {
             Ok(titles) => Response::builder()
@@ -148,7 +144,7 @@ mod handlers {
         }
     }
 
-    pub async fn read<S: Subject>(title: String, provider: Arc<Option<S>>) -> Response<String> {
+    pub async fn read<S: Subjects>(title: String, provider: Arc<Option<S>>) -> Response<String> {
         let provider = provider.as_ref().as_ref().unwrap();
         match provider.read(&title).await {
             Ok(content) => Response::builder()
@@ -159,12 +155,14 @@ mod handlers {
         }
     }
 
-    pub async fn update<S: Subject>(title: String, user: Result<String, ()>, provider: Arc<Option<S>>, body: Bytes) -> Response<String> {
-        let user = match user {
+    pub async fn update<S: Subjects, U: Users>(title: String, auth_header: String, users: Arc<U>, provider: Arc<Option<S>>, body: Bytes) -> Response<String> {
+        let user = match users.authorize(auth_header).await {
             Ok(u) => u,
-            Err(()) => return error_response(Error::Unauthorized),
+            Err(err) => {
+                error!(target: "wiki::api", "could not authorize: {:?}", err);
+                return error_response(Error::Unauthorized);
+            }
         };
-
         let body = match std::str::from_utf8(&body) {
             Ok(b) => b,
             Err(_) => {
@@ -184,12 +182,14 @@ mod handlers {
         }
     }
 
-    pub async fn create<S: Subject>(title: String, user: Result<String, ()>, provider: Arc<Option<S>>, body: Bytes) -> Response<String> {
-        let user = match user {
+    pub async fn create<S: Subjects, U: Users>(title: String, auth_header: String, users: Arc<U>, provider: Arc<Option<S>>, body: Bytes) -> Response<String> {
+        let user = match users.authorize(auth_header).await {
             Ok(u) => u,
-            Err(()) => return error_response(Error::Unauthorized),
+            Err(err) => {
+                error!(target: "wiki::api", "could not authorize: {:?}", err);
+                return error_response(Error::Unauthorized);
+            }
         };
-
         let body = match std::str::from_utf8(&body) {
             Ok(b) => b,
             Err(_) => {
@@ -215,18 +215,18 @@ mod tests {
     use bytes::Bytes;
     use warp::http::StatusCode;
 
-    use crate::error::Error;
+    use crate::{auth::mock_user, error::Error};
 
     use super::*;
 
-    struct TestSubjectProvider {
+    struct TestSubjects {
         list_response: Result<Vec<String>, Error>,
         read_response: Result<String, Error>,
         update_response: Result<(), Error>,
         create_response: Result<(), Error>,
     }
 
-    impl Subject for TestSubjectProvider {
+    impl Subjects for TestSubjects {
         async fn list(&self) -> Result<Vec<String>, Error> {
             match &self.list_response {
                 Ok(titles) => Ok(titles.to_vec()),
@@ -276,8 +276,8 @@ mod tests {
         }
     }
 
-    fn good_provider() -> TestSubjectProvider {
-        TestSubjectProvider {
+    fn good_subjects() -> TestSubjects {
+        TestSubjects {
             list_response: Ok(vec![
                 "Good Subject 1".into(),
                 "Good Subject 2".into(),
@@ -288,8 +288,8 @@ mod tests {
         }
     }
 
-    fn error_provider() -> TestSubjectProvider {
-        TestSubjectProvider {
+    fn error_subjects() -> TestSubjects {
+        TestSubjects {
             list_response: Err(Error::Internal("test error".into())),
             read_response: Err(Error::Internal("test error".into())),
             update_response: Err(Error::Internal("test error".into())),
@@ -299,7 +299,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_read() {
-        let good_filter = read(Arc::new(Some(good_provider())));
+        let good_filter = read(Arc::new(Some(good_subjects())));
         fn good_request() -> warp::test::RequestBuilder {
             warp::test::request()
                 .path("/subject/some_title")
@@ -334,7 +334,7 @@ mod tests {
         assert_eq!(res.body(), "Good content");
 
         // 4. Provider error is returned
-        let filter = read(Arc::new(Some(error_provider())));
+        let filter = read(Arc::new(Some(error_subjects())));
         let res = good_request()
                 .reply(&filter)
                 .await;
@@ -344,7 +344,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_update() {
-        let good_filter = update(Arc::new(Some(good_provider())));
+        let good_filter = update(Arc::new(Some(good_subjects())), Arc::new(mock_user::Mock::new()));
         fn good_request() -> warp::test::RequestBuilder {
             warp::test::request()
                 .path("/subject/some_title")
@@ -401,7 +401,7 @@ mod tests {
             .await;
         assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
         let res = good_request()
-            .header("Authorization", "Bearer asdf")
+            .header("Authorization", "Basic ")
             .reply(&good_filter)
             .await;
         assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
@@ -414,7 +414,7 @@ mod tests {
         );
 
         // 7. Provider error is returned
-        let filter = update(Arc::new(Some(error_provider())));
+        let filter = update(Arc::new(Some(error_subjects())), Arc::new(mock_user::Mock::new()));
         let res = good_request()
                 .reply(&filter)
                 .await;
@@ -424,7 +424,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_create() {
-        let good_filter = create(Arc::new(Some(good_provider())));
+        let good_filter = create(Arc::new(Some(good_subjects())), Arc::new(mock_user::Mock::new()));
         fn good_request() -> warp::test::RequestBuilder {
             warp::test::request()
                 .path("/subject/some_title")
@@ -482,7 +482,7 @@ mod tests {
         );
 
         // 6. Provider error is returned
-        let filter = create(Arc::new(Some(error_provider())));
+        let filter = create(Arc::new(Some(error_subjects())), Arc::new(mock_user::Mock::new()));
         let res = good_request()
                 .reply(&filter)
                 .await;
@@ -492,8 +492,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_filter() {
-        let good_filter = filter(Arc::new(Some(good_provider())));
-        let error_filter = filter(Arc::new(Some(error_provider())));
+        let good_filter = filter(Arc::new(Some(good_subjects())), Arc::new(mock_user::Mock::new()));
+        let error_filter = filter(Arc::new(Some(error_subjects())), Arc::new(mock_user::Mock::new()));
 
         // 1. List success/fail
         let res = warp::test::request()
@@ -558,7 +558,7 @@ mod tests {
             .await;
         assert_ne!(res.status(), StatusCode::OK);
 
-        let disabled_filter = filter::<TestSubjectProvider>(Arc::new(None));
+        let disabled_filter = filter::<TestSubjects, mock_user::Mock>(Arc::new(None), Arc::new(mock_user::Mock::new()));
 
         // 4. Disabled list
         let res = warp::test::request()
