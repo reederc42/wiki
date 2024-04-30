@@ -26,8 +26,7 @@ export function configure(config, api, auth) {
 function main() {
     const argv = yargs(hideBin(process.argv))
         .default("api", "mock")
-        .default("auth", "mock")
-        .argv;
+        .default("auth", "mock").argv;
     configure(argv, argv.api, argv.auth);
 }
 

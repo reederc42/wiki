@@ -5,34 +5,40 @@ import { loremIpsum } from "lorem-ipsum";
 
 import { newSubject, existingSubject } from "../../src/test-helpers/mock/api";
 import { newUser, existingUser } from "../../src/test-helpers/mock/auth";
-import mockSubjects from  "../../src/api/mock/subjects.json";
+import mockSubjects from "../../src/api/mock/subjects.json";
 
 const maxTextLength = 256;
 const userSignInWait = 1000;
-const userExpiration = Number(Cypress.env("userExpiration")) + 250
+const userExpiration = Number(Cypress.env("USER_EXPIRATION")) + 250;
 
 describe("UI e2e tests", () => {
     before(async () => {
         if (Cypress.env("API_URL")) {
             let token;
             if (!Cypress.env("AUTH_URL")) {
-                let {user, pass} = existingUser();
-                token = `Bearer ${user}:${pass}`;
+                let { user, pass } = existingUser();
+                token = `Basic ${user}:${pass}`;
             } else {
                 throw new Error("auth url not supported");
             }
 
             for (const k in mockSubjects) {
-                await axios.post(
-                    Cypress.env("API_URL")+"/subject/" + k,
-                    mockSubjects[k],
-                    {
-                        headers: {
-                            "Authorization": token,
-                            "Content-Type": "text/plain",
+                await axios
+                    .post(
+                        Cypress.env("API_URL") + "/subject/" + k,
+                        mockSubjects[k],
+                        {
+                            headers: {
+                                Authorization: token,
+                                "Content-Type": "text/plain",
+                            },
+                        },
+                    )
+                    .catch((err) => {
+                        if (!Cypress.env("REQUIRE_CLEAN_PERSISTENCE")) {
+                            throw err;
                         }
-                    },
-                );
+                    });
             }
         }
     });

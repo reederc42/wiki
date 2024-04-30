@@ -31,7 +31,7 @@ async function main() {
         .default("port", 8080)
         .default("interface", ["lo0", "en0", "lo", "eth0"]).argv;
 
-    configure(argv, argv.api);
+    configure(argv, argv.api, argv.auth);
 
     await build(
         merge([
