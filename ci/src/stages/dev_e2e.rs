@@ -63,11 +63,18 @@ fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
                 set -xe
                 ln -s /ci/node_modules ./ui/node_modules || true
                 cd ui
-                npm run build -- --build dev --user-expiration {0} --api-expiration {0}
+                npm run build -- --build dev --api server --user-expiration {0} --api-expiration {0}
                 cd ..
                 cargo build --bin wiki
             ", expiration),
         ],
+    )?;
+
+    let db = config.runner.run_background(
+        ExecutionContext::Postgres,
+        vec!["POSTGRES_HOST_AUTH_METHOD=trust"],
+        false,
+        Vec::new(),
     )?;
 
     let server = config.runner.run_background(
@@ -77,16 +84,20 @@ fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
         vec![
             "sh",
             "-c",
-            r"
+            &format!(r"
                 set -xe
-                RUST_LOG=info ./target/debug/wiki
-            ",
+                sleep 10s
+                RUST_LOG=info ./target/debug/wiki --postgres-host={}
+            ", &db.addr()),
         ],
     )?;
 
     config.runner.run(
         ExecutionContext::E2E,
-        Vec::new(),
+        vec![
+            &format!("CYPRESS_API_URL=http://{}/api/v1", server.addr()),
+            "CYPRESS_REQUIRE_CLEAN_PERSISTENCE=true",
+        ],
         true,
         vec![
             "sh",

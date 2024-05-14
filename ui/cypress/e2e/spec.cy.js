@@ -35,7 +35,7 @@ describe("UI e2e tests", () => {
                         },
                     )
                     .catch((err) => {
-                        if (!Cypress.env("REQUIRE_CLEAN_PERSISTENCE")) {
+                        if (Cypress.env("REQUIRE_CLEAN_PERSISTENCE")) {
                             throw err;
                         }
                     });

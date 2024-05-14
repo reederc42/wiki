@@ -29,3 +29,54 @@ are developed similarly to the main application, using TDD.
     * Wiki will provide several container images built by Docker
 * Make
     * Make is used to automate build tasks
+
+# Update dependencies
+
+* Regex search the repository for:
+
+    ```
+    Latest .* version
+    ```
+
+* Update rust dependencies:
+
+    ```sh
+    cargo install-update -a
+    ```
+
+* Update node.js dependencies:
+
+    ```sh
+    npx npm-check-updates -u
+    ```
+
+Current mindmap idea:
+@startmindmap
+* root
+** api/v1
+*** disabled handler
+*** subject
+**** title
+***** get
+****** read handler
+***** put
+****** authorization
+******* unauthorized handler
+******* update handler
+***** post
+****** authorization
+******* unauthorized handler
+******* create handler
+***** bad method handler
+*** subjects
+**** get
+***** content-type
+****** list handler
+*** not found handler
+** auth/v1
+*** not found handler
+** ui
+*** get
+**** resource handler
+** not found handler
+@endmindmap

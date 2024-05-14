@@ -95,7 +95,9 @@ pub fn cmd(args: Cli) {
                 println!("Stage error: {:?}", e);
                 stages_failed += 1;
                 if args.fail_fast {
-                    println!("::endgroup::");
+                    if args.github_logger {
+                        println!("::endgroup::");
+                    }
                     break;
                 }
             } else {

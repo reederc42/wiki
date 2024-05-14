@@ -20,19 +20,15 @@ use crate::auth::mock_user;
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 pub struct Cli {
-    /// Use Postgres-persisted API
-    #[arg(long)]
-    enable_postgres: bool,
-
-    /// If enabled, Postgres host
+    /// Postgres host
     #[arg(long, default_value="localhost")]
     postgres_host: String,
 
-    /// If enabled, Postgres user
+    /// Postgres user
     #[arg(long, default_value="postgres")]
     postgres_user: String,
 
-    /// If enabled, Postgres database
+    /// Postgres database
     #[arg(long, default_value="postgres")]
     postgres_database: String,
 
@@ -61,20 +57,21 @@ pub async fn run(args: Cli) {
         path_validator: Regex::new(r"^$|wiki(:?-new)?").unwrap(),
     }));
 
-    let db = Arc::new(if args.enable_postgres {
+    let db = Arc::new({
         let mut db = persistence::postgres::Postgres::new(
             &args.postgres_host,
             &args.postgres_user,
             &args.postgres_database,
         ).await.unwrap();
         db.migrate().await.unwrap();
-        Some(db)
-    } else {
-        None
+        db
     });
 
     let filter = api::filter()
-        .and(subject::filter(db, Arc::new(mock_user::Mock::new())))
+        .and(
+            subject::filter(db, Arc::new(mock_user::Mock::new()))
+            .with(warp::log("wiki::api"))
+        )
         .or(ui_filter);
 
     let (addr, fut) = warp::serve(filter)
