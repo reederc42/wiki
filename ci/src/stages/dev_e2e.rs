@@ -95,7 +95,7 @@ fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
     config.runner.run(
         ExecutionContext::E2E,
         vec![
-            &format!("CYPRESS_API_URL=http://{}/api/v1", server.addr()),
+            &format!("CYPRESS_API_URL=http://{}:8080/api/v1", server.addr()),
             "CYPRESS_REQUIRE_CLEAN_PERSISTENCE=true",
         ],
         true,
@@ -113,13 +113,11 @@ fn cypress_script(expiration: u32, server_addr: &str, stage_name: &str, browsers
         ln -s /ci/node_modules ./ui/node_modules || true
         cd ui
         node tools/configure.js --user-expiration {0} --api-expiration {0}
+        trap 'mv *-e2e.xml ../test_results/' EXIT
         for b in {1}; do
-            npx cypress run \
+            CYPRESS_MOCHA_FILE={3}-$b-e2e.xml npx cypress run \
                 --browser $b \
-                --config baseUrl=http://{2}:8080 \
-                --reporter=cypress-multi-reporters \
-                --reporter-options=configFile=ci-cypress-reporter-config.json
-            mv e2e-test-tmp.xml ../test_results/{3}-$b-e2e.xml
+                --config baseUrl=http://{2}:8080
         done
     ", expiration, browsers.join(" "), server_addr, stage_name)
 }

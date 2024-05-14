@@ -13,7 +13,14 @@ export const subject = {
     get(subject) {
         return axios
             .get(config.apiBaseUrl + "/subject/" + subject)
-            .then((response) => response.data);
+            .then((response) => response.data)
+            .catch((err) => {
+                if (err.response.status == 404) {
+                    throw new Error("not found");
+                } else {
+                    throw err;
+                }
+            });
     },
 
     put(subject, content) {

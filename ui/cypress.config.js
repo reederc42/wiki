@@ -8,4 +8,11 @@ export default defineConfig({
             REQUIRE_CLEAN_PERSISTENCE: false,
         },
     },
+    reporter: "cypress-multi-reporters",
+    reporterOptions: {
+        reporterEnabled: "spec, mocha-junit-reporter",
+        mochaJunitReporterReporterOptions: {
+            mochaFile: process.env.CYPRESS_MOCHA_FILE || "./e2e-test-local.xml"
+        }
+    }
 });
