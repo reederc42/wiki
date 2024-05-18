@@ -25,13 +25,13 @@ export const subject = {
 
     put(subject, content) {
         let url = config.apiBaseUrl + "/subject/" + subject;
-        return doAuthRequest(axios.put, url, content).catch((err) => {
+        return doAuthRequest(axios.patch, url, content).catch((err) => {
             if (!err.response || err.response.status != 401) {
                 throw err;
             }
             return user.signIn(user.username(), "", user.refresh()).then(() => {
                 console.log("signed back in " + user.username());
-                return doAuthRequest(axios.put, url, content);
+                return doAuthRequest(axios.patch, url, content);
             });
         });
     },

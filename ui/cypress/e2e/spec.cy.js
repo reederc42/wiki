@@ -338,8 +338,9 @@ describe("UI e2e tests", () => {
             cy.get("button").contains("Sign Out").click();
             cy.get("#username").type(t.user.name);
             cy.get("#password").type(t.user.pass);
-            cy.get("button").contains(`Sign In`).click();
+            cy.get("button").contains("Sign In").click();
             cy.get("button").contains("Save").click();
+            cy.wait(500);
 
             // 5. Add more new content
             cy.log("Trying to add more content");
