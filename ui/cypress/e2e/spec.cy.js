@@ -79,6 +79,7 @@ describe("UI e2e tests", () => {
                     cy.get("#username").type(t.user.name);
                     cy.get("#password").type(t.user.pass);
                     cy.get("button").contains(`Sign ${t.method}`).click();
+                    cy.wait(userSignInWait);
 
                     // 5. Edit subject
                     cy.get("button").contains("Edit").should("not.be.disabled");
@@ -137,6 +138,7 @@ describe("UI e2e tests", () => {
             cy.get("#username").type(t.user.name);
             cy.get("#password").type(t.user.pass);
             cy.get("button").contains(`Sign ${t.method}`).click();
+            cy.wait(userSignInWait);
 
             // 5. Edit subject
             cy.get("textarea").should("not.have.attr", "readonly");
@@ -183,6 +185,7 @@ describe("UI e2e tests", () => {
                 cy.get("#username").type(user.name);
                 cy.get("#password").type(user.pass);
                 cy.get("button").contains("Sign In").click();
+                cy.wait(userSignInWait);
             }
 
             let subject = existingSubject();
@@ -214,6 +217,7 @@ describe("UI e2e tests", () => {
             cy.get("#username").type(t.user.name);
             cy.get("#password").type(t.user.pass);
             cy.get("button").contains(`Sign ${t.method}`).click();
+            cy.wait(userSignInWait);
 
             // 6. Save has no error
             cy.get("button").contains("Save").click();
@@ -246,6 +250,7 @@ describe("UI e2e tests", () => {
             cy.get("#username").type(t.user.name);
             cy.get("#password").type(t.user.pass);
             cy.get("button").contains(`Sign ${t.method}`).click();
+            cy.wait(userSignInWait);
 
             // 4. Add existing title
             cy.get("textarea").should("not.have.attr", "readonly");
@@ -272,6 +277,7 @@ describe("UI e2e tests", () => {
             cy.get("#username").type(t.user.name);
             cy.get("#password").type(t.user.pass);
             cy.get("button").contains(`Sign ${t.method}`).click();
+            cy.wait(userSignInWait);
             cy.get("wiki-user").contains(t.user.name).should("exist");
 
             // 3. Reload
@@ -304,6 +310,7 @@ describe("UI e2e tests", () => {
             cy.get("#username").type(t.user.name);
             cy.get("#password").type(t.user.pass);
             cy.get("button").contains(`Sign ${t.method}`).click();
+            cy.wait(userSignInWait);
 
             // 3. Wait until expiration
             cy.wait(userExpiration);
@@ -329,6 +336,7 @@ describe("UI e2e tests", () => {
             cy.get("#username").type(t.user.name);
             cy.get("#password").type(t.user.pass);
             cy.get("button").contains(`Sign ${t.method}`).click();
+            cy.wait(userSignInWait);
 
             // 3. Add new content
             cy.get("textarea").should("not.have.attr", "readonly");
@@ -339,6 +347,7 @@ describe("UI e2e tests", () => {
             cy.get("#username").type(t.user.name);
             cy.get("#password").type(t.user.pass);
             cy.get("button").contains("Sign In").click();
+            cy.wait(userSignInWait);
             cy.get("button").contains("Save").click();
             cy.wait(500);
 

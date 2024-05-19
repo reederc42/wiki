@@ -176,8 +176,15 @@ mod handlers {
         if let Some(e) = err.find::<Error>() {
             (status, message) = match e {
                 Error::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg.clone()),
-                Error::Internal(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg.clone()),
+                Error::Internal(msg) => {
+                    log::error!(target: "wiki::api", "internal error: {}", msg);
+                    (StatusCode::INTERNAL_SERVER_ERROR, "".into())
+                },
                 Error::NotFound(_) => (StatusCode::NOT_FOUND, "".into()),
+                Error::Unauthorized(msg) => {
+                    log::warn!(target: "wiki::api", "unauthorized: {}", msg);
+                    (StatusCode::UNAUTHORIZED, "".into())
+                }
             }
         } else if err.is_not_found() {
             status = StatusCode::NOT_FOUND;
@@ -234,6 +241,7 @@ mod tests {
                     Error::Internal(msg) => Err(Error::Internal(msg.clone())),
                     Error::NotFound(msg) => Err(Error::NotFound(msg.clone())),
                     Error::BadRequest(msg) => Err(Error::BadRequest(msg.clone())),
+                    Error::Unauthorized(msg) => Err(Error::Unauthorized(msg.clone())),
                 }
             }
         }
@@ -245,6 +253,7 @@ mod tests {
                     Error::Internal(msg) => Err(Error::Internal(msg.clone())),
                     Error::NotFound(msg) => Err(Error::NotFound(msg.clone())),
                     Error::BadRequest(msg) => Err(Error::BadRequest(msg.clone())),
+                    Error::Unauthorized(msg) => Err(Error::Unauthorized(msg.clone())),
                 }
             }
         }
@@ -256,6 +265,7 @@ mod tests {
                     Error::Internal(msg) => Err(Error::Internal(msg.clone())),
                     Error::NotFound(msg) => Err(Error::NotFound(msg.clone())),
                     Error::BadRequest(msg) => Err(Error::BadRequest(msg.clone())),
+                    Error::Unauthorized(msg) => Err(Error::Unauthorized(msg.clone())),
                 }
             }
         }
@@ -267,6 +277,7 @@ mod tests {
                     Error::Internal(msg) => Err(Error::Internal(msg.clone())),
                     Error::NotFound(msg) => Err(Error::NotFound(msg.clone())),
                     Error::BadRequest(msg) => Err(Error::BadRequest(msg.clone())),
+                    Error::Unauthorized(msg) => Err(Error::Unauthorized(msg.clone())),
                 }
             }
         }
@@ -382,7 +393,6 @@ mod tests {
                 .reply(&f)
                 .await;
             assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
-            assert_eq!(res.body(), "test error");
         }
 
         let res = test_request("GET")
@@ -390,7 +400,6 @@ mod tests {
             .reply(&f)
             .await;
         assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
-        assert_eq!(res.body(), "test error");
     }
 
     #[tokio::test]

@@ -92,6 +92,8 @@ fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
         ],
     )?;
 
+    std::thread::sleep(std::time::Duration::from_secs(10));
+
     config.runner.run(
         ExecutionContext::E2E,
         vec![
