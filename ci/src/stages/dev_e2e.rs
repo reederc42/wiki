@@ -14,7 +14,7 @@ impl Stage for DevE2E {
 
     // run e2e tests against dev servers
     fn run(&self, _context: &Context, config: &Config) -> Result<(), Error> {
-        let expiration = 1500;
+        let expiration = 3000;
 
         node_dev_e2e(expiration, config)?;
 
@@ -97,6 +97,7 @@ fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
     config.runner.run(
         ExecutionContext::E2E,
         vec![
+            &format!("CYPRESS_USER_EXPIRATION={}", expiration),
             &format!("CYPRESS_API_URL=http://{}:8080/api/v1", server.addr()),
             "CYPRESS_REQUIRE_CLEAN_PERSISTENCE=true",
         ],
