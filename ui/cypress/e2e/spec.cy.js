@@ -1,15 +1,48 @@
 /* eslint no-undef: "off" */
 
+import axios from "axios";
 import { loremIpsum } from "lorem-ipsum";
 
-import config from "../../src/config.json";
 import { newSubject, existingSubject } from "../../src/test-helpers/mock/api";
 import { newUser, existingUser } from "../../src/test-helpers/mock/auth";
+import mockSubjects from "../../src/api/mock/subjects.json";
 
+const maxTextLength = 256;
 const userSignInWait = 1000;
-const userExpiration = config.userExpiration + 250;
+const userExpiration = Number(Cypress.env("USER_EXPIRATION")) + 250;
 
 describe("UI e2e tests", () => {
+    before(async () => {
+        if (Cypress.env("API_URL")) {
+            let token;
+            if (!Cypress.env("AUTH_URL")) {
+                let { user, pass } = existingUser();
+                token = `Basic ${user}:${pass}`;
+            } else {
+                throw new Error("auth url not supported");
+            }
+
+            for (const k in mockSubjects) {
+                await axios
+                    .post(
+                        Cypress.env("API_URL") + "/subject/" + k,
+                        mockSubjects[k],
+                        {
+                            headers: {
+                                Authorization: token,
+                                "Content-Type": "text/plain",
+                            },
+                        },
+                    )
+                    .catch((err) => {
+                        if (Cypress.env("REQUIRE_CLEAN_PERSISTENCE")) {
+                            throw err;
+                        }
+                    });
+            }
+        }
+    });
+
     it("Views subject list", () => {
         // 1. Visit homepage
         cy.visit("/");
@@ -46,6 +79,7 @@ describe("UI e2e tests", () => {
                     cy.get("#username").type(t.user.name);
                     cy.get("#password").type(t.user.pass);
                     cy.get("button").contains(`Sign ${t.method}`).click();
+                    cy.wait(userSignInWait);
 
                     // 5. Edit subject
                     cy.get("button").contains("Edit").should("not.be.disabled");
@@ -55,11 +89,12 @@ describe("UI e2e tests", () => {
                         .contains(subject.textContent)
                         .should("not.be.visible");
                     cy.get("textarea").should("not.have.attr", "readonly");
-                    let testText = loremIpsum();
+                    let testText = randomText();
                     cy.get("#ace-editor").type(testText);
 
                     // 6. Save changes
                     cy.get("button").contains("Save").click();
+                    cy.wait(500);
 
                     // 7. See changes
                     cy.get("button").contains("View").click();
@@ -103,14 +138,16 @@ describe("UI e2e tests", () => {
             cy.get("#username").type(t.user.name);
             cy.get("#password").type(t.user.pass);
             cy.get("button").contains(`Sign ${t.method}`).click();
+            cy.wait(userSignInWait);
 
             // 5. Edit subject
             cy.get("textarea").should("not.have.attr", "readonly");
             let testText = newSubject();
-            cy.get("#ace-editor").type("# " + testText);
+            cy.get("#ace-editor").type("# " + testText, { delay: 2 });
 
             // 6. Save subject
             cy.get("button").contains("Save").click();
+            cy.wait(500);
 
             // 7. See changes
             cy.get("button").contains("View").click();
@@ -148,6 +185,7 @@ describe("UI e2e tests", () => {
                 cy.get("#username").type(user.name);
                 cy.get("#password").type(user.pass);
                 cy.get("button").contains("Sign In").click();
+                cy.wait(userSignInWait);
             }
 
             let subject = existingSubject();
@@ -179,6 +217,7 @@ describe("UI e2e tests", () => {
             cy.get("#username").type(t.user.name);
             cy.get("#password").type(t.user.pass);
             cy.get("button").contains(`Sign ${t.method}`).click();
+            cy.wait(userSignInWait);
 
             // 6. Save has no error
             cy.get("button").contains("Save").click();
@@ -211,6 +250,7 @@ describe("UI e2e tests", () => {
             cy.get("#username").type(t.user.name);
             cy.get("#password").type(t.user.pass);
             cy.get("button").contains(`Sign ${t.method}`).click();
+            cy.wait(userSignInWait);
 
             // 4. Add existing title
             cy.get("textarea").should("not.have.attr", "readonly");
@@ -237,6 +277,7 @@ describe("UI e2e tests", () => {
             cy.get("#username").type(t.user.name);
             cy.get("#password").type(t.user.pass);
             cy.get("button").contains(`Sign ${t.method}`).click();
+            cy.wait(userSignInWait);
             cy.get("wiki-user").contains(t.user.name).should("exist");
 
             // 3. Reload
@@ -269,6 +310,7 @@ describe("UI e2e tests", () => {
             cy.get("#username").type(t.user.name);
             cy.get("#password").type(t.user.pass);
             cy.get("button").contains(`Sign ${t.method}`).click();
+            cy.wait(userSignInWait);
 
             // 3. Wait until expiration
             cy.wait(userExpiration);
@@ -294,22 +336,25 @@ describe("UI e2e tests", () => {
             cy.get("#username").type(t.user.name);
             cy.get("#password").type(t.user.pass);
             cy.get("button").contains(`Sign ${t.method}`).click();
+            cy.wait(userSignInWait);
 
             // 3. Add new content
             cy.get("textarea").should("not.have.attr", "readonly");
-            cy.get("#ace-editor").type(loremIpsum());
+            cy.get("#ace-editor").type(randomText());
 
             // 4. Save
             cy.get("button").contains("Sign Out").click();
             cy.get("#username").type(t.user.name);
             cy.get("#password").type(t.user.pass);
-            cy.get("button").contains(`Sign In`).click();
+            cy.get("button").contains("Sign In").click();
+            cy.wait(userSignInWait);
             cy.get("button").contains("Save").click();
+            cy.wait(500);
 
             // 5. Add more new content
             cy.log("Trying to add more content");
             cy.get("textarea").should("not.have.attr", "readonly");
-            cy.get("#ace-editor").type("\n\n" + loremIpsum());
+            cy.get("#ace-editor").type("\n\n" + randomText());
 
             // 6. Wait until expiration
             cy.wait(userExpiration);
@@ -328,4 +373,8 @@ describe("UI e2e tests", () => {
 
 function randomElement(list = []) {
     return list[Math.floor(Math.random() * list.length)];
+}
+
+function randomText(length = maxTextLength) {
+    return loremIpsum().slice(0, length);
 }

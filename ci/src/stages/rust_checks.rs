@@ -18,18 +18,17 @@ impl Stage for RustChecks {
 
         config.runner.run(
             ExecutionContext::Build,
-            Vec::new(),
+            vec![&format!("WIKI_CI_TEST_POSTGRES_HOST={}", &db.addr())],
             true,
             vec![
                 "sh",
                 "-c",
-                &format!(r"
+                r"
                     set -xe
                     RUSTFLAGS='-Dwarnings' cargo clippy --all-targets --all-features
-                    export WIKI_CI_TEST_POSTGRES_HOST={}
                     cargo nextest run --run-ignored all --config-file .nextest-config.toml
                     mv target/nextest/default/rust-unit.xml test_results/
-                ", &db.addr()),
+                ",
             ],
         )
     }

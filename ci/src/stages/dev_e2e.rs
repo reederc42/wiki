@@ -14,7 +14,7 @@ impl Stage for DevE2E {
 
     // run e2e tests against dev servers
     fn run(&self, _context: &Context, config: &Config) -> Result<(), Error> {
-        let expiration = 1000;
+        let expiration = 3000;
 
         node_dev_e2e(expiration, config)?;
 
@@ -46,10 +46,7 @@ fn node_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
         vec![
             "sh",
             "-c",
-            &format!(r"
-                set -xe
-                {}
-            ", make_cypress_script(expiration, &server.addr(), "node-dev", &BROWSERS))
+            &cypress_script(expiration, &server.addr(), "node-dev", &BROWSERS),
         ]
     )
 }
@@ -66,54 +63,68 @@ fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
                 set -xe
                 ln -s /ci/node_modules ./ui/node_modules || true
                 cd ui
-                npm run build -- --build dev --user-expiration {0} --api-expiration {0}
+                npm run build -- --build dev --api server --user-expiration {0} --api-expiration {0}
                 cd ..
                 cargo build --bin wiki
             ", expiration),
         ],
     )?;
 
-    let server = config.runner.run_background(
-        ExecutionContext::Build,
-        Vec::new(),
-        true,
-        vec![
-            "sh",
-            "-c",
-            r"
-                set -xe
-                ./target/debug/wiki
-            ",
-        ],
-    )?;
+    for browser in BROWSERS {
+        let db = config.runner.run_background(
+            ExecutionContext::Postgres,
+            vec!["POSTGRES_HOST_AUTH_METHOD=trust"],
+            false,
+            Vec::new(),
+        )?;
 
-    config.runner.run(
-        ExecutionContext::E2E,
-        Vec::new(),
-        true,
-        vec![
-            "sh",
-            "-c",
-            &format!(r"
-                set -xe
-                {}
-            ", make_cypress_script(expiration, &server.addr(), "rust-dev", &BROWSERS)),
-        ],
-    )
+        let server = config.runner.run_background(
+            ExecutionContext::Build,
+            Vec::new(),
+            true,
+            vec![
+                "sh",
+                "-c",
+                &format!(r"
+                    set -xe
+                    sleep 10s
+                    RUST_LOG=info ./target/debug/wiki --postgres-host={}
+                ", &db.addr()),
+            ],
+        )?;
+
+        std::thread::sleep(std::time::Duration::from_secs(10));
+
+        config.runner.run(
+            ExecutionContext::E2E,
+            vec![
+                &format!("CYPRESS_USER_EXPIRATION={}", expiration),
+                &format!("CYPRESS_API_URL=http://{}:8080/api/v1", server.addr()),
+                "CYPRESS_REQUIRE_CLEAN_PERSISTENCE=true",
+            ],
+            true,
+            vec![
+                "sh",
+                "-c",
+                &cypress_script(expiration, &server.addr(), "rust-dev", &[browser]),
+            ],
+        )?;
+    }
+
+    Ok(())
 }
 
-fn make_cypress_script(expiration: u32, server_addr: &str, stage_name: &str, browsers: &[&str]) -> String {
+fn cypress_script(expiration: u32, server_addr: &str, stage_name: &str, browsers: &[&str]) -> String {
     format!(r"
+        set -xe
         ln -s /ci/node_modules ./ui/node_modules || true
         cd ui
         node tools/configure.js --user-expiration {0} --api-expiration {0}
+        trap 'mv *-e2e.xml ../test_results/' EXIT
         for b in {1}; do
-            npx cypress run \
+            CYPRESS_MOCHA_FILE={3}-$b-e2e.xml npx cypress run \
                 --browser $b \
-                --config baseUrl=http://{2}:8080 \
-                --reporter=cypress-multi-reporters \
-                --reporter-options=configFile=ci-cypress-reporter-config.json
-                mv e2e-test-tmp.xml ../test_results/{3}-$b-e2e.xml
+                --config baseUrl=http://{2}:8080
         done
     ", expiration, browsers.join(" "), server_addr, stage_name)
 }

@@ -1,7 +1,7 @@
 # Latest Node.js version: https://nodejs.org/en
 ARG NODE_VERSION="22.2.0"
 
-FROM node:${NODE_VERSION}
+FROM node:${NODE_VERSION}-alpine
 
 # Latest NPM version: https://www.npmjs.com/package/npm
 ARG NPM_VERSION="10.8.0"
@@ -15,6 +15,19 @@ ARG NEXTEST_VERSION="^0.9"
 USER root
 
 RUN [ "$(npm --version)" = "${NPM_VERSION}" ] || npm install --verbose -g npm@${NPM_VERSION}
+
+RUN apk update &&\
+    apk upgrade &&\
+    apk add \
+    curl \
+    gcc \
+    musl-dev \
+    openssl-dev \
+    openssl-libs-static
+
+ENV OPENSSL_STATIC=true
+ENV OPENSSL_LIB_DIR=/usr/lib/
+ENV OPENSSL_INCLUDE_DIR=/usr/include/
 
 WORKDIR /ci
 

@@ -10,9 +10,12 @@ import { isMain } from "./is-main.js";
 const configFile = "./src/config.json";
 export const defaults = JSON.parse(fs.readFileSync("config.default.json"));
 
-export function configure(config, api) {
-    let mergedConfig = defaults[api];
-    for (const v in defaults[api]) {
+export function configure(config, api, auth) {
+    let mergedConfig = {
+        ...defaults["api"][api],
+        ...defaults["auth"][auth],
+    };
+    for (const v in mergedConfig) {
         if (v in config) {
             mergedConfig[v] = config[v];
         }
@@ -21,8 +24,10 @@ export function configure(config, api) {
 }
 
 function main() {
-    const argv = yargs(hideBin(process.argv)).default("api", "mock").argv;
-    configure(argv, argv.api);
+    const argv = yargs(hideBin(process.argv))
+        .default("api", "mock")
+        .default("auth", "mock").argv;
+    configure(argv, argv.api, argv.auth);
 }
 
 if (isMain(import.meta.url)) main();

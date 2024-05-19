@@ -1,10 +1,17 @@
 {
-    "server": {
-        "apiBaseURL": "http://localhost:8080",
-        "authBaseURL": "http://localhost:8080"
+    "api": {
+        "server": {
+            "apiBaseUrl": "/api/v1"
+        },
+        "mock": {}
     },
-    "mock": {
-        "userExpiration": 300000,
-        "apiExpiration": 120000
+    "auth": {
+        "server": {
+            "authBaseUrl": "/auth/v1"
+        },
+        "mock": {
+            "userExpiration": 300000,
+            "apiExpiration": 120000
+        }
     }
 }

@@ -1,4 +1,6 @@
-use crate::{api::subject::Subject, error::Error};
+use log::{info, error};
+
+use crate::{api::subject::Subjects, error::Error};
 
 pub struct Postgres {
     client: tokio_postgres::Client,
@@ -14,13 +16,8 @@ impl Postgres {
 
     pub async fn migrate(&mut self) -> Result<(), Error> {
         match embedded::migrations::runner().run_async(&mut self.client).await {
-            Ok(r) => {
-                for m in r.applied_migrations() {
-                    println!("Applied: {}", m.name());
-                }
-                Ok(())
-            },
-            Err(e) => Err(Error::Internal(e.to_string()))
+            Ok(_) => Ok(()),
+            Err(e) => Err(Error::Internal(e.to_string())),
         }
     }
 }
@@ -30,10 +27,27 @@ mod embedded {
     embed_migrations!("./src/persistence/migrations");
 }
 
-impl Subject for Postgres {
+impl Subjects for Postgres {
+    async fn list(&self) -> Result<Vec<String>, Error> {
+        let r = self.client.query(r"
+            SELECT title
+            FROM subjects;
+        ", &[]).await;
+
+        match r {
+            Ok(rows) => Ok(
+                rows.into_iter()
+                    .map(|r| r.get(0))
+                    .collect::<Vec<String>>()
+            ),
+            Err(err) => Err(Error::Internal(err.to_string())),
+        }
+    }
+
     async fn create(&self, user: &str, title: &str, content: &str) -> Result<(), Error> {
         let r = self.client.query(r"
-            INSERT INTO subjects VALUES ($1, $2, $3);
+            INSERT INTO subjects
+            VALUES ($1, $2, $3);
         ", &[&title, &user, &content]).await;
 
         match r {
@@ -71,7 +85,6 @@ impl Subject for Postgres {
 
         match r {
             Ok(rows) => {
-                println!("Rows updated: {}", rows);
                 if rows < 1 {
                     Err(Error::NotFound(title.to_string()))
                 } else {
@@ -94,10 +107,10 @@ async fn connect(host: &str, user: &str, database: &str) -> Result<tokio_postgre
         Ok((client, connection)) => {
             tokio::spawn(async move {
                 if let Err(e) = connection.await {
-                    eprintln!("connection error: {}", e);
+                    error!(target: "persistence/postgres", "connection error: {}", e);
                 }
             });
-            println!("Connected to database");
+            info!(target: "persistence/postgres", "Connected to database");
             Ok(client)
         },
     }
@@ -203,8 +216,21 @@ mod tests {
 
         // 4. Update subject and assert has new content
         let r = harness.db.update("test_user", "Exists", &new_content).await;
-        assert!(r.is_ok(), "{:?}", r);
+        assert!(r.is_ok());
         let r = harness.db.read("Exists").await;
         assert_eq!(r.unwrap(), new_content);
+
+        // 5. List subjects
+        let r = harness.db.create("test_user", "Exists2", "Some content").await;
+        assert!(r.is_ok());
+        let r = harness.db.list().await;
+        let mut actual = r.unwrap();
+        actual.sort();
+        let mut expected: Vec<String> = vec![
+            "Exists".into(),
+            "Exists2".into(),
+        ];
+        expected.sort();
+        assert_eq!(actual, expected);
     }
 }

@@ -62,7 +62,7 @@ export const subjects = {
     },
 
     // pushContent asynchronously saves the current content to backend, emitting
-    // signal and updating store on success
+    // signal and updating store on success. New
     pushContent(name) {
         let s = store.get(name);
         if (s === undefined) {
@@ -85,12 +85,17 @@ export const subjects = {
         return store.get(name);
     },
 
-    // create creates a new subject
+    // create creates a new subject and returns a promise to create the subject
+    // in the backend
     create(name, subject) {
         if (store.has(name)) {
-            return new Error("subject already exists");
+            return new Promise((resolve, reject) => {
+                reject(new Error("subject already exists"));
+            });
         }
-        store.set(name, subject);
-        return null;
+        return subjectAPI.post(name, subject.content).then(() => {
+            subject.synced = true;
+            store.set(name, subject);
+        });
     },
 };

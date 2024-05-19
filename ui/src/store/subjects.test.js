@@ -150,19 +150,30 @@ describe("subjects store", () => {
 
         await waitFor(() => eventFired, document);
 
-        assert(
-            window.subjects
-                .create(subjectName, new window.Subject())
-                .message.includes("already exists"),
-        );
+        let err;
+        window.subjects.create(subjectName, new window.Subject()).catch((e) => {
+            err = e;
+        });
+
+        await waitFor(() => err.message.includes("already exists"), document);
     });
 
     test("creating new subject allows retrieval", async () => {
         let subjectName = "brand new subject";
         let newSubject = new window.Subject();
 
-        let err = window.subjects.create(subjectName, newSubject);
-        assert(err == null);
+        let signedIn = false;
+        window.user.signIn("bob", "bobpass").then(() => {
+            signedIn = true;
+        });
+        await waitFor(() => signedIn, document);
+
+        let success = false;
+        window.subjects.create(subjectName, newSubject).then(() => {
+            success = true;
+        });
+
+        await waitFor(() => success, document);
 
         assert(window.subjects.get(subjectName) === newSubject);
     });

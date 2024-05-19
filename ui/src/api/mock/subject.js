@@ -61,6 +61,43 @@ export const subject = {
             }, timeout);
         });
     },
+
+    post(subject, content) {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                if (subject == "error") {
+                    reject(new Error("server error"));
+                    return;
+                }
+                if (!user.username()) {
+                    reject(new Error("not logged in"));
+                    return;
+                }
+                if (tokenExpired(user.token())) {
+                    user.signIn(user.username(), "", user.refresh())
+                        .then(() => {
+                            if (m.has(subject)) {
+                                reject(new Error("subject already exists"));
+                            } else {
+                                m.set(subject, content);
+                                resolve();
+                            }
+                        })
+                        .catch((err) => {
+                            console.log("sign in error");
+                            reject(err);
+                        });
+                } else {
+                    if (m.has(subject)) {
+                        reject(new Error("subject already exists"));
+                    } else {
+                        m.set(subject, content);
+                        resolve();
+                    }
+                }
+            }, timeout);
+        });
+    },
 };
 
 function tokenExpired(token) {
