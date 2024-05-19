@@ -17,10 +17,10 @@ env:
   ESLINT_USE_FLAT_CONFIG: false
 
   # Latest Node.js version: https://nodejs.org/en
-  NODE_VERSION: 21.7.3
+  NODE_VERSION: 22.2.0
 
   # Latest Rust version: https://www.rust-lang.org/
-  RUST_VERSION: 1.77.2
+  RUST_VERSION: 1.78.0
 
 jobs:
   nodejs:

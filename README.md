@@ -42,6 +42,7 @@ are developed similarly to the main application, using TDD.
 
     ```sh
     cargo install-update -a
+    cargo upgrade
     ```
 
 * Update node.js dependencies:
