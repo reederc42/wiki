@@ -70,44 +70,48 @@ fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
         ],
     )?;
 
-    let db = config.runner.run_background(
-        ExecutionContext::Postgres,
-        vec!["POSTGRES_HOST_AUTH_METHOD=trust"],
-        false,
-        Vec::new(),
-    )?;
+    for browser in BROWSERS {
+        let db = config.runner.run_background(
+            ExecutionContext::Postgres,
+            vec!["POSTGRES_HOST_AUTH_METHOD=trust"],
+            false,
+            Vec::new(),
+        )?;
 
-    let server = config.runner.run_background(
-        ExecutionContext::Build,
-        Vec::new(),
-        true,
-        vec![
-            "sh",
-            "-c",
-            &format!(r"
-                set -xe
-                sleep 10s
-                RUST_LOG=info ./target/debug/wiki --postgres-host={}
-            ", &db.addr()),
-        ],
-    )?;
+        let server = config.runner.run_background(
+            ExecutionContext::Build,
+            Vec::new(),
+            true,
+            vec![
+                "sh",
+                "-c",
+                &format!(r"
+                    set -xe
+                    sleep 10s
+                    RUST_LOG=info ./target/debug/wiki --postgres-host={}
+                ", &db.addr()),
+            ],
+        )?;
 
-    std::thread::sleep(std::time::Duration::from_secs(10));
+        std::thread::sleep(std::time::Duration::from_secs(10));
 
-    config.runner.run(
-        ExecutionContext::E2E,
-        vec![
-            &format!("CYPRESS_USER_EXPIRATION={}", expiration),
-            &format!("CYPRESS_API_URL=http://{}:8080/api/v1", server.addr()),
-            "CYPRESS_REQUIRE_CLEAN_PERSISTENCE=true",
-        ],
-        true,
-        vec![
-            "sh",
-            "-c",
-            &cypress_script(expiration, &server.addr(), "rust-dev", &BROWSERS),
-        ],
-    )
+        config.runner.run(
+            ExecutionContext::E2E,
+            vec![
+                &format!("CYPRESS_USER_EXPIRATION={}", expiration),
+                &format!("CYPRESS_API_URL=http://{}:8080/api/v1", server.addr()),
+                "CYPRESS_REQUIRE_CLEAN_PERSISTENCE=true",
+            ],
+            true,
+            vec![
+                "sh",
+                "-c",
+                &cypress_script(expiration, &server.addr(), "rust-dev", &[browser]),
+            ],
+        )?;
+    }
+
+    Ok(())
 }
 
 fn cypress_script(expiration: u32, server_addr: &str, stage_name: &str, browsers: &[&str]) -> String {
