@@ -46,7 +46,7 @@ fn node_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
         vec![
             "sh",
             "-c",
-            &cypress_script(expiration, &server.addr(), "node-dev", &BROWSERS),
+            &cypress_script(&server.addr(), "node-dev", &BROWSERS),
         ]
     )
 }
@@ -54,19 +54,19 @@ fn node_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
 fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
     config.runner.run(
         ExecutionContext::Build,
-        Vec::new(),
+        vec![&format!(
+            "'WIKI_CI_UI_BUILD_OPTIONS=--build dev --api server --user-expiration {0} --api-expiration {0}'",
+            expiration,
+        )],
         true,
         vec![
             "sh",
             "-c",
-            &format!(r"
+            r"
                 set -xe
                 ln -s /ci/node_modules ./ui/node_modules || true
-                cd ui
-                npm run build -- --build dev --api server --user-expiration {0} --api-expiration {0}
-                cd ..
-                cargo build --bin wiki
-            ", expiration),
+                cargo build -vv --bin wiki
+            ",
         ],
     )?;
 
@@ -88,7 +88,7 @@ fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
                 &format!(r"
                     set -xe
                     sleep 10s
-                    RUST_LOG=info ./target/debug/wiki --postgres-host={}
+                    ./target/debug/wiki --postgres-host={}
                 ", &db.addr()),
             ],
         )?;
@@ -106,7 +106,7 @@ fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
             vec![
                 "sh",
                 "-c",
-                &cypress_script(expiration, &server.addr(), "rust-dev", &[browser]),
+                &cypress_script(&server.addr(), "rust-dev", &[browser]),
             ],
         )?;
     }
@@ -114,17 +114,16 @@ fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
     Ok(())
 }
 
-fn cypress_script(expiration: u32, server_addr: &str, stage_name: &str, browsers: &[&str]) -> String {
+fn cypress_script(server_addr: &str, stage_name: &str, browsers: &[&str]) -> String {
     format!(r"
         set -xe
         ln -s /ci/node_modules ./ui/node_modules || true
         cd ui
-        node tools/configure.js --user-expiration {0} --api-expiration {0}
         trap 'mv *-e2e.xml ../test_results/' EXIT
-        for b in {1}; do
-            CYPRESS_MOCHA_FILE={3}-$b-e2e.xml npx cypress run \
+        for b in {0}; do
+            CYPRESS_MOCHA_FILE={2}-$b-e2e.xml npx cypress run \
                 --browser $b \
-                --config baseUrl=http://{2}:8080
+                --config baseUrl=http://{1}:8080
         done
-    ", expiration, browsers.join(" "), server_addr, stage_name)
+    ", browsers.join(" "), server_addr, stage_name)
 }
