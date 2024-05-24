@@ -13,7 +13,7 @@ impl Stage for RustChecks {
             ExecutionContext::Postgres,
             vec!["POSTGRES_HOST_AUTH_METHOD=trust"],
             false,
-            Vec::new(),
+            vec![],
         )?;
 
         config.runner.run(

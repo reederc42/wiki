@@ -80,7 +80,7 @@ fn build_assets(dir: &Path) -> Vec<Asset> {
     let content_types: HashMap<&str, &str> =
         serde_yaml::from_str(&content_types_str).unwrap();
 
-    let mut assets = Vec::new();
+    let mut assets = vec![];
 
     walk_dir(dir, &mut |p: &Path| {
         if p.is_dir() {

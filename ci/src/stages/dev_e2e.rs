@@ -25,7 +25,7 @@ impl Stage for DevE2E {
 fn node_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
     let server = config.runner.run_background(
         ExecutionContext::Build,
-        Vec::new(),
+        vec![],
         true,
         vec![
             "sh",
@@ -41,7 +41,7 @@ fn node_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
 
     config.runner.run(
         ExecutionContext::E2E,
-        Vec::new(),
+        vec![],
         true,
         vec![
             "sh",
@@ -54,19 +54,17 @@ fn node_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
 fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
     config.runner.run(
         ExecutionContext::Build,
-        vec![&format!(
-            "'WIKI_CI_UI_BUILD_OPTIONS=--build dev --api server --user-expiration {0} --api-expiration {0}'",
-            expiration,
-        )],
+        vec![],
         true,
         vec![
             "sh",
             "-c",
-            r"
+            &format!(r#"
                 set -xe
                 ln -s /ci/node_modules ./ui/node_modules || true
+                export WIKI_CI_UI_BUILD_OPTIONS='--build dev --api server --user-expiration {0} --api-expiration {0}'
                 cargo build -vv --bin wiki
-            ",
+            "#, expiration),
         ],
     )?;
 
@@ -75,12 +73,12 @@ fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
             ExecutionContext::Postgres,
             vec!["POSTGRES_HOST_AUTH_METHOD=trust"],
             false,
-            Vec::new(),
+            vec![],
         )?;
 
         let server = config.runner.run_background(
             ExecutionContext::Build,
-            Vec::new(),
+            vec![],
             true,
             vec![
                 "sh",

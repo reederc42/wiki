@@ -11,7 +11,7 @@ impl Stage for NodeJSChecks {
     fn run(&self, _context: &Context, config: &Config) -> Result<(), Error> {
         config.runner.run(
             ExecutionContext::Build,
-            Vec::new(),
+            vec![],
             true,
             vec![
                 "sh",
