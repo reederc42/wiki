@@ -18,7 +18,7 @@ impl Stage for NodeJSChecks {
                 "-c",
                 r"
                     set -xe
-                    ln -s /ci/node_modules ./ui/node_modules || true
+                    ln -s /ci/ui/node_modules ./ui/node_modules || true
                     export ESLINT_USE_FLAT_CONFIG=false
                     cd ui
                     npm run lint

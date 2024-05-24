@@ -32,7 +32,7 @@ fn node_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
             "-c",
             &format!(r"
                 set -xe
-                ln -s /ci/node_modules ./ui/node_modules || true
+                ln -s /ci/ui/node_modules ./ui/node_modules || true
                 cd ui
                 npm run dev -- --user-expiration {0} --api-expiration {0}
             ", expiration),
@@ -61,9 +61,9 @@ fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
             "-c",
             &format!(r#"
                 set -xe
-                ln -s /ci/node_modules ./ui/node_modules || true
+                ln -s /ci/ui/node_modules ./ui/node_modules || true
                 export WIKI_CI_UI_BUILD_OPTIONS='--build dev --api server --user-expiration {0} --api-expiration {0}'
-                cargo build -vv --bin wiki
+                cargo build --bin wiki
             "#, expiration),
         ],
     )?;
@@ -115,7 +115,7 @@ fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
 fn cypress_script(server_addr: &str, stage_name: &str, browsers: &[&str]) -> String {
     format!(r"
         set -xe
-        ln -s /ci/node_modules ./ui/node_modules || true
+        ln -s /ci/ui/node_modules ./ui/node_modules || true
         cd ui
         trap 'mv *-e2e.xml ../test_results/' EXIT
         for b in {0}; do
