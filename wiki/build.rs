@@ -59,10 +59,17 @@ fn walk_dir(dir: &Path, f: &mut dyn FnMut(&Path)) {
 }
 
 fn build_ui(build_options: &[&str]) {
-    Command::new("npm")
-        .current_dir(UI_SRC)
-        .arg("run").arg("build").arg("--")
+    let base_args = vec!["run", "build", "--"];
+    let (program, args) = if cfg!(target_os = "windows") {
+        ("cmd", [vec!["/C", "npm"], base_args].concat())
+    } else {
+        ("npm", base_args)
+    };
+
+    Command::new(program)
+        .args(args)
         .args(build_options)
+        .current_dir(UI_SRC)
         .spawn()
         .unwrap()
         .wait()
@@ -97,6 +104,7 @@ fn build_assets(dir: &Path) -> Vec<Asset> {
 
         let path = String::from(
             p.to_str().unwrap()
+                .replace("\\", "/")
                 .strip_prefix(dir.to_str().unwrap()).unwrap()
                 .trim_start_matches('/')
         );
