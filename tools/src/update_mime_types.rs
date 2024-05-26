@@ -25,7 +25,7 @@ pub struct Args {
 }
 
 pub async fn cmd(args: Args) {
-    let f = File::create(args.output).unwrap();
+    let mut f = File::create(args.output).unwrap();
 
     let body = reqwest::get(args.source)
         .await.unwrap()
@@ -37,9 +37,16 @@ pub async fn cmd(args: Args) {
     // map is not included so it must be added manually
     m.insert("map", "application/json");
 
-    let mut w = BufWriter::new(f);
-    serde_yaml::to_writer(&mut w, &m).unwrap();
-    w.flush().unwrap();
+    let s = serde_yaml::to_string(&m).unwrap();
+    let mut lines: Vec<&str> = s
+        .strip_suffix('\n')
+        .unwrap()
+        .split('\n')
+        .collect();
+    lines.sort();
+
+    f.write(lines.join("\n").as_bytes()).unwrap();
+    f.write(b"\n").unwrap();
 }
 
 fn nginx_to_map(nginx_mime_types: &str) -> HashMap<&str, &str> {
