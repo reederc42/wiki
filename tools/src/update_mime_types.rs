@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs::File, io::{BufWriter, Write}};
+use std::{collections::HashMap, fs::File, io::Write};
 
 use regex::Regex;
 
@@ -45,8 +45,8 @@ pub async fn cmd(args: Args) {
         .collect();
     lines.sort();
 
-    f.write(lines.join("\n").as_bytes()).unwrap();
-    f.write(b"\n").unwrap();
+    let _ = f.write(lines.join("\n").as_bytes()).unwrap();
+    let _ = f.write(b"\n").unwrap();
 }
 
 fn nginx_to_map(nginx_mime_types: &str) -> HashMap<&str, &str> {

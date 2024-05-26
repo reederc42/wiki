@@ -104,7 +104,7 @@ fn build_assets(dir: &Path) -> Vec<Asset> {
 
         let path = String::from(
             p.to_str().unwrap()
-                .replace("\\", "/")
+                .replace('\\', "/")
                 .strip_prefix(dir.to_str().unwrap()).unwrap()
                 .trim_start_matches('/')
         );
