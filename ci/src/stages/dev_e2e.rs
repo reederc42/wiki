@@ -54,17 +54,19 @@ fn node_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
 fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
     config.runner.run(
         ExecutionContext::Build,
-        vec![],
+        vec![&format!(
+            "WIKI_CI_UI_BUILD_OPTIONS=--build dev --api server --user-expiration {0} --api-expiration {0}",
+            expiration,
+        )],
         true,
         vec![
             "sh",
             "-c",
-            &format!(r#"
+            r"
                 set -xe
                 ln -s /ci/ui/node_modules ./ui/node_modules || true
-                export WIKI_CI_UI_BUILD_OPTIONS='--build dev --api server --user-expiration {0} --api-expiration {0}'
                 cargo build --bin wiki
-            "#, expiration),
+            ",
         ],
     )?;
 
