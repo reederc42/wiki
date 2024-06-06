@@ -13,89 +13,72 @@ impl Stage for DevE2E {
     }
 
     // run e2e tests against dev servers
-    fn run(&self, _context: &Context, config: &Config) -> Result<(), Error> {
+    fn run(&self, _context: &Context, runner: &Box<dyn Runner>) -> Result<(), Error> {
         let expiration = 3000;
 
-        node_dev_e2e(expiration, config)?;
+        node_dev_e2e(expiration, runner)?;
 
-        rust_dev_e2e(expiration, config)
+        rust_dev_e2e(expiration, runner)
     }
 }
 
-fn node_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
-    let server = config.runner.run_background(
+fn node_dev_e2e(expiration: u32, runner: &Box<dyn Runner>) -> Result<(), Error> {
+    let server = runner.run_background(
         ExecutionContext::Build,
         vec![],
         true,
-        vec![
-            "sh",
-            "-c",
-            &format!(r"
-                set -xe
-                ln -s /ci/ui/node_modules ./ui/node_modules || true
-                cd ui
-                npm run dev -- --user-expiration {0} --api-expiration {0}
-            ", expiration),
-        ]
+        &format!(r"
+            set -xe
+            cd ui
+            npm run dev -- --user-expiration {0} --api-expiration {0}
+        ", expiration),
     )?;
 
-    config.runner.run(
+    runner.run(
         ExecutionContext::E2E,
         vec![],
         true,
-        vec![
-            "sh",
-            "-c",
-            &cypress_script(&server.addr(), "node-dev", &BROWSERS),
-        ]
+        &cypress_script(&server.addr(), "node-dev", &BROWSERS),
     )
 }
 
-fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
-    config.runner.run(
+fn rust_dev_e2e(expiration: u32, runner: &Box<dyn Runner>) -> Result<(), Error> {
+    runner.run(
         ExecutionContext::Build,
         vec![&format!(
             "WIKI_CI_UI_BUILD_OPTIONS=--build dev --api server --user-expiration {0} --api-expiration {0}",
             expiration,
         )],
         true,
-        vec![
-            "sh",
-            "-c",
             r"
                 set -xe
-                ln -s /ci/ui/node_modules ./ui/node_modules || true
                 cargo build --bin wiki
             ",
-        ],
     )?;
 
     for browser in BROWSERS {
-        let db = config.runner.run_background(
+        let db = runner.run_background(
             ExecutionContext::Postgres,
             vec!["POSTGRES_HOST_AUTH_METHOD=trust"],
             false,
-            vec![],
-        )?;
-
-        let server = config.runner.run_background(
-            ExecutionContext::Build,
-            vec![],
-            true,
-            vec![
-                "sh",
-                "-c",
-                &format!(r"
-                    set -xe
-                    sleep 10s
-                    ./target/debug/wiki --postgres-host={}
-                ", &db.addr()),
-            ],
+            "",
         )?;
 
         std::thread::sleep(std::time::Duration::from_secs(10));
 
-        config.runner.run(
+        let server = runner.run_background(
+            ExecutionContext::Build,
+            vec![],
+            true,
+            &format!(r#"
+                set -xe
+                ./target/debug/wiki --postgres-host={}
+            "#, &db.addr()),
+        )?;
+
+        std::thread::sleep(std::time::Duration::from_secs(10));
+
+        runner.run(
             ExecutionContext::E2E,
             vec![
                 &format!("CYPRESS_USER_EXPIRATION={}", expiration),
@@ -103,11 +86,7 @@ fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
                 "CYPRESS_REQUIRE_CLEAN_PERSISTENCE=true",
             ],
             true,
-            vec![
-                "sh",
-                "-c",
-                &cypress_script(&server.addr(), "rust-dev", &[browser]),
-            ],
+            &cypress_script(&server.addr(), "rust-dev", &[browser]),
         )?;
     }
 
@@ -117,7 +96,6 @@ fn rust_dev_e2e(expiration: u32, config: &Config) -> Result<(), Error> {
 fn cypress_script(server_addr: &str, stage_name: &str, browsers: &[&str]) -> String {
     format!(r"
         set -xe
-        ln -s /ci/ui/node_modules ./ui/node_modules || true
         cd ui
         trap 'mv *-e2e.xml ../test_results/' EXIT
         for b in {0}; do

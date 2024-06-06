@@ -8,7 +8,7 @@ impl Stage for PrepareContexts {
     }
 
     // run builds test and build images
-    fn run(&self, context: &Context, config: &Config) -> Result<(), Error> {
+    fn run(&self, context: &Context, runner: &Box<dyn Runner>) -> Result<(), Error> {
         let exec_contexts: [ExecutionContext; 3] = [
             ExecutionContext::Build,
             ExecutionContext::E2E,
@@ -16,7 +16,7 @@ impl Stage for PrepareContexts {
         ];
 
         for exec_context in exec_contexts {
-            config.builder.build(exec_context, context)?;
+            runner.build(exec_context, context)?;
         }
 
         Ok(())

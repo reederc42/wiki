@@ -1,7 +1,5 @@
 use std::process::Command;
 
-use sha2::{Digest, Sha256};
-
 use crate::*;
 
 // Latest postgres image: https://hub.docker.com/_/postgres/tags
@@ -11,10 +9,8 @@ pub struct Docker {
     pub context: Rc<Context>,
 }
 
-const CMD_HASH_LENGTH: usize = 7;
-
 impl Docker {
-    fn build_docker_run_args(&self, background: bool, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>, remove: bool) -> Vec<String> {
+    fn build_docker_run_args(&self, background: bool, context: ExecutionContext, env: Vec<&str>, include_source: bool, script: &str, remove: bool) -> Vec<String> {
         let mut args: Vec<String> = vec![
             "run",
         ].into_iter().map(|a| a.to_string()).collect();
@@ -47,7 +43,11 @@ impl Docker {
             ExecutionContext::Postgres => args.push(POSTGRES_IMAGE.into()),
         }
 
-        args.extend(cmd.into_iter().map(|a| a.to_string()).collect::<Vec<String>>());
+        args.extend([
+            "sh",
+            "-c",
+            script,
+        ].into_iter().map(|a| a.to_string()).collect::<Vec<String>>());
 
         args
     }
@@ -65,35 +65,10 @@ impl Docker {
 
         let mut finished_print = None;
         if self.context.verbose {
-            finished_print = Some(print_command(cmd, false));
+            finished_print = Some(shell::print_command(cmd, false));
         }
 
-        let res = cmd.spawn();
-
-        match res {
-            Ok(mut c) => {
-                let res = c.wait();
-                if let Some(f) = finished_print {
-                    f();
-                }
-                match res {
-                    Ok(s) => {
-                        match s.code() {
-                            Some(code) => {
-                                if code != 0 {
-                                    Err(error!("Received non-zero exit status: {}", code))
-                                } else {
-                                    Ok(())
-                                }
-                            },
-                            None => Err(error!("Process terminated with signal")),
-                        }
-                    },
-                    Err(e) => Err(Box::new(e)),
-                }
-            },
-            Err(e) => Err(Box::new(e)),
-        }
+        shell::spawn_result_to_result(cmd.spawn(), finished_print)
     }
 
     fn pull_postgres_image(&self, image: &str) -> Result<(), Error> {
@@ -105,39 +80,14 @@ impl Docker {
 
         let mut finished_print = None;
         if self.context.verbose {
-            finished_print = Some(print_command(cmd, false));
+            finished_print = Some(shell::print_command(cmd, false));
         }
 
-        let res = cmd.spawn();
-
-        match res {
-            Ok(mut c) => {
-                let res = c.wait();
-                if let Some(f) = finished_print {
-                    f();
-                }
-                match res {
-                    Ok(s) => {
-                        match s.code() {
-                            Some(code) => {
-                                if code != 0 {
-                                    Err(error!("Received non-zero exit status: {}", code))
-                                } else {
-                                    Ok(())
-                                }
-                            },
-                            None => Err(error!("Process terminated with signal")),
-                        }
-                    },
-                    Err(e) => Err(Box::new(e)),
-                }
-            },
-            Err(e) => Err(Box::new(e)),
-        }
+        shell::spawn_result_to_result(cmd.spawn(), finished_print)
     }
 }
 
-impl Builder for Docker {
+impl Runner for Docker {
     fn build(&self, exec_context: ExecutionContext, build_context: &Context) -> Result<(), Error> {
         match exec_context {
             ExecutionContext::Build => {
@@ -157,57 +107,30 @@ impl Builder for Docker {
             ExecutionContext::Postgres => self.pull_postgres_image(POSTGRES_IMAGE),
         }
     }
-}
 
-impl Runner for Docker {
-    fn run(&self, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>) -> Result<(), Error> {
-        let args = self.build_docker_run_args(false, context, env, include_source, cmd, true);
+    fn run(&self, context: ExecutionContext, env: Vec<&str>, include_source: bool, script: &str) -> Result<(), Error> {
+        let args = self.build_docker_run_args(false, context, env, include_source, script, true);
 
         let mut prog = Command::new("docker");
         let cmd = prog.args(args);
 
         let mut finished_print = None;
         if self.context.verbose {
-            finished_print = Some(print_command(cmd, false));
+            finished_print = Some(shell::print_command(cmd, false));
         }
 
-        let res = cmd.spawn();
-
-        match res {
-            Ok(mut c) => {
-                let res = c.wait();
-                if let Some(f) = finished_print {
-                    f();
-                }
-                match res{
-                    Ok(s) => {
-                        match s.code() {
-                            Some(code) => {
-                                if code != 0 {
-                                    Err(error!("Received non-zero exit status: {}", code))
-                                } else {
-                                    Ok(())
-                                }
-                            },
-                            None => Err(error!("Process terminated with signal")),
-                        }
-                    },
-                    Err(e) => Err(Box::new(e)),
-                }
-            },
-            Err(e) => Err(Box::new(e)),
-        }
+        shell::spawn_result_to_result(cmd.spawn(), finished_print)
     }
 
-    fn run_background(&self, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>) -> Result<Box<dyn BackgroundServer>, Error> {
-        let args = self.build_docker_run_args(true, context, env, include_source, cmd, false);
+    fn run_background(&self, context: ExecutionContext, env: Vec<&str>, include_source: bool, script: &str) -> Result<Box<dyn BackgroundServer>, Error> {
+        let args = self.build_docker_run_args(true, context, env, include_source, script, false);
 
         let mut prog = Command::new("docker");
         let cmd = prog.args(args);
 
         let mut finished_print = None;
         if self.context.verbose {
-            finished_print = Some(print_command(cmd, true));
+            finished_print = Some(shell::print_command(cmd, true));
         }
 
         let output = cmd.output();
@@ -286,40 +209,4 @@ impl BackgroundServer for DockerBackgroundServer {
             container[0]["NetworkSettings"]["IPAddress"].as_str().unwrap()
         )
     }
-}
-
-fn print_command(cmd: &Command, background: bool) -> Box<dyn FnOnce()> {
-    let program = cmd.get_program().to_string_lossy();
-
-    let full_cmd = format!(
-        "{} {}",
-        program,
-        cmd.get_args()
-            .map(|a| a.to_string_lossy())
-            .collect::<Vec<_>>()
-            .join(" "),
-    );
-
-    let cmd_hash: String = format!("{:x}", Sha256::digest(&full_cmd))
-        .chars()
-        .take(CMD_HASH_LENGTH)
-        .collect();
-
-    let id = format!("{}-{}", program, cmd_hash);
-
-    if background {
-        println!("Executing background command [id: {}]:\n```", id);
-    } else {
-        println!("Executing command [id: {}]:\n```", id);
-    }
-    println!("{}", full_cmd);
-    println!("```");
-
-    Box::new(move || {
-        if background {
-            println!("Background command completed [id: {}]", id);
-        } else {
-            println!("Command completed [id: {}]", id);
-        }
-    })
 }

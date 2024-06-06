@@ -3,6 +3,7 @@ use std::{fs, rc::Rc};
 use clap::Parser;
 
 mod docker;
+mod shell;
 mod stages;
 
 #[macro_export]
@@ -37,8 +38,13 @@ pub struct Cli {
     #[arg(short, long)]
     verbose: bool,
 
+    /// Fail on first stage error
     #[arg(short, long)]
     fail_fast: bool,
+
+    /// Runner for scripts [docker, shell]
+    #[arg(short, long, default_value = "docker")]
+    runner: String,
 }
 
 pub fn cmd(args: Cli) {
@@ -63,12 +69,13 @@ pub fn cmd(args: Cli) {
         ),
         verbose: args.verbose,
     });
-    let docker = Rc::new(docker::Docker{
-        context: context.clone(),
-    });
-    let config = Config {
-        runner: docker.clone(),
-        builder: docker.clone(),
+
+    let mut runner: Box<dyn Runner> = match args.runner.as_str() {
+        "docker" => Box::new(docker::Docker{
+            context: context.clone(),
+        }),
+        "shell" => Box::new(shell::Shell::new(context.clone())),
+        r => panic!("Invalid runner option: {}", r),
     };
 
     match fs::remove_dir_all(TEST_RESULTS_DIR) {
@@ -91,7 +98,7 @@ pub fn cmd(args: Cli) {
                 println!("::group::Stage: {}", s.name());
             }
 
-            if let Err(e) = s.run(&context, &config) {
+            if let Err(e) = s.run(&context, &mut runner) {
                 println!("Stage error: {:?}", e);
                 stages_failed += 1;
                 if args.fail_fast {
@@ -136,18 +143,14 @@ pub struct Context {
     pub verbose: bool,
 }
 
-pub struct Config {
-    pub runner: Rc<dyn Runner>,
-    pub builder: Rc<dyn Builder>,
-}
-
 pub trait BackgroundServer {
     fn addr(&self) -> String;
 }
 
 pub trait Runner {
-    fn run(&self, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>) -> Result<(), Error>;
-    fn run_background(&self, context: ExecutionContext, env: Vec<&str>, include_source: bool, cmd: Vec<&str>) -> Result<Box<dyn BackgroundServer>, Error>;
+    fn build(&self, exec_context: ExecutionContext, build_context: &Context) -> Result<(), Error>;
+    fn run(&self, context: ExecutionContext, env: Vec<&str>, include_source: bool, script: &str) -> Result<(), Error>;
+    fn run_background(&self, context: ExecutionContext, env: Vec<&str>, include_source: bool, script: &str) -> Result<Box<dyn BackgroundServer>, Error>;
 }
 
 pub enum ExecutionContext {
@@ -156,11 +159,7 @@ pub enum ExecutionContext {
     Postgres,
 }
 
-pub trait Builder {
-    fn build(&self, exec_context: ExecutionContext, build_context: &Context) -> Result<(), Error>;
-}
-
 pub trait Stage {
     fn name(&self) -> &'static str;
-    fn run(&self, context: &Context, config: &Config) -> Result<(), Error>;
+    fn run(&self, context: &Context, runner: &Box<dyn Runner>) -> Result<(), Error>;
 }
