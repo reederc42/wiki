@@ -43,7 +43,7 @@ pub struct Cli {
 
 pub fn cmd(args: Cli) {
     let all_stages: Vec<Box<dyn Stage>> = vec![
-        Box::new(stages::build_images::BuildImages{}),
+        Box::new(stages::prepare_contexts::PrepareContexts{}),
         Box::new(stages::nodejs_checks::NodeJSChecks{}),
         Box::new(stages::rust_checks::RustChecks{}),
         Box::new(stages::dev_e2e::DevE2E{}),
@@ -157,7 +157,7 @@ pub enum ExecutionContext {
 }
 
 pub trait Builder {
-    fn build(&self, tag: &str, dockerfile: &str, context: &str) -> Result<(), Error>;
+    fn build(&self, exec_context: ExecutionContext, build_context: &Context) -> Result<(), Error>;
 }
 
 pub trait Stage {
