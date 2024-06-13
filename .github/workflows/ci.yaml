@@ -14,7 +14,6 @@ permissions:
 env:
   RUSTFLAGS: "-Dwarnings"
   BUILD_ID: ${{ github.job }}-${{ github.run_id }}
-  ESLINT_USE_FLAT_CONFIG: false
 
   # Latest Node.js version: https://nodejs.org/en
   NODE_VERSION: 22.2.0

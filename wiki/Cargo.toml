@@ -20,6 +20,7 @@ tokio-postgres = "0.7.10"
 warp = "0.3.7"
 
 [build-dependencies]
+ignore = "0.4.22"
 phf_codegen = "0.11.2"
 serde_yaml = "0.9.34"
 

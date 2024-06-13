@@ -9,9 +9,11 @@ RUN update-ca-certificates
 
 FROM scratch
 
+ARG RELEASE=release
+
 COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs
 
-COPY ./target/release/tools .
+COPY ./target/${RELEASE}/wiki .
 
-ENTRYPOINT [ "/tools" ]
-CMD [ "update-mime-types" ]
+ENTRYPOINT [ "/wiki" ]
+CMD ["--help"]
