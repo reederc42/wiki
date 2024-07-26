@@ -1,20 +1,35 @@
 # Latest Node.js version: https://nodejs.org/en
-ARG NODE_VERSION="22.2.0"
+ARG NODE_VERSION="22.5.1"
 
-FROM node:${NODE_VERSION}
+FROM node:${NODE_VERSION}-alpine
 
 # Latest NPM version: https://www.npmjs.com/package/npm
-ARG NPM_VERSION="10.8.0"
+ARG NPM_VERSION="10.8.2"
 
 # Latest Rust version: https://www.rust-lang.org/
-ARG RUST_VERSION="1.78.0"
+ARG RUST_VERSION="1.80.0"
 
 # Latest nextest version: https://github.com/nextest-rs/nextest/releases
 ARG NEXTEST_VERSION="^0.9"
 
+ARG RUST_BINS="ci tools wiki"
+
 USER root
 
 RUN [ "$(npm --version)" = "${NPM_VERSION}" ] || npm install --verbose -g npm@${NPM_VERSION}
+
+RUN apk update &&\
+    apk upgrade &&\
+    apk add \
+    curl \
+    gcc \
+    musl-dev \
+    openssl-dev \
+    openssl-libs-static
+
+ENV OPENSSL_STATIC=true
+ENV OPENSSL_LIB_DIR=/usr/lib/
+ENV OPENSSL_INCLUDE_DIR=/usr/include/
 
 WORKDIR /ci
 
@@ -27,19 +42,6 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |\
 
 RUN cargo install cargo-nextest --version ${NEXTEST_VERSION} --locked
 
-COPY ./ui/package.json .
-COPY ./ui/package-lock.json .
-RUN npm install --verbose
-
-RUN mkdir wiki
-RUN cd wiki &&\
-    cargo new ci &&\
-    cargo new tools &&\
-    cargo new wiki
-COPY ./Cargo.lock ./wiki/
-COPY ./Cargo.toml ./wiki/
-COPY ./ci/Cargo.toml ./wiki/ci/
-COPY ./tools/Cargo.toml ./wiki/tools/
-COPY ./wiki/Cargo.toml ./wiki/wiki/
-RUN cd wiki &&\
-    cargo fetch -vv
+RUN for bin in ${RUST_BINS}; do cargo init $bin; done;
+COPY . .
+RUN cargo fetch -vv && cd ui && npm install --omit=dev --verbose

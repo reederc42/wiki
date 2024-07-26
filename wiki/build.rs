@@ -1,13 +1,31 @@
-use std::{collections::HashMap, ffi::OsStr, fs::{self, File}, io::Write, path::Path};
+use std::{collections::HashMap, ffi::OsStr, fs::{self, File}, io::Write, path::Path, process::Command};
 
+const UI_SRC: &str = "../ui";
 const DIST_DIR: &str = "../ui/dist";
 const DIST_FILE: &str = "src/dist.rs";
 const MIME_TYPES: &str = "mime_types.yaml";
+const BUILD_OPTIONS_ENV: &str = "WIKI_CI_UI_BUILD_OPTIONS";
 
 fn main() {
-    walk_dir(Path::new(DIST_DIR), &mut |p: &Path| {
-        println!("cargo:rerun-if-changed={}", p.display());
-    });
+    for result in ignore::WalkBuilder::new("../")
+        .filter_entry(|dent| {
+            let p = dent.clone().into_path();
+            p.starts_with(UI_SRC)
+        })
+        .build().flatten() {
+        let p = result.into_path();
+        if !p.is_dir() {
+            println!("cargo:rerun-if-changed={}", p.display());
+        }
+    }
+    println!("cargo:rerun-if-env-changed={}", BUILD_OPTIONS_ENV);
+
+    let build_options_env = std::env::var(BUILD_OPTIONS_ENV)
+        .unwrap_or(String::from(""));
+    let build_options: Vec<&str> = build_options_env
+        .split(' ')
+        .collect();
+    build_ui(&build_options);
 
     let assets = build_assets(Path::new(DIST_DIR));
     let mut m = phf_codegen::Map::new();
@@ -40,6 +58,24 @@ fn walk_dir(dir: &Path, f: &mut dyn FnMut(&Path)) {
     }
 }
 
+fn build_ui(build_options: &[&str]) {
+    let base_args = vec!["run", "build", "--"];
+    let (program, args) = if cfg!(target_os = "windows") {
+        ("cmd", [vec!["/C", "npm"], base_args].concat())
+    } else {
+        ("npm", base_args)
+    };
+
+    Command::new(program)
+        .args(args)
+        .args(build_options)
+        .current_dir(UI_SRC)
+        .spawn()
+        .unwrap()
+        .wait()
+        .unwrap();
+}
+
 struct Asset {
     path: String,
     content_type: String,
@@ -51,7 +87,7 @@ fn build_assets(dir: &Path) -> Vec<Asset> {
     let content_types: HashMap<&str, &str> =
         serde_yaml::from_str(&content_types_str).unwrap();
 
-    let mut assets = Vec::new();
+    let mut assets = vec![];
 
     walk_dir(dir, &mut |p: &Path| {
         if p.is_dir() {
@@ -68,6 +104,7 @@ fn build_assets(dir: &Path) -> Vec<Asset> {
 
         let path = String::from(
             p.to_str().unwrap()
+                .replace('\\', "/")
                 .strip_prefix(dir.to_str().unwrap()).unwrap()
                 .trim_start_matches('/')
         );
