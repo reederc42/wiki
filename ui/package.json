@@ -27,19 +27,19 @@
     "eslint": "^9.7.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
+    "express": "^4.19.2",
     "globals": "^15.8.0",
     "jsdom": "^24.1.1",
     "lorem-ipsum": "^2.0.8",
     "marked": "^13.0.2",
+    "nodemon": "^3.1.4",
     "reefjs": "^13.0.4",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
     "cypress": "^13.13.1",
     "cypress-multi-reporters": "^1.6.4",
-    "express": "^4.19.2",
-    "mocha-junit-reporter": "^2.2.1",
-    "nodemon": "^3.1.4"
+    "mocha-junit-reporter": "^2.2.1"
   },
   "nodemonConfig": {
     "ignore": [

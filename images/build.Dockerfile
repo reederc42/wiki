@@ -44,4 +44,4 @@ RUN cargo install cargo-nextest --version ${NEXTEST_VERSION} --locked
 
 RUN for bin in ${RUST_BINS}; do cargo init $bin; done;
 COPY . .
-RUN cargo fetch -vv && cd ui && npm install --verbose
+RUN cargo fetch -vv && cd ui && npm install --omit=dev --verbose
