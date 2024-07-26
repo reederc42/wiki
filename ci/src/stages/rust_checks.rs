@@ -8,7 +8,7 @@ impl Stage for RustChecks {
     }
 
     // run runs unit tests and linters for Rust
-    fn run(&self, _context: &Context, runner: &Box<dyn Runner>) -> Result<(), Error> {
+    fn run(&self, _context: &Context, runner: &dyn Runner) -> Result<(), Error> {
         let db = runner.run_background(
             ExecutionContext::Postgres,
             vec!["POSTGRES_HOST_AUTH_METHOD=trust"],

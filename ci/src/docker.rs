@@ -2,7 +2,7 @@ use std::process::Command;
 
 use crate::*;
 
-// Latest postgres image: https://hub.docker.com/_/postgres/tags
+// Latest postgres version: https://hub.docker.com/_/postgres/tags
 const POSTGRES_IMAGE: &str = "postgres:16-alpine";
 
 pub struct Docker {
@@ -43,11 +43,13 @@ impl Docker {
             ExecutionContext::Postgres => args.push(POSTGRES_IMAGE.into()),
         }
 
-        args.extend([
-            "sh",
-            "-c",
-            script,
-        ].into_iter().map(|a| a.to_string()).collect::<Vec<String>>());
+        if !script.is_empty() {
+            args.extend([
+                "sh",
+                "-c",
+                script,
+            ].into_iter().map(|a| a.to_string()).collect::<Vec<String>>());
+        }
 
         args
     }
@@ -95,6 +97,12 @@ impl Runner for Docker {
                     &format!("wiki-ci:build-{}", build_context.id),
                     &format!("{}/images/build.Dockerfile", build_context.cwd),
                     &build_context.cwd,
+                )?;
+                self.run(
+                    ExecutionContext::Build,
+                    vec![],
+                    true,
+                    "ln -s /ci/ui/node_modules ui/node_modules || true",
                 )
             },
             ExecutionContext::E2E => {
@@ -102,6 +110,12 @@ impl Runner for Docker {
                     &format!("wiki-ci:e2e-{}", build_context.id),
                     &format!("{}/images/e2e.Dockerfile", build_context.cwd),
                     &build_context.cwd,
+                )?;
+                self.run(
+                    ExecutionContext::Build,
+                    vec![],
+                    true,
+                    "ln -s /ci/ui/node_modules ui/node_modules || true",
                 )
             },
             ExecutionContext::Postgres => self.pull_postgres_image(POSTGRES_IMAGE),

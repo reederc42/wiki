@@ -70,7 +70,7 @@ pub fn cmd(args: Cli) {
         verbose: args.verbose,
     });
 
-    let mut runner: Box<dyn Runner> = match args.runner.as_str() {
+    let runner: Box<dyn Runner> = match args.runner.as_str() {
         "docker" => Box::new(docker::Docker{
             context: context.clone(),
         }),
@@ -98,7 +98,7 @@ pub fn cmd(args: Cli) {
                 println!("::group::Stage: {}", s.name());
             }
 
-            if let Err(e) = s.run(&context, &mut runner) {
+            if let Err(e) = s.run(&context, runner.as_ref()) {
                 println!("Stage error: {:?}", e);
                 stages_failed += 1;
                 if args.fail_fast {
@@ -161,5 +161,5 @@ pub enum ExecutionContext {
 
 pub trait Stage {
     fn name(&self) -> &'static str;
-    fn run(&self, context: &Context, runner: &Box<dyn Runner>) -> Result<(), Error>;
+    fn run(&self, context: &Context, runner: &dyn Runner) -> Result<(), Error>;
 }

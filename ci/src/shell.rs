@@ -126,9 +126,7 @@ impl Shell {
             finished_print = Some(print_command(cmd, true));
         }
 
-        if let Err(err) = spawn_result_to_result(cmd.spawn(), finished_print) {
-            return Err(err);
-        }
+        spawn_result_to_result(cmd.spawn(), finished_print)?;
 
         let mut prog = Command::new("pg_ctl");
         let cmd = prog

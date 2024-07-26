@@ -13,7 +13,7 @@ impl Stage for DevE2E {
     }
 
     // run e2e tests against dev servers
-    fn run(&self, _context: &Context, runner: &Box<dyn Runner>) -> Result<(), Error> {
+    fn run(&self, _context: &Context, runner: &dyn Runner) -> Result<(), Error> {
         let expiration = 3000;
 
         node_dev_e2e(expiration, runner)?;
@@ -22,7 +22,7 @@ impl Stage for DevE2E {
     }
 }
 
-fn node_dev_e2e(expiration: u32, runner: &Box<dyn Runner>) -> Result<(), Error> {
+fn node_dev_e2e(expiration: u32, runner: &dyn Runner) -> Result<(), Error> {
     let server = runner.run_background(
         ExecutionContext::Build,
         vec![],
@@ -42,7 +42,7 @@ fn node_dev_e2e(expiration: u32, runner: &Box<dyn Runner>) -> Result<(), Error> 
     )
 }
 
-fn rust_dev_e2e(expiration: u32, runner: &Box<dyn Runner>) -> Result<(), Error> {
+fn rust_dev_e2e(expiration: u32, runner: &dyn Runner) -> Result<(), Error> {
     runner.run(
         ExecutionContext::Build,
         vec![&format!(
