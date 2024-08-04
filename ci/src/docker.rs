@@ -2,7 +2,7 @@ use std::process::Command;
 
 use crate::*;
 
-// Latest postgres version: https://hub.docker.com/_/postgres/tags
+// Latest postgres version: https://hub.docker.com/_/postgres
 const POSTGRES_IMAGE: &str = "postgres:16-alpine";
 
 pub struct Docker {
