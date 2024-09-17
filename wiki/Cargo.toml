@@ -6,21 +6,21 @@ edition = "2021"
 [dependencies]
 base64 = "0.22.1"
 bytes = "1.7.1"
-clap = "4.5.13"
+clap = "4.5.17"
 log = "0.4.22"
 phf = "0.11.2"
 pretty_env_logger = "0.5.0"
 rand = "0.8.5"
 refinery = { version = "0.8.14", features = ["tokio-postgres"] }
 regex = "1.10.6"
-serde_json = "1.0.122"
+serde_json = "1.0.128"
 serde_yaml = "0.9.34"
-tokio = { version = "1.39.2", features = ["full"] }
-tokio-postgres = "0.7.11"
+tokio = { version = "1.40.0", features = ["full"] }
+tokio-postgres = "0.7.12"
 warp = "0.3.7"
 
 [build-dependencies]
-ignore = "0.4.22"
+ignore = "0.4.23"
 phf_codegen = "0.11.2"
 serde_yaml = "0.9.34"
 
