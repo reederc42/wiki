@@ -1,8 +1,8 @@
 # Latest Node.js version: https://nodejs.org/en
-ARG NODE_VERSION="22.8.0"
+ARG NODE_VERSION="22.9.0"
 
 # Latest Chrome version: https://www.ubuntuupdates.org/package/google_chrome/stable/main/base/google-chrome-stable
-ARG CHROME_VERSION="129.0.6668.58-1"
+ARG CHROME_VERSION="129.0.6668.70-1"
 
 # Latest Firefox version: https://www.mozilla.org/en-US/firefox/releases/
 ARG FIREFOX_VERSION="130.0.1"

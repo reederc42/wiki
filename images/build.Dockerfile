@@ -1,5 +1,5 @@
 # Latest Node.js version: https://nodejs.org/en
-ARG NODE_VERSION="22.8.0"
+ARG NODE_VERSION="22.9.0"
 
 FROM node:${NODE_VERSION}-alpine
 
@@ -12,11 +12,7 @@ ARG RUST_VERSION="1.81.0"
 # Latest nextest version: https://github.com/nextest-rs/nextest/releases
 ARG NEXTEST_VERSION="^0.9"
 
-# Latest zigbuild version: https://github.com/rust-cross/cargo-zigbuild/releases
-ARG ZIGBUILD_VERSION="^0.19"
-
 ARG RUST_BINS="ci tools wiki"
-ARG TARGETS="aarch64-unknown-linux-musl x86_64-unknown-linux-musl"
 
 USER root
 
@@ -44,10 +40,7 @@ RUN mkdir -p ${CARGO_HOME} ${RUSTUP_HOME}
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |\
     sh -s -- -y --default-toolchain ${RUST_VERSION}
 
-RUN for target in ${TARGETS}; do rustup target add $target; done;
-
 RUN cargo install cargo-nextest --version ${NEXTEST_VERSION} --locked
-RUN cargo install cargo-zigbuild --version ${ZIGBUILD_VERSION} --locked
 
 RUN for bin in ${RUST_BINS}; do cargo init $bin; done;
 COPY . .
