@@ -3,7 +3,7 @@ use std::process::Command;
 use crate::*;
 
 // Latest postgres version: https://hub.docker.com/_/postgres
-const POSTGRES_IMAGE: &str = "postgres:16-alpine";
+const POSTGRES_IMAGE: &str = "postgres:17-alpine";
 
 pub struct Docker {
     pub context: Rc<Context>,

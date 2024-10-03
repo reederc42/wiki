@@ -28,7 +28,7 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "express": "^4.21.0",
-    "globals": "^15.9.0",
+    "globals": "^15.10.0",
     "jsdom": "^25.0.1",
     "lorem-ipsum": "^2.0.8",
     "marked": "^14.1.2",

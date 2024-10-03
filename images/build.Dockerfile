@@ -4,7 +4,7 @@ ARG NODE_VERSION="22.9.0"
 FROM node:${NODE_VERSION}-alpine
 
 # Latest NPM version: https://www.npmjs.com/package/npm
-ARG NPM_VERSION="10.8.3"
+ARG NPM_VERSION="10.9.0"
 
 # Latest Rust version: https://www.rust-lang.org/
 ARG RUST_VERSION="1.81.0"
