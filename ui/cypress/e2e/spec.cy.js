@@ -90,7 +90,10 @@ describe("UI e2e tests", () => {
                         .should("not.be.visible");
                     cy.get("textarea").should("not.have.attr", "readonly");
                     let testText = randomText();
-                    cy.get("#ace-editor").get(".ace_content").click().type(testText);
+                    cy.get("#ace-editor")
+                        .get(".ace_content")
+                        .click()
+                        .type(testText);
 
                     // 6. Save changes
                     cy.get("button").contains("Save").click();
@@ -143,7 +146,9 @@ describe("UI e2e tests", () => {
             // 5. Edit subject
             cy.get("textarea").should("not.have.attr", "readonly");
             let testText = newSubject();
-            cy.get("#ace-editor").click().type("# " + testText, { delay: 2 });
+            cy.get("#ace-editor")
+                .click()
+                .type("# " + testText, { delay: 2 });
 
             // 6. Save subject
             cy.get("button").contains("Save").click();
@@ -255,7 +260,9 @@ describe("UI e2e tests", () => {
             // 4. Add existing title
             cy.get("textarea").should("not.have.attr", "readonly");
             let subject = existingSubject();
-            cy.get("#ace-editor").click().type("# " + subject);
+            cy.get("#ace-editor")
+                .click()
+                .type("# " + subject);
 
             // 5. Save
             cy.get("button").contains("Save").click();
@@ -354,7 +361,8 @@ describe("UI e2e tests", () => {
             // 5. Add more new content
             cy.log("Trying to add more content");
             cy.get("textarea").should("not.have.attr", "readonly");
-            cy.get("#ace-editor").click()
+            cy.get("#ace-editor")
+                .click()
                 .type("{moveToEnd}{enter}{enter}" + randomText());
 
             // 6. Wait until expiration
