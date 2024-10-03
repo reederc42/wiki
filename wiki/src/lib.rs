@@ -72,7 +72,8 @@ pub async fn run(args: Cli) {
             subject::filter(db, Arc::new(mock_user::Mock::new()))
             .with(warp::log("wiki::api"))
         )
-        .or(ui_filter);
+        .or(ui_filter)
+        .with(warp::cors().allow_any_origin());
 
     let (addr, fut) = warp::serve(filter)
             .bind_with_graceful_shutdown(
