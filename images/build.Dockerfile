@@ -4,10 +4,10 @@ ARG NODE_VERSION="23.3.0"
 FROM node:${NODE_VERSION}-alpine
 
 # Latest NPM version: https://www.npmjs.com/package/npm
-ARG NPM_VERSION="10.9.1"
+ARG NPM_VERSION="10.9.2"
 
 # Latest Rust version: https://www.rust-lang.org/
-ARG RUST_VERSION="1.82.0"
+ARG RUST_VERSION="1.83.0"
 
 # Latest nextest version: https://github.com/nextest-rs/nextest/releases
 ARG NEXTEST_VERSION="^0.9"

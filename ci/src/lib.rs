@@ -42,6 +42,10 @@ pub struct Cli {
     #[arg(short, long)]
     fail_fast: bool,
 
+    /// Use headed (GUI) browsers for e2e tests
+    #[arg(short = 'e', long)]
+    headed: bool,
+
     /// Runner for scripts [docker, shell]
     #[arg(short, long, default_value = "docker")]
     runner: String,
@@ -67,6 +71,7 @@ pub fn cmd(args: Cli) {
         cwd: std::env::var("HOST_WORKDIR").unwrap_or(
             String::from(std::env::current_dir().unwrap().to_str().unwrap())
         ),
+        headed: args.headed,
         verbose: args.verbose,
     });
 
@@ -140,6 +145,7 @@ pub type Error = Box<dyn std::error::Error>;
 pub struct Context {
     pub id: String,
     pub cwd: String,
+    pub headed: bool,
     pub verbose: bool,
 }
 
