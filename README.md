@@ -7,10 +7,10 @@ and Javascript to create a well-tested, secure, client/server application.
 This monorepo includes all design notes and a set of build and test tools that
 are developed similarly to the main application, using TDD.
 
-# Major Technologies
+## Major Technologies
 
-* Go
-    * Go is used to develop the server and tools
+* Rust
+    * Rust is used to develop the server and tools
 * Javascript
     * Javascript is used to develop the user interface, the client
         * Reef.js is used to assist with reactive components
@@ -30,7 +30,7 @@ are developed similarly to the main application, using TDD.
 * Make
     * Make is used to automate build tasks
 
-# Update dependencies
+## Update dependencies
 
 * Regex search the repository for:
 
@@ -51,7 +51,16 @@ are developed similarly to the main application, using TDD.
     npx npm-check-updates -u
     ```
 
+## Remove untracked files
+
+Linux is able to handle globbing with large numbers of files, but MacOS might fail. This will work on both platforms.
+
+```sh
+(find . -type f; find . -type d) | xargs git check-ignore | xargs rm -rf
+```
+
 Current mindmap idea:
+```
 @startmindmap
 * root
 ** api/v1
@@ -81,3 +90,4 @@ Current mindmap idea:
 **** resource handler
 ** not found handler
 @endmindmap
+```
