@@ -1,10 +1,10 @@
 # Latest Node.js version: https://nodejs.org/en
-ARG NODE_VERSION="23.3.0"
+ARG NODE_VERSION="23.5.0"
 
 FROM node:${NODE_VERSION}-alpine
 
 # Latest NPM version: https://www.npmjs.com/package/npm
-ARG NPM_VERSION="10.9.2"
+ARG NPM_VERSION="11.0.0"
 
 # Latest Rust version: https://www.rust-lang.org/
 ARG RUST_VERSION="1.83.0"
