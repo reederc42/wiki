@@ -7,5 +7,5 @@ edition = "2021"
 
 [dependencies]
 clap = "4.5.23"
-serde_json = "1.0.133"
+serde_json = "1.0.134"
 sha2 = "0.10.8"
