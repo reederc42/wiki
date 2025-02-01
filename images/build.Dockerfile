@@ -1,13 +1,13 @@
 # Latest Node.js version: https://nodejs.org/en
-ARG NODE_VERSION="23.6.1"
+ARG NODE_VERSION="23.7.0"
 
 FROM node:${NODE_VERSION}-alpine
 
 # Latest NPM version: https://www.npmjs.com/package/npm
-ARG NPM_VERSION="11.0.0"
+ARG NPM_VERSION="11.1.0"
 
 # Latest Rust version: https://www.rust-lang.org/
-ARG RUST_VERSION="1.84.0"
+ARG RUST_VERSION="1.84.1"
 
 # Latest nextest version: https://github.com/nextest-rs/nextest/releases
 ARG NEXTEST_VERSION="^0.9"
