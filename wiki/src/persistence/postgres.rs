@@ -120,7 +120,7 @@ async fn connect(host: &str, user: &str, database: &str) -> Result<tokio_postgre
 mod tests {
     use std::{mem::ManuallyDrop, time::Duration};
 
-    use rand::{distributions::Alphanumeric, Rng};
+    use rand::{distr::Alphanumeric, Rng};
 
     use super::*;
 
@@ -135,7 +135,7 @@ mod tests {
 
     impl TestDB {
         async fn new(host: &str, user: &str, database: &str) -> Self {
-            let database_name = format!("test_{}", rand::thread_rng()
+            let database_name = format!("test_{}", rand::rng()
                 .sample_iter(&Alphanumeric)
                 .take(DATABASE_NAME_LENGTH)
                 .map(char::from)
