@@ -1,5 +1,5 @@
 # Latest Node.js version: https://nodejs.org/en
-ARG NODE_VERSION="23.7.0"
+ARG NODE_VERSION="23.8.0"
 
 FROM node:${NODE_VERSION}-alpine
 
