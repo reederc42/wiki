@@ -16,10 +16,10 @@ env:
   BUILD_ID: ${{ github.job }}-${{ github.run_id }}
 
   # Latest Node.js version: https://nodejs.org/en
-  NODE_VERSION: 23.7.0
+  NODE_VERSION: 23.11.0
 
   # Latest Rust version: https://www.rust-lang.org/
-  RUST_VERSION: 1.84.1
+  RUST_VERSION: 1.86.0
 
 jobs:
   nodejs:

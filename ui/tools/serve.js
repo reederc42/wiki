@@ -49,7 +49,7 @@ async function main() {
     function sendIndex(_, res) {
         res.sendFile(`${dist}/index.html`);
     }
-    app.get("/*", sendIndex);
+    app.get("/*splat", sendIndex);
 
     const listener = app.listen(argv.port).address();
     if (listener == null) {
