@@ -42,7 +42,7 @@ are developed similarly to the main application, using TDD.
 
     ```sh
     cargo install-update -a
-    cargo upgrade
+    cargo upgrade --incompatible=allow --pinned=allow
     ```
 
 * Update node.js dependencies:
