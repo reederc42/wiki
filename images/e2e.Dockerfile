@@ -1,11 +1,11 @@
 # Latest Node.js version: https://nodejs.org/en
-ARG NODE_VERSION="24.1.0"
+ARG NODE_VERSION="24.3.0"
 
 # Latest Chrome version: https://www.ubuntuupdates.org/package/google_chrome/stable/main/base/google-chrome-stable
-ARG CHROME_VERSION="137.0.7151.68-1"
+ARG CHROME_VERSION="138.0.7204.92-1"
 
 # Latest Firefox version: https://www.mozilla.org/en-US/firefox/releases/
-ARG FIREFOX_VERSION="139.0.1"
+ARG FIREFOX_VERSION="140.0.2"
 
 # Disable other browsers
 ARG EDGE_VERSION=
@@ -13,10 +13,10 @@ ARG YARN_VERSION=
 ARG CYPRESS_VERSION=
 
 # Latest cypress factory version: https://hub.docker.com/r/cypress/factory/tags
-FROM cypress/factory:5.10.0
+FROM cypress/factory:5.11.2
 
 # Latest NPM version: https://www.npmjs.com/package/npm
-ARG NPM_VERSION="11.4.1"
+ARG NPM_VERSION="11.4.2"
 
 USER root
 
