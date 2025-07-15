@@ -1,11 +1,11 @@
 # Latest Node.js version: https://nodejs.org/en
-ARG NODE_VERSION="24.3.0"
+ARG NODE_VERSION="24.4.0"
 
 # Latest Chrome version: https://www.ubuntuupdates.org/package/google_chrome/stable/main/base/google-chrome-stable
-ARG CHROME_VERSION="138.0.7204.92-1"
+ARG CHROME_VERSION="138.0.7204.100-1"
 
 # Latest Firefox version: https://www.mozilla.org/en-US/firefox/releases/
-ARG FIREFOX_VERSION="140.0.2"
+ARG FIREFOX_VERSION="140.0.4"
 
 # Disable other browsers
 ARG EDGE_VERSION=
